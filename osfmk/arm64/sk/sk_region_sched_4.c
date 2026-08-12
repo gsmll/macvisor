@@ -40,6 +40,29 @@ typedef uint64_t (*code)();     /* Ghidra `code` = function pointer (unspecified
 #define CONCAT62(a,b) ((((uint64_t)(a) & 0x0000ffffffffffffULL) << 16) | ((uint16_t)(b)))
 #define SCARRY8(a,b)  (((uint64_t)(a) + (uint64_t)(b)) < (uint64_t)(a))
 extern void *SoftwareBreakpoint(int level, unsigned long addr);  /* Ghidra BRK builtin */
+extern uint64_t LAB_00319c6c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319c9c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319ccc;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319cfc;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319d2c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319d5c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319d8c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319dbc;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319dec;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319e1c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319e4c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319eac;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319edc;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319f0c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319f6c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319f9c;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319fcc;  /* Ghidra label (code address) */
+extern uint64_t LAB_00319ffc;  /* Ghidra label (code address) */
+extern uint64_t LAB_0031a02c;  /* Ghidra label (code address) */
+extern uint64_t LAB_0031a05c;  /* Ghidra label (code address) */
+extern uint64_t LAB_0031a08c;  /* Ghidra label (code address) */
+extern uint64_t LAB_005ce9e0;  /* Ghidra label (code address) */
+
 
 /*------------------------------------------------------------------*/
 /* Shared runtime helpers referenced from this region (out-of-slice: FUN_ address in the
@@ -912,7 +935,7 @@ extern void sk_h_002060d4();           /* FUN_002060d4 out-of-slice */
  * definition.  Forward declarations matching the bodies defined below. */
 extern void sk_r4_001c050c(uint64_t, uint64_t);
 extern sk_r4_u128_t sk_r4_001c0528(void);
-extern void sk_r4_001c11b4(uint64_t, uint64_t);
+extern void sk_r4_001c11b4(void);
 extern void sk_r4_001c11d8(void);
 extern void sk_r4_001c12dc(void);
 extern void sk_r4_001c1300(uint64_t *p1);
@@ -1023,7 +1046,7 @@ extern void sk_r4_001c316c(void);
 extern void sk_r4_001c328c(void);
 extern void sk_r4_001c32b8(void);
 extern void sk_r4_001c33f8(void);
-extern void sk_r4_001c3424(uint64_t, uint64_t, uint32_t, uint64_t, long, uint64_t, code *p7);
+extern void sk_r4_001c3424(void);
 extern void sk_r4_001c37cc(uint64_t);
 extern void sk_r4_001c3868(void);
 extern void sk_r4_001c39dc(void);
@@ -1155,7 +1178,7 @@ extern void sk_r4_001c64fc(byte *p1);
 extern void sk_r4_001c652c(void);
 extern void sk_r4_001c65d0(void);
 extern sk_r4_u128_t sk_r4_001c6c48(void);
-extern void sk_r4_001c6ce8(void);
+extern void sk_r4_001c6ce8(uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001c6d74(uint64_t);
 extern void sk_r4_001c6d78(uint64_t);
 extern void sk_r4_001c6d90(uint8_t (*p1) [16]);
@@ -1213,9 +1236,9 @@ extern void sk_r4_001c8c20(void);
 extern void sk_r4_001c8c24(void);
 extern void sk_r4_001c8c50(void);
 extern void sk_r4_001c8ca8(uint64_t);
-extern void sk_r4_001c8cd8(void);
+extern void sk_r4_001c8cd8(uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001c8d70(uint64_t, uint64_t);
-extern void sk_r4_001c8da0(void);
+extern void sk_r4_001c8da0(uint64_t, uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001c8e18(uint64_t);
 extern void sk_r4_001c8e1c(uint64_t);
 extern void sk_r4_001c8e34(uint64_t *p1);
@@ -1225,7 +1248,7 @@ extern void sk_r4_001c8e90(void);
 extern void sk_r4_001c8f24(void);
 extern void sk_r4_001c8f7c(void);
 extern void sk_r4_001c9550(uint64_t);
-extern void sk_r4_001c9580(void);
+extern void sk_r4_001c9580(uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001c95b0(uint64_t);
 extern void sk_r4_001c95b4(uint64_t);
 extern void sk_r4_001c95cc(uint8_t (*p1) [16]);
@@ -1241,9 +1264,9 @@ extern void sk_r4_001c9728(void);
 extern void sk_r4_001c972c(void);
 extern void sk_r4_001c9758(void);
 extern void sk_r4_001c97a0(uint64_t);
-extern void sk_r4_001c97d0(void);
+extern void sk_r4_001c97d0(uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001c9864(uint64_t, uint64_t);
-extern void sk_r4_001c9894(void);
+extern void sk_r4_001c9894(uint64_t, uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001c9910(uint64_t);
 extern void sk_r4_001c9914(uint64_t);
 extern void sk_r4_001c992c(uint8_t *p1);
@@ -1253,9 +1276,9 @@ extern void sk_r4_001c9988(void);
 extern void sk_r4_001c9a1c(void);
 extern void sk_r4_001c9a74(void);
 extern void sk_r4_001ca040(uint64_t);
-extern void sk_r4_001ca070(void);
+extern void sk_r4_001ca070(uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001ca104(uint64_t, uint64_t);
-extern void sk_r4_001ca134(void);
+extern void sk_r4_001ca134(uint64_t, uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001ca1b0(uint64_t);
 extern void sk_r4_001ca1b4(uint64_t);
 extern void sk_r4_001ca1cc(uint16_t *p1);
@@ -1265,9 +1288,9 @@ extern void sk_r4_001ca228(void);
 extern void sk_r4_001ca2bc(void);
 extern void sk_r4_001ca314(void);
 extern void sk_r4_001ca8e0(uint64_t);
-extern void sk_r4_001ca910(void);
+extern void sk_r4_001ca910(uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001ca9a4(uint64_t, uint64_t);
-extern void sk_r4_001ca9d4(void);
+extern void sk_r4_001ca9d4(uint64_t, uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001caa50(uint64_t);
 extern void sk_r4_001caa54(uint64_t);
 extern void sk_r4_001caa6c(uint32_t *p1);
@@ -1285,8 +1308,8 @@ extern void sk_r4_001cb228(void);
 extern void sk_r4_001cb22c(void);
 extern void sk_r4_001cb258(void);
 extern void sk_r4_001cb2a0(uint64_t);
-extern void sk_r4_001cb2d0(void);
-extern void sk_r4_001cb368(void);
+extern void sk_r4_001cb2d0(uint64_t, uint64_t, uint64_t);
+extern void sk_r4_001cb368(uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001cb398(void);
 extern void sk_r4_001cb43c(uint64_t);
 extern void sk_r4_001cb440(uint64_t);
@@ -1321,12 +1344,12 @@ extern void sk_r4_001cc54c(void);
 extern void sk_r4_001cc584(uint64_t, uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001cc764(uint64_t, long, uint64_t);
 extern void sk_r4_001cc768(uint64_t, long, uint64_t);
-extern void sk_r4_001cc790(void);
-extern void sk_r4_001cc94c(uint64_t, uint64_t, long);
+extern void sk_r4_001cc790(uint64_t, uint64_t, uint64_t, uint64_t);
+extern void sk_r4_001cc94c(void);
 extern void sk_r4_001cc98c(uint64_t *p1, uint64_t, long, uint64_t);
-extern void sk_r4_001cc9c8(void);
+extern void sk_r4_001cc9c8(uint64_t, uint64_t);
 extern void sk_r4_001ccd1c(uint64_t, uint64_t, uint64_t, uint64_t);
-extern void sk_r4_001cd0b8(void);
+extern void sk_r4_001cd0b8(uint64_t);
 extern void sk_r4_001cd168(long);
 extern void sk_r4_001cd194(long);
 extern void sk_r4_001cd1e0(uint64_t, uint64_t, uint64_t, uint8_t);
@@ -1337,13 +1360,13 @@ extern void sk_r4_001cd618(long *p1, uint64_t, uint64_t, uint64_t);
 extern sk_r4_u128_t sk_r4_001cd66c(uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001cd6e0(uint64_t *p1);
 extern void sk_r4_001cd70c(uint64_t, uint64_t, uint64_t, uint8_t);
-extern void sk_r4_001cd778(uint64_t, uint64_t, uint64_t);
+extern void sk_r4_001cd778(void);
 extern void sk_r4_001cd7e4(uint8_t (*p1) [16]);
 extern void sk_r4_001cd80c(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001ce58c(void);
 extern void sk_r4_001ce6d4(uint64_t, long, uint64_t);
 extern void sk_r4_001ce6d8(uint64_t, long, uint64_t);
-extern void sk_r4_001ce704(void);
+extern void sk_r4_001ce704(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
 extern void sk_r4_001cf6f4(uint64_t, uint64_t, long);
 extern void sk_r4_001cf8b8(uint64_t *p1, uint64_t, long, uint64_t);
 extern void sk_r4_001cf8f8(void);
@@ -1364,10 +1387,10 @@ extern void sk_r4_001cfc34(void);
 extern void sk_r4_001cfc60(void);
 extern void sk_r4_001cfcc0(void);
 extern void sk_r4_001cfcc4(void);
-extern void sk_r4_001cfcf0(uint, uint64_t, uint64_t, uint64_t, code *p5);
+extern void sk_r4_001cfcf0(void);
 extern void sk_r4_001cfd64(void);
 extern void sk_r4_001cfd68(void);
-extern void sk_r4_001cfd94(uint, uint64_t, uint64_t, uint64_t, code *p5);
+extern void sk_r4_001cfd94(void);
 extern void sk_r4_001cfe08(void);
 extern void sk_r4_001cfe0c(void);
 extern void sk_r4_001cfe24(void);
@@ -2222,8 +2245,7 @@ LAB_001c0f40:
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001c11b4(uint64_t p1,uint64_t p2)
-
+void sk_r4_001c11b4(void)
 {
   sk_masked_free(p2);
   sk_h_00019858();
@@ -5846,9 +5868,7 @@ void sk_r4_001c33f8(void)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001c3424(uint64_t p1,uint64_t p2,uint32_t p3,uint64_t p4,
-                 long p5,uint64_t p6,code *p7)
-
+void sk_r4_001c3424(void)
 {
   code *pc1;
   long xo8;
@@ -11006,8 +11026,7 @@ sk_r4_u128_t sk_r4_001c6c48(void)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001c6ce8(void)
-
+void sk_r4_001c6ce8(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   long r1;
   code *xo8;
@@ -11893,7 +11912,7 @@ LAB_001c7a98:
     ax25 = v9;
   }
 LAB_001c7afc:
-  v4 = (uint64_t ***)sk_h_0035059c();
+  v4 = (uint64_t ***)sk_h_0035059c().lo;
   sk_h_0034c960();
   if ((xo8_09 == 0) &&
      ((((uint64_t)v7 & ((uint64_t)ax25 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
@@ -12364,7 +12383,7 @@ LAB_001c8278:
     ax25 = v10;
   }
 LAB_001c82e8:
-  v5 = (uint64_t ***)sk_h_0035059c();
+  v5 = (uint64_t ***)sk_h_0035059c().lo;
   sk_h_0034c960();
   if ((xo8_09 == 0) &&
      ((((uint64_t)v8 & ((uint64_t)ax25 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
@@ -12605,7 +12624,7 @@ void sk_r4_001c87bc(uint16_t *p1)
 void sk_r4_001c87e8(uint64_t p1)
 
 {
-  sk_r4_001c8cd8(p1,&LAB_00319c6c,0x66d5);
+  sk_r4_001c8cd8(p1,(uint64_t)&LAB_00319c6c,0x66d5);
   return;
 }
 
@@ -12619,7 +12638,7 @@ void sk_r4_001c87e8(uint64_t p1)
 void sk_r4_001c8818(uint64_t p1,uint64_t p2)
 
 {
-  sk_r4_001c8da0(p1,p2,&LAB_00319c9c,0x7e8e);
+  sk_r4_001c8da0(p1,p2,(uint64_t)&LAB_00319c9c,0x7e8e);
   return;
 }
 
@@ -12727,7 +12746,7 @@ void sk_r4_001c88c0(void)
 void sk_r4_001c8918(uint64_t p1)
 
 {
-  sk_r4_001c97d0(p1,&LAB_00319ccc,0x46be);
+  sk_r4_001c97d0(p1,(uint64_t)&LAB_00319ccc,0x46be);
   return;
 }
 
@@ -12741,7 +12760,7 @@ void sk_r4_001c8918(uint64_t p1)
 void sk_r4_001c8948(uint64_t p1,uint64_t p2)
 
 {
-  sk_r4_001c9894(p1,p2,&LAB_00319cfc,0xdd24);
+  sk_r4_001c9894(p1,p2,(uint64_t)&LAB_00319cfc,0xdd24);
   return;
 }
 
@@ -12849,7 +12868,7 @@ void sk_r4_001c89f0(void)
 void sk_r4_001c8a48(uint64_t p1)
 
 {
-  sk_r4_001ca070(p1,&LAB_00319d2c,0x630c);
+  sk_r4_001ca070(p1,(uint64_t)&LAB_00319d2c,0x630c);
   return;
 }
 
@@ -12863,7 +12882,7 @@ void sk_r4_001c8a48(uint64_t p1)
 void sk_r4_001c8a78(uint64_t p1,uint64_t p2)
 
 {
-  sk_r4_001ca134(p1,p2,&LAB_00319d5c,0x9f8b);
+  sk_r4_001ca134(p1,p2,(uint64_t)&LAB_00319d5c,0x9f8b);
   return;
 }
 
@@ -12971,7 +12990,7 @@ void sk_r4_001c8b20(void)
 void sk_r4_001c8b78(uint64_t p1)
 
 {
-  sk_r4_001ca910(p1,&LAB_00319d8c,0xf7d5);
+  sk_r4_001ca910(p1,(uint64_t)&LAB_00319d8c,0xf7d5);
   return;
 }
 
@@ -12985,7 +13004,7 @@ void sk_r4_001c8b78(uint64_t p1)
 void sk_r4_001c8ba8(uint64_t p1,uint64_t p2)
 
 {
-  sk_r4_001ca9d4(p1,p2,&LAB_00319dbc,0x9dd2);
+  sk_r4_001ca9d4(p1,p2,(uint64_t)&LAB_00319dbc,0x9dd2);
   return;
 }
 
@@ -13093,7 +13112,7 @@ void sk_r4_001c8c50(void)
 void sk_r4_001c8ca8(uint64_t p1)
 
 {
-  sk_r4_001c8cd8(p1,&LAB_00319dec,0xed02);
+  sk_r4_001c8cd8(p1,(uint64_t)&LAB_00319dec,0xed02);
   return;
 }
 
@@ -13105,8 +13124,7 @@ void sk_r4_001c8ca8(uint64_t p1)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001c8cd8(void)
-
+void sk_r4_001c8cd8(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint64_t v1;
   code *xo8;
@@ -13147,7 +13165,7 @@ void sk_r4_001c8cd8(void)
 void sk_r4_001c8d70(uint64_t p1,uint64_t p2)
 
 {
-  sk_r4_001c8da0(p1,p2,&LAB_00319e1c,0x536c);
+  sk_r4_001c8da0(p1,p2,(uint64_t)&LAB_00319e1c,0x536c);
   return;
 }
 
@@ -13159,8 +13177,7 @@ void sk_r4_001c8d70(uint64_t p1,uint64_t p2)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001c8da0(void)
-
+void sk_r4_001c8da0(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   code *xo8;
   code *xo9;
@@ -13658,7 +13675,7 @@ LAB_001c94e0:
 void sk_r4_001c9550(uint64_t p1)
 
 {
-  sk_r4_001cb2d0(p1,&LAB_00319e4c,0x9678);
+  sk_r4_001cb2d0(p1,(uint64_t)&LAB_00319e4c,0x9678);
   return;
 }
 
@@ -13669,8 +13686,7 @@ void sk_r4_001c9550(uint64_t p1)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001c9580(void)
-
+void sk_r4_001c9580(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   sk_r4_001cb398();
   return;
@@ -13781,7 +13797,7 @@ void sk_r4_001c9628(void)
 void sk_r4_001c9680(uint64_t p1)
 
 {
-  sk_r4_001c8cd8(p1,&LAB_00319eac,0x5a17);
+  sk_r4_001c8cd8(p1,(uint64_t)&LAB_00319eac,0x5a17);
   return;
 }
 
@@ -13795,7 +13811,7 @@ void sk_r4_001c9680(uint64_t p1)
 void sk_r4_001c96b0(uint64_t p1,uint64_t p2)
 
 {
-  sk_r4_001c8da0(p1,p2,&LAB_00319edc,0x3def);
+  sk_r4_001c8da0(p1,p2,(uint64_t)&LAB_00319edc,0x3def);
   return;
 }
 
@@ -13904,7 +13920,7 @@ void sk_r4_001c9758(void)
 void sk_r4_001c97a0(uint64_t p1)
 
 {
-  sk_r4_001c97d0(p1,&LAB_00319f0c,0xae16);
+  sk_r4_001c97d0(p1,(uint64_t)&LAB_00319f0c,0xae16);
   return;
 }
 
@@ -13916,8 +13932,7 @@ void sk_r4_001c97a0(uint64_t p1)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001c97d0(void)
-
+void sk_r4_001c97d0(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint64_t v1;
   code *xo8;
@@ -13956,7 +13971,7 @@ void sk_r4_001c97d0(void)
 void sk_r4_001c9864(uint64_t p1,uint64_t p2)
 
 {
-  sk_r4_001c9894(p1,p2,sk_h_00319f3c,0x3724);
+  sk_r4_001c9894(p1,p2,(uint64_t)(uint64_t)sk_h_00319f3c,0x3724);
   return;
 }
 
@@ -13968,8 +13983,7 @@ void sk_r4_001c9864(uint64_t p1,uint64_t p2)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001c9894(void)
-
+void sk_r4_001c9894(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   uint64_t v1;
   uint64_t xo1;
@@ -14457,7 +14471,7 @@ LAB_001c9fd0:
 void sk_r4_001ca040(uint64_t p1)
 
 {
-  sk_r4_001ca070(p1,&LAB_00319f6c,0x32e1);
+  sk_r4_001ca070(p1,(uint64_t)&LAB_00319f6c,0x32e1);
   uint64_t stack0x00000008;
   return;
 }
@@ -14469,8 +14483,7 @@ void sk_r4_001ca040(uint64_t p1)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001ca070(void)
-
+void sk_r4_001ca070(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint64_t v1;
   code *xo8;
@@ -14510,7 +14523,7 @@ void sk_r4_001ca104(uint64_t p1,uint64_t p2)
 
 {
   uint64_t stack0x00000008;
-  sk_r4_001ca134(p1,p2,&LAB_00319f9c,0xe9c0);
+  sk_r4_001ca134(p1,p2,(uint64_t)&LAB_00319f9c,0xe9c0);
   return;
 }
 
@@ -14521,8 +14534,7 @@ void sk_r4_001ca104(uint64_t p1,uint64_t p2)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001ca134(void)
-
+void sk_r4_001ca134(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   uint64_t v1;
   uint64_t xo1;
@@ -15011,7 +15023,7 @@ LAB_001ca870:
 void sk_r4_001ca8e0(uint64_t p1)
 
 {
-  sk_r4_001ca910(p1,&LAB_00319fcc,0x700);
+  sk_r4_001ca910(p1,(uint64_t)&LAB_00319fcc,0x700);
   return;
 }
 
@@ -15022,8 +15034,7 @@ void sk_r4_001ca8e0(uint64_t p1)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001ca910(void)
-
+void sk_r4_001ca910(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint64_t v1;
   code *xo8;
@@ -15063,7 +15074,7 @@ void sk_r4_001ca910(void)
 void sk_r4_001ca9a4(uint64_t p1,uint64_t p2)
 
 {
-  sk_r4_001ca9d4(p1,p2,&LAB_00319ffc,0x3dc5);
+  sk_r4_001ca9d4(p1,p2,(uint64_t)&LAB_00319ffc,0x3dc5);
   return;
 }
 
@@ -15074,8 +15085,7 @@ void sk_r4_001ca9a4(uint64_t p1,uint64_t p2)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001ca9d4(void)
-
+void sk_r4_001ca9d4(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   uint64_t v1;
   uint64_t xo1;
@@ -15565,7 +15575,7 @@ LAB_001cb110:
 void sk_r4_001cb180(uint64_t p1)
 
 {
-  sk_r4_001c8cd8(p1,&LAB_0031a02c,0xf20);
+  sk_r4_001c8cd8(p1,(uint64_t)&LAB_0031a02c,0xf20);
   return;
 }
 
@@ -15579,7 +15589,7 @@ void sk_r4_001cb180(uint64_t p1)
 void sk_r4_001cb1b0(uint64_t p1,uint64_t p2)
 
 {
-  sk_r4_001c8da0(p1,p2,&LAB_0031a05c,0x56c9);
+  sk_r4_001c8da0(p1,p2,(uint64_t)&LAB_0031a05c,0x56c9);
   return;
 }
 
@@ -15689,7 +15699,7 @@ void sk_r4_001cb258(void)
 void sk_r4_001cb2a0(uint64_t p1)
 
 {
-  sk_r4_001cb2d0(p1,&LAB_0031a08c,0x70c4);
+  sk_r4_001cb2d0(p1,(uint64_t)&LAB_0031a08c,0x70c4);
   return;
 }
 
@@ -15700,8 +15710,7 @@ void sk_r4_001cb2a0(uint64_t p1)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001cb2d0(void)
-
+void sk_r4_001cb2d0(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint64_t v1;
   code *xo8;
@@ -15741,8 +15750,7 @@ void sk_r4_001cb2d0(void)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001cb368(void)
-
+void sk_r4_001cb368(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   sk_r4_001cb398();
   return;
@@ -17005,8 +17013,7 @@ void sk_r4_001cc768(uint64_t p1,long p2,uint64_t p3)
 
 /* WARNING: Removing unreachable block (ram,0x001cc90c) */
 
-void sk_r4_001cc790(void)
-
+void sk_r4_001cc790(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   uint64_t v1;
   uint64_t v2;
@@ -17095,8 +17102,7 @@ uint64_t * sk_r4_001cc948(void)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001cc94c(uint64_t p1,uint64_t p2,long p3)
-
+void sk_r4_001cc94c(void)
 {
   sk_r4_u128_t av1;
 
@@ -17136,8 +17142,7 @@ void sk_r4_001cc98c(uint64_t *p1,uint64_t p2,long p3,uint64_t p4)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001cc9c8(void)
-
+void sk_r4_001cc9c8(uint64_t p1, uint64_t p2)
 {
   sk_r4_u128_t av1;
   uint v2;
@@ -17496,8 +17501,7 @@ void sk_r4_001ccd1c(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001cd0b8(void)
-
+void sk_r4_001cd0b8(uint64_t p1)
 {
   uint8_t zf;
   long xo8;
@@ -17901,8 +17905,7 @@ void sk_r4_001cd70c(uint64_t p1,uint64_t p2,uint64_t p3,uint8_t p4)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001cd778(uint64_t p1,uint64_t p2,uint64_t p3)
-
+void sk_r4_001cd778(void)
 {
   code *xo8;
   long xo16;
@@ -18591,8 +18594,7 @@ void sk_r4_001ce6d8(uint64_t p1,long p2,uint64_t p3)
   uint64_t stack0x00000000;
   uint64_t stack0x00000038;
   uint64_t stack0x00000048;
-void sk_r4_001ce704(void)
-
+void sk_r4_001ce704(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5, uint64_t p6)
 {
   uint64_t *v1;
   uint64_t *v2;
@@ -19635,9 +19637,7 @@ void sk_r4_001cfcc4(void)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001cfcf0(uint p1,uint64_t p2,uint64_t p3,uint64_t p4,
-                 code *p5)
-
+void sk_r4_001cfcf0(void)
 {
   uint64_t v1;
   uint64_t v2;
@@ -19687,9 +19687,7 @@ void sk_r4_001cfd68(void)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-void sk_r4_001cfd94(uint p1,uint64_t p2,uint64_t p3,uint64_t p4,
-                 code *p5)
-
+void sk_r4_001cfd94(void)
 {
   uint64_t v1;
   uint64_t v2;

@@ -388,7 +388,7 @@ static void sk_vas_region_alloc(void)
  * Confidence: medium (structural). */
 static uint64_t sk_vas_region_free(uint64_t page)
 {
-    extern void sk_vas_fault15(void);   /* FUN_004b225c */
+    extern void sk_vas_fault15h(void);   /* FUN_004b225c */
 
     if (sk_vas_is_span(page) & 1) {   /* FUN_00030cb8 */
         sk_vas_frag_heap_node_t *node = NULL;
@@ -402,7 +402,7 @@ static uint64_t sk_vas_region_free(uint64_t page)
         }
         SK_ASRT_PANIC(0x33e60);
     }
-    sk_vas_fault15();   /* FUN_004b225c */
+    sk_vas_fault15h();   /* FUN_004b225c */
     {
         sk_vas_frag_heap_node_t *node = NULL;
         sk_vspace_alloc((uint64_t *)&node, 4, 0xd);
@@ -478,8 +478,8 @@ static uint64_t *sk_vas_heap_alloc(void)
 {
     extern uint64_t sk_vas_reserve_base(uint64_t, uint8_t *);   /* FUN_0003456c */
     extern uint64_t sk_vas_populate(uint64_t, uint64_t *, uint64_t *); /* SUB_dac10230d2860f51 */
-    extern uint64_t sk_vas_fault16(void);                       /* FUN_004b2294 */
-    extern uint64_t sk_vas_fault17(void);                       /* FUN_004b22cc */
+    extern uint64_t sk_vas_fault16h(void);                       /* FUN_004b2294 */
+    extern uint64_t sk_vas_fault17h(void);                       /* FUN_004b22cc */
     extern uint64_t sk_vas_mark_cap_slots2(uint64_t, uint64_t); /* FUN_0003573c */
     extern void sk_vas_page_ready(void);                        /* FUN_0004ba18 */
 
@@ -501,9 +501,9 @@ static uint64_t *sk_vas_heap_alloc(void)
                                               (uint8_t *)node2 + 0x40); /* FUN_0003456c */
         if (blk == NULL) {
             if (node2->active == 1) {   /* +0xc0 */
-                uint64_t pg = sk_vas_fault16();   /* FUN_004b2294 */
+                uint64_t pg = sk_vas_fault16h();   /* FUN_004b2294 */
                 if (!(sk_vas_is_page(pg) & 1)) {   /* FUN_00030ca8 */
-                    uint64_t v2 = sk_vas_fault17();   /* FUN_004b22cc */
+                    uint64_t v2 = sk_vas_fault17h();   /* FUN_004b22cc */
                     return (uint64_t *)sk_vas_mark_cap_slots2(v2, 0x40); /* FUN_0003573c */
                 }
                 uint64_t stored = 0;
@@ -615,11 +615,11 @@ fail_34308:
  * Confidence: medium (structural). */
 static void sk_vas_heap_free(uint64_t page)
 {
-    extern uint64_t sk_vas_fault17(void);                       /* FUN_004b22cc */
+    extern uint64_t sk_vas_fault17h(void);                       /* FUN_004b22cc */
     extern uint64_t sk_vas_mark_cap_slots2(uint64_t, uint64_t); /* FUN_0003573c */
 
     if (!(sk_vas_is_page(page) & 1)) {   /* FUN_00030ca8 */
-        uint64_t v = sk_vas_fault17();   /* FUN_004b22cc */
+        uint64_t v = sk_vas_fault17h();   /* FUN_004b22cc */
         sk_vas_mark_cap_slots2(v, 0x40); /* FUN_0003573c */
         return;
     }

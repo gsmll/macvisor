@@ -1562,3 +1562,27 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (FUN_00021904() == 0x4159b862aecab4d9) return; FUN_001afa84(s_Fatal_error_005accd0,...,0x519,0);` (178348).
 - **Severity (hypothesis)**: informational — the tagged stream format is integrity-checked at well-defined boundaries; malformed input aborts rather than being misparsed.
 - **Confidence**: high (fixed hash compares + noreturn fatal).
+
+## [sk] 0002ee90-0002f780 VAS op-dispatch — slot-ring result code bounds-checked fail-closed
+- **Observation**: The six VAS op-dispatch wrappers reserve a slot in a per-VAS ring (0x30-byte slots, count at slots+0x1f0, write index +0x1f8, base +0x200), stamp a per-op type tag, run the backend vtable method under the global VM lock, then write the op result code into the slot. Every path that stores a result validates it first: any code with low byte not in {0,1..5} is aborted via `sk_vas_abort("unknown vas return code 0x%x")` (FUN_004afae4) before the value is packed.
+- **Evidence**: `sk_vas_check_result(code)` guards `slot_res_store()` in sk_slice_06_frag_opdispatch.c; bounds of the ring slot `slot < ring || ring+count*6 < slot+6 || slot+6 < slot` trap via SoftwareBreakpoint(0x5519, addr); the ring-region bounds check (`limit < slots+0x210 || slots+0x210 < slots || slots < slots_min`) is validated in `sk_vas_slots()`.
+- **Severity (hypothesis)**: informational — an invalid backend return cannot be recorded into a VAS slot (would corrupt the op log); the encoding is checked before write.
+- **Confidence**: high (result-code range check + SoftwareBreakpoint traps on every store path).
+
+## [sk] 0002fb88/0002ff48 cap-split & span-map — bounds-guarded span carve
+- **Observation**: `sk_cap_split` (2fb88) carves a chunk out of a span's child list and maps the child region. Every pointer deref of the child list (chunk+8..0xb) and the destination page range is guarded: the carve validates `bsz-off < code+off` and `b-*chunk > code` and traps via SoftwareBreakpoint(0x5519,0x2fe54) on overflow; the map result is checked non-zero before committing. `sk_vas_span_map2` (2ff48) re-validates the target PTEs and range before writing page-table entries.
+- **Evidence**: `sk_cap_split` (frag_capsplit.c): `if (bsz - off < (code + off)) SK_ASRT_PANIC(0x2fe54);` plus the `d2==0 -> sk_boot_fatal2()` map-failure trap; span_map2 (frag_spanmap.c) uses `SK_ASRT_PANIC(0x30460)` on every PTE-write range violation.
+- **Severity (hypothesis)**: low — the span carve and page-table writes are bounds-checked and fail-closed on overflow, so a crafted span/offset cannot overrun the destination region.
+- **Confidence**: medium (carve arithmetic faithfully transcribed; offsets page-aligned by the 0x3fff checks).
+
+## [sk] 00037fb8/000380b4/00038184 Freezer span allocator — size checks fail-closed, destroy validates backing
+- **Observation**: The "Freezer" allocator (guest-span bulk allocator) validates sizes before acting: `sk_freezer_alloc` requires size 0x4000-aligned (traps SoftwareBreakpoint 0x5519/0x380b4 on misalignment via `lStack_30 + (size & ~0x3fff)`), `sk_freezer_bump` traps "Freezer bump size %zu exceeds reserved size %zu" if the requested bump exceeds the reserved capacity, and `sk_freezer_destroy` only releases a span whose backing store is non-null, else traps "Freezer failed to destroy a backing".
+- **Evidence**: frag_freezer.c: `if (param_2 <= param_1[1])` gate in sk_freezer_bump with the exceeds abort; destroy checks `param_1[3]==0` -> abort; the `(param_1 & 0x3fff) != 0` alignment path in sk_freezer_alloc.
+- **Severity (hypothesis)**: low — the guest-facing bulk span allocator enforces alignment and reserved-size limits, so an oversized/misaligned request cannot cause an undersized mapping.
+- **Confidence**: high (three Freezer error strings resolved from the string table + size/alignment guards).
+
+## [sk] 00034bd8/00034d5c VAS lock token — acquire/release counter paired, no use-after-unlock
+- **Observation**: The VAS object lock is a token mutex: `sk_vas_lock_acquire` (34bd8) returns a {flags, counter} token and marks the lock held, `sk_vas_lock_release` (34d5c) validates the token counter equals the held counter and the held-flag matches before clearing. Every acquire is paired with a release; the release path double-checks `param_3+1 == *(lock+0x18)` (counter) before unlocking.
+- **Evidence**: frag_lock.c: `if (param_3 + 1 != *(long*)(lock+0x18)) sk_vas_abort(...)` in sk_vas_lock_release; `sk_vas_locked` (34ba4) compares the per-cpu base against the lock owner.
+- **Severity (hypothesis)**: informational — the token pairing prevents a stale/misordered release from unlocking the wrong VAS lock generation.
+- **Confidence**: medium (token structure reconstructed; counter comparison explicit).

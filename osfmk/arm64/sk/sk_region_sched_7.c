@@ -2996,8 +2996,9 @@ void cl4_sched_class_dispatch(word_t a, word_t b, int cls)
         FUN_001fb194();
         FUN_0036b118(ctx);
     }
+    long l2 = *unaff_x20;
     if ((((-1 < (long)unaff_x22) &&
-         (long l2 = *unaff_x20, (word_t)unaff_x22 >> ((ulong)*(byte *)(l2 + 0x20) & 0x3f) == 0)) &&
+         ((word_t)unaff_x22 >> ((ulong)*(byte *)(l2 + 0x20) & 0x3f) == 0)) &&
         ((*(ulong *)(l2 + ((word_t)unaff_x22 >> 6) * 8 + 0x40) >> ((word_t)unaff_x22 & 0x3f) & 1) != 0)) &&
         (cls == *(int *)(l2 + 0x24))) {
         FUN_00354d2c(*(word_t *)(l2 + 0x38));
@@ -3108,8 +3109,9 @@ void cl4_sched_dict_access(word_t a, ulong *kv, long sched)
         FUN_001fb194();
         FUN_0036b118(ctx);
     }
+    long l5 = *unaff_x20;
     if ((((-1 < (long)key) &&
-         (long l5 = *unaff_x20, key >> ((ulong)*(byte *)(l5 + 0x20) & 0x3f) == 0)) &&
+         (key >> ((ulong)*(byte *)(l5 + 0x20) & 0x3f) == 0)) &&
         ((*(ulong *)(l5 + (key >> 6) * 8 + 0x40) >> (key & 0x3f) & 1) != 0)) &&
         ((int)cls == *(int *)(l5 + 0x24))) {
         long l5 = FUN_001f0bb4();
@@ -3203,7 +3205,7 @@ void cl4_sched_syscall_desc_release(word_t *desc, uint mode)
         p[7] = p[2];
         *(uint *)(p + 8) = *(uint *)(p + 3);
         p[9] = p[4];
-        thunk_FUN_0036b270();
+        thunk_FUN_0036b270(0);
         FUN_00356710();
         FUN_003511f0(p + 5);
         FUN_00256f34();
@@ -3589,6 +3591,7 @@ scan:
             }
         }
 scan_advance:
+scan_body:
         for (;;) {
             lStack_80 = l8 + 1;
             if (SCARRY8(l8, 1)) {     /* WARNING: does not return */
@@ -4343,7 +4346,7 @@ void cl4_sched_op_prep3(word_t a, word_t b, word_t c)
     FUN_00352578();
     FUN_0031a29c();
     FUN_00357f24();
-    thunk_FUN_0036b270();
+    thunk_FUN_0036b270(0);
 }
 
 /* FUN_001f59d4 @ 0x001f59d4   (est. cl4_sched_desc_setup)
@@ -4430,7 +4433,7 @@ void cl4_sched_op_prep6(word_t a, word_t b, word_t c, word_t d, word_t e, word_t
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_0031a29c(r_lo, r_hi, d, f);
     FUN_00356b5c();
-    thunk_FUN_0036b270();
+    thunk_FUN_0036b270(0);
     FUN_003515fc();
     word_t v = FUN_00365b6c();
     FUN_0034dba8(v, (uint)v ^ 1);
@@ -4818,7 +4821,7 @@ build2:
                         goto commit2;
                     }
                     FUN_00357250();
-                    code *pc9b = dpcb;
+                    pc9b = dpcb;
                 }
             }
             thunk_FUN_0036b270(extraout_x1_00);
@@ -5682,7 +5685,7 @@ void cl4_sched_set_insert_requeue(void)
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     if ((r_hi & 1) == 0) {
-        long i = FUN_00084024(unaff_x19 + (r_lo >> 6) * 8);
+        long i = FUN_00084024((word_t)(uintptr_t)unaff_x19 + (r_lo >> 6) * 8);
         (**(code **)(*(long *)(in_x3 + -8) + 0x20))
             (*(long *)(unaff_x19 + 0x30) + *(long *)(*(long *)(in_x3 + -8) + 0x48) * i, v1, in_x3);
         FUN_003511e4();
@@ -5974,7 +5977,7 @@ void cl4_sched_scan_apply_main(void)
                 code *pc9 = (code *)*local_e0;
                 FUN_003510ac();
                 (*(fn_any_t)extraout_x8_05)();
-                pc10 = (code *)(uintptr_t)*(word_t *)(uintptr_t)local_e8;
+                pc10 = *(word_t *)(uintptr_t)local_e8;
                 (*(fn_any_t)pc10)(local_108 + i2, l15 + i1, in_x4);
                 i1 = *(int *)(l4 + 0x30);
                 FUN_00355ea4();
@@ -6035,7 +6038,7 @@ void cl4_sched_scan_apply_main(void)
             code *pc9 = (code *)*unaff_x27;
             r = FUN_00084180();
             (*(fn_any_t)pc9)(r_lo, r_hi, 0x6753a0);
-            pc10 = (code *)(uintptr_t)*(word_t *)(uintptr_t)local_e8;
+            pc10 = *(word_t *)(uintptr_t)local_e8;
             (*(fn_any_t)pc10)(local_120 + i2, local_90 + i1b, in_x4);
             i1 = *(int *)(local_d8 + 0x30);
             FUN_0034f5b4();
@@ -6207,7 +6210,7 @@ void cl4_sched_resolve_entry(void)
         local_80 = (word_t)local_30;
         FUN_00357540(local_20);
         thunk_FUN_0036b270(l6);
-        word_t *pu3 = puStack_18;
+        word_t *pu3 = (word_t *)(uintptr_t)puStack_18;
         ulong u12 = (word_t)local_10;
         for (;;) {
             for (; u12 != 0; u12 = u12 - 1 & u12) {
@@ -6319,7 +6322,7 @@ void cl4_sched_resolve_entry(void)
     }
 done:
     FUN_0036b118(local_80);
-    word_t u9 = FUN_00355e38();
+    u9 = FUN_00355e38();
     FUN_0008e500(u9, unaff_x30);
     return;
 panic:
@@ -6400,7 +6403,7 @@ void cl4_sched_pair_apply(long a, code *cb, word_t c, long d, long e, long f, lo
     }
     l5 = FUN_003722e4(0, f, g, s_key_value_005cea2a, 0);
     u4 = 1;
-    long l2 = local_68;
+    l2 = local_68;
 out:
     FUN_000839d8(l2, u4, 1, l5);
 }
@@ -6540,9 +6543,11 @@ void cl4_sched_probe_slot(word_t a, word_t b, ulong idx)
     for (;;) {
         idx = idx & ~extraout_x8;
         ulong u2 = 1L << (idx & 0x3f) & *(ulong *)(unaff_x20 + 0x40 + (idx >> 6) * 8);
+        long *pl;
+        bool b3;
         if ((u2 == 0) ||
-            (long *pl = (long *)(*(long *)(unaff_x20 + 0x30) + idx * 0x10),
-             bool b3 = (*pl == (word_t)unaff_x21 && pl[1] == unaff_x19), b3)) break;
+            ((pl = (long *)(*(long *)(unaff_x20 + 0x30) + idx * 0x10),
+              b3 = (*pl == (word_t)unaff_x21 && pl[1] == unaff_x19), b3))) break;
         FUN_00359d70();
         if (!b3 || (extraout_x1 & 0x6000000000000000) != 0x6000000000000000) {
             FUN_0035063c();
@@ -7360,8 +7365,9 @@ void cl4_sched_mask_bitmap(long set)
 void cl4_sched_slot_clear(word_t a, word_t b, long set)
 {
     word_t r1_lo = 0, r1_hi = 0, r2_lo = 0, r2_hi = 0;   /* split-pair scratch */
-    if ((((-1 < a) && (uint128_t r1 = FUN_003535f4(), !(bool)in_CY)) &&
-        (uint128_t r2 = FUN_00357e24(r1_lo, set + 0x40), (extraout_x9 & 1) != 0)) &&
+    uint128_t r1 = 0, r2 = 0;                            /* split-pair scratch */
+    if ((((-1 < a) && ((r1 = FUN_003535f4(), !(bool)in_CY))) &&
+        ((r2 = FUN_00357e24(r1_lo, set + 0x40), (extraout_x9 & 1) != 0))) &&
         (r1_hi == *(int *)(set + 0x24))) {
         FUN_0022afd8(r2_lo, r2_hi, ~extraout_x8);
         return;
@@ -7405,8 +7411,9 @@ cl4_find_t cl4_sched_find_or_empty(word_t a, long set)
  * Notes: FUN_003577cc lookup; method +0x10; FUN_0034dba8/FUN_000839d8. */
 void cl4_sched_requeue_found(word_t a, word_t b, long set, word_t d, word_t e)
 {
+    uint128_t r = 0; word_t r_lo = 0, r_hi = 0;   /* split-pair scratch */
     if ((*(long *)(set + 0x10) == 0) ||
-        (uint128_t r = FUN_003577cc(), b = r_lo, (r_hi & 1) == 0)) {
+        ((r = FUN_003577cc(), b = r_lo, (r_hi & 1) == 0))) {
         u2 = 1;
     } else {
         long l1 = FUN_00350bcc();
@@ -7770,7 +7777,7 @@ void cl4_sched_set_copy_28(void)
             s[3] = in_stack_00000020;
             s[2] = in_stack_00000018;
             s[4] = in_stack_00000028;
-            thunk_FUN_0036b270();
+            thunk_FUN_0036b270(0);
             if (unaff_x26 != 0) break;
 advance:
             do {
@@ -7824,7 +7831,7 @@ void cl4_sched_set_copy_20x10(void)
                 v[0] = unaff_x28;
                 v[1] = (word_t)unaff_x23;
                 FUN_00310d98();
-                thunk_FUN_0036b270();
+                thunk_FUN_0036b270(0);
                 if (unaff_x26 != 0) break;
 advance:
                 do {
@@ -7885,7 +7892,7 @@ void cl4_sched_set_copy_10(void)
                 word_t *s = (word_t *)(*(long *)(unaff_x21 + 0x38) + unaff_x26 * 0x10);
                 s[0] = sv0;
                 s[1] = sv1;
-                thunk_FUN_0036b270();
+                thunk_FUN_0036b270(0);
                 if (unaff_x25 != 0) break;
 advance:
                 do {
@@ -10242,10 +10249,10 @@ void cl4_sched_scan_apply_pair(word_t a, word_t b, word_t c, word_t d, word_t e)
     } else {
         FUN_00359a04(*(word_t *)(unaff_x20 + 0x10));
         if (same) {
-            thunk_FUN_001fca54(auStack_50);
+            thunk_FUN_001fca54(auStack_50, 0);
             FUN_001f6b30(local_28, auStack_50, c, d, e);
             FUN_00359d38(local_18);
-            thunk_FUN_0036b270();
+            thunk_FUN_0036b270(0);
             long l2 = local_8, l3 = lStack_10;
             do {
                 while (l2 == 0) {

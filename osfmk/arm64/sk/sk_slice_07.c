@@ -60,6 +60,7 @@ extern void   FUN_004b2d38(void);
 extern void   FUN_004b2f88(void);
 extern word_t FUN_0002fa84(word_t, word_t);
 extern word_t FUN_00033638(void);
+extern sk_pair_t FUN_004b3234(void);
 extern void   FUN_004b2930(void);
 extern void   FUN_004b28f8(void);
 extern void   FUN_004b3c74(word_t, void *);
@@ -83,7 +84,7 @@ extern word_t FUN_004b2d6c(word_t, word_t *);
 extern void   FUN_004b2f88(void);
 extern word_t FUN_00043f28(word_t, word_t, word_t, int);
 extern word_t FUN_00043be8(word_t, word_t, word_t, word_t, word_t, word_t);
-extern word_t FUN_00043b44(word_t, ...);
+extern word_t FUN_00043b44();
 
 extern word_t FUN_00032cec(void);
 extern word_t FUN_00032e44(void);
@@ -129,7 +130,6 @@ extern void   FUN_00044dec(word_t, word_t*, word_t, word_t);
 extern void   FUN_00043e88(void);
 extern word_t FUN_00043c74(word_t, word_t, word_t, word_t);
 extern word_t FUN_00043be8(word_t, word_t, word_t, word_t, word_t, word_t);
-extern word_t FUN_00043b44(word_t, ...);
 extern word_t FUN_00043f28(word_t, word_t, word_t, int);
 extern word_t FUN_000555ac(word_t, word_t, word_t);
 extern void   FUN_000457f8(word_t*, word_t, void*);
@@ -167,7 +167,7 @@ extern void   FUN_004b3e5c(word_t, word_t);
 extern void   FUN_004b3da4(word_t, word_t, word_t, word_t);
 extern sk_pair_t FUN_004b3d54(word_t, void*);
 extern sk_pair_t FUN_004b3ec4(void);
-extern void   FUN_004b350c(void);
+extern sk_pair_t FUN_004b350c(void);
 extern void   FUN_004b363c(void*, void*);
 extern void   FUN_004b3768(word_t, int);
 extern void   FUN_004b377c(word_t, word_t);
@@ -228,6 +228,7 @@ extern word_t DAT_006ad33c, DAT_006ad338, DAT_006ad340, DAT_006ad2c8,
     DAT_006ad380, DAT_006ad384, DAT_006ad388, DAT_006ad38c, DAT_006ad390,
     DAT_006ad394, DAT_006ad3a0, DAT_006ad3a1;
 extern word_t DAT_006af2b8, DAT_006af298;
+extern word_t DAT_006ad34c;
 extern char  DAT_006af2b9, DAT_006af2ba, DAT_006af2bb;
 extern word_t DAT_0064c3f0, DAT_0064c450, DAT_0064cba0, DAT_0064cb80;
 extern word_t DAT_004bb180, DAT_004bc1f0, DAT_004bb178, DAT_004bc208;
@@ -2590,7 +2591,7 @@ static sk_pair_t sk_vspace_span_lookup(word_t *rec, word_t addr, int *flags,
             if (flags) *flags = *(int *)(span + 4);
             if (out) {
                 word_t a = *(word_t *)span, b = ((word_t *)span)[3], c = ((word_t *)span)[2];
-                out[1] = span[1]; out[0] = a; out[3] = b; out[2] = c;
+                out[1] = ((word_t *)span)[1]; out[0] = a; out[3] = b; out[2] = c;
             }
             hi = 0x65b648;
         }
@@ -3706,7 +3707,7 @@ static sk_pair_t sk_faulf_handler_enter(word_t vspace, word_t span, word_t a3,
     rec[0] = vspace; rec[4] = 1; rec[6] = 1;
     uint8_t fault_flag[0x40] = {0};
     FUN_001180fc(&rec[6]);
-    sk_pair_t r = sk_faulf_dispatch(vspace, &rec[0], a3, a4, fault_flag);
+    sk_pair_t r = sk_faulf_dispatch(vspace, rec[0], a3, a4, fault_flag);
     if (fault_flag[0] == 1) FUN_004b28c0();
     else if ((int8_t)rec[1] != 1) {
         if (rec[0x13] != 1) {
@@ -3958,8 +3959,8 @@ static sk_pair_t sk_faulf_handler_run(word_t vspace)
                     if (FUN_00118164((void *)(u14 + 0x80)) != 0) SK_ABORT("VAS abort");
                     word_t d0[3] = {0,0,0};
                     FUN_000363ac(d0, *(word_t *)(u14 + 0x78), 0);
-                    sk_pair_t st = FUN_0003667c(d0);
-                    word_t u8 = st.hi, u11 = st.lo;
+                    word_t st = FUN_0003667c(d0);
+                    word_t u8 = st, u11 = st;
                     if ((u11 & 3) != 0) {
                         word_t *tp = (word_t *)tpidrro_el0;
                         do {
@@ -3968,7 +3969,7 @@ static sk_pair_t sk_faulf_handler_run(word_t vspace)
                                 word_t u2 = (uint32_t)u11 >> 6 & 0x3fffff;
                                 *tp = 0; CallSupervisor(0); *tp = 0; CallSupervisor(5);
                                 if (u4 <= u4 + 0xb0) {
-                                    if (sk_span_map_page_walk(u4, u13, 0, 0, 0, 0, 0).lo == 0) {
+                                    if ((sk_span_map_page_walk(u4, u13, 0, 0, 0, 0, 0) & 0xff) == 0) {
                                         if (u13 + 0x4000 < u13 || (u13 + 0x4000) - u13 < u12) SK_FATAL();
                                         FUN_0002fb88(&d0, vspace + 0x208, u2, u13, 0);
                                         word_t lf = 0x4000, lo = 0;
@@ -3985,15 +3986,15 @@ static sk_pair_t sk_faulf_handler_run(word_t vspace)
                                                 st = FUN_0003667c(d0);
                                                 u8 = 0;
                                             } else {
-                                                u11 = FUN_0003667c(d0).lo;
+                                                u11 = FUN_0003667c(d0);
                                                 *tp = 1; CallSupervisor(0); *tp = 1;
-                                                st.hi = 0; st.lo = u11;
+                                                st = u11;
                                             }
                                         } else goto fail;
                                     } else { FUN_004b29a0(&d0, 0); goto fail; }
                                 } else SK_FATAL();
                             }
-                            u8 = st.hi; u11 = st.lo;
+                            u8 = st; u11 = st;
                         } while ((u11 & 3) != 0);
                     }
                     if (FUN_00118194((void *)(u14 + 0x80)) != 0) SK_ABORT("VAS abort");
@@ -4002,7 +4003,7 @@ static sk_pair_t sk_faulf_handler_run(word_t vspace)
             } while (u14 != 0);
         }
         if (FUN_00118194((void *)(vspace + 0x1f0)) != 0) SK_ABORT("VAS abort");
-        (*(void (**)(void))*local_a8)(u4);
+        (*(word_t (**)(word_t))*local_a8)(u4);
         return (sk_pair_t){ 0, 0 };
     }
 fail:
@@ -4085,10 +4086,10 @@ static sk_pair_t sk_faulthandler_create(word_t vspace, word_t *out)
  * ================================================================== */
 
 /* FUN_0004108c @ 0x4108c — log an error string on the stack. */
-static void sk_log_err_stack8(void) { sk_l4_error_string((word_t *)&(word_t){0}); }
+static void sk_log_err_stack8(void) { word_t tmp[4] = {0}; sk_l4_error_string(tmp, 0xff); }
 
 /* FUN_000410ac @ 0x410ac — log an error string on the stack. */
-static void sk_log_err_stack9(void) { sk_l4_error_string((word_t *)&(word_t){0}); }
+static void sk_log_err_stack9(void) { word_t tmp[4] = {0}; sk_l4_error_string(tmp, 0xff); }
 
 /* FUN_000410cc @ 0x410cc — empty stub. */
 static void sk_abort_noop(void) { }
@@ -4103,7 +4104,7 @@ static void sk_abort_noop2(void) { }
 static void sk_abort_noop3(void) { }
 
 /* FUN_0004112c @ 0x4112c — log an error string on the stack. */
-static void sk_log_err_stack10(void) { sk_l4_error_string((word_t *)&(word_t){0}); }
+static void sk_log_err_stack10(void) { word_t tmp[4] = {0}; sk_l4_error_string(tmp, 0xff); }
 
 /* FUN_00041138 @ 0x41138 — empty stub. */
 static void sk_abort_noop4(void) { }
@@ -4187,7 +4188,7 @@ static word_t sk_populate_level(word_t vspace, word_t paddr, word_t level)
     word_t mask = (word_t)-1 << (level * -3 + lvl * 0xe & 0x3f);
     word_t vaddr = mask & paddr;
     word_t pte = FUN_00042abc(vspace2, level, vaddr);
-    FUN_00042d04(vspace2, pte);
+    FUN_00042d04((word_t *)vspace2, pte);
     CallSupervisor(1);
     if (pte == 5) {
         sk_pair_t r = FUN_004b3d54(pte, NULL);
@@ -4225,7 +4226,7 @@ static word_t sk_populate_level(word_t vspace, word_t paddr, word_t level)
     if (r != 0) goto fail;
     return 0;
 fail:
-    (*(word_t **)(*(word_t *)(vspace2 + 0xb8) + 0x10))(*(word_t *)(vspace2 + 0xb0), pte);
+    (*(word_t (**)(word_t, word_t))(*(word_t *)(vspace2 + 0xb8) + 0x10))(*(word_t *)(vspace2 + 0xb0), pte);
     return 0;
 }
 
@@ -4254,7 +4255,7 @@ static word_t sk_populate_level_rec(word_t vspace, word_t paddr, word_t level)
     word_t mask = (word_t)-1 << (level * -3 + lvl * 0xe & 0x3f);
     word_t vaddr = mask & paddr;
     word_t pte = FUN_00042abc(vspace, level, vaddr);
-    FUN_00042d04(vspace, pte);
+    FUN_00042d04((word_t *)vspace, pte);
     CallSupervisor(1);
     if (pte == 5) {
         sk_pair_t r = FUN_004b3d54(pte, NULL);
@@ -4315,7 +4316,7 @@ static sk_pair_t sk_span_split_caller(word_t *p1, word_t *p2, word_t tag, word_t
         word_t a = 0, b = 0;
         word_t base = p1[1], end = p2[1];
         word_t b1 = base, b2 = end;
-        word_t r1 = p1, r2 = p2;
+        word_t *r1 = p1, *r2 = p2;
         if (p2[1] < (word_t)p1[1]) {
             /* swap so r1 starts lower */
             b1 = p1[1]; b2 = p2[10];
@@ -4323,16 +4324,16 @@ static sk_pair_t sk_span_split_caller(word_t *p1, word_t *p2, word_t tag, word_t
             p2 = p1;
         }
         if (b1 == p2[10]) {
-            if (*(uint32_t *)(r1 + 4) == *(uint32_t *)(p2 + 4)) {
-                if ((*(uint32_t *)(r1 + 4) & 0xd000800) != 0) return (sk_pair_t){ 0x75b0001, 0 };
+            if (*(uint32_t *)((word_t)r1 + 4) == *(uint32_t *)((word_t)p2 + 4)) {
+                if ((*(uint32_t *)((word_t)r1 + 4) & 0xd000800) != 0) return (sk_pair_t){ 0x75b0001, 0 };
                 word_t err;
                 if (b2 == 0) err = 0x75c0001;
                 else { err = 0; if (r1[2] + r1[1] != b2) err = 0x75d0001; }
                 if ((err & 0xff) == 0) {
-                    word_t f = *(uint32_t *)(r1 + 4) >> 0x10 & 1;
+                    word_t f = *(uint32_t *)((word_t)r1 + 4) >> 0x10 & 1;
                     word_t local[9] = {0,0,0,0,0,0,0,0,0};
                     if (sk_lock_collection_alloc(local, (word_t)r1, 0,
-                        (*(uint32_t *)(r1 + 4) != 0), f, f)) {
+                        (*(uint32_t *)((word_t)r1 + 4) != 0), f, f)) {
                         word_t lc[9] = {0,0,0,0,0,0,0,0,0};
                         FUN_00044dec((word_t)r1, lc + 1, r1[1], p2[2] + r1[2]);
                         word_t sp1, sp2;
@@ -4541,10 +4542,10 @@ static word_t sk_span_leaf_walk_v2(char *span, word_t a2, word_t a3,
                             if (end_al != base)
                                 for (word_t i = 0; i < n; i++) {
                                     word_t r1 = FUN_000402b4((word_t)&cbA, i);
-                                    word_t r2 = (*(word_t *)*ops)(v, rtype, r1, r1, attr2);
+                                    word_t r2 = (*(word_t (**)(word_t,char,word_t,word_t,word_t))*ops)(v, rtype, r1, r1, attr2);
                                     FUN_000403b0((word_t)&cbB, r2, i, r1);
                                 }
-                        } else (*(void (**)(void))(ops[9]))(v, rtype, attr2, n, &cbA, &cbB);
+                        } else (*(word_t (**)(word_t,char,word_t,word_t,word_t*,word_t*))(ops[9]))(v, rtype, attr2, n, cbA, cbB);
                     } else {
                         while (end_al != cur2) {
                             rtype = *sp2;
@@ -4552,9 +4553,9 @@ static word_t sk_span_leaf_walk_v2(char *span, word_t a2, word_t a3,
                             word_t *ops = *(word_t **)(dom + 0xb8);
                             if (ops[9] == 0) {
                                 word_t r1 = FUN_000402b4((word_t)&cbA, 0);
-                                v = (*(word_t *)*ops)(v, rtype, r1, r1, attr2);
+                                v = (*(word_t (**)(word_t,char,word_t,word_t,word_t))*ops)(v, rtype, r1, r1, attr2);
                                 FUN_000403b0((word_t)&cbB, v, 0, r1);
-                            } else (*(void (**)(void))(ops[9]))(v, rtype, attr2, 1, &cbA, &cbB);
+                            } else (*(word_t (**)(word_t,char,word_t,word_t,word_t*,word_t*))(ops[9]))(v, rtype, attr2, 1, cbA, cbB);
                             if (sb[3] != 0) break;
                             word_t s = sa[3];
                             sa[3] = s + 0x4000U;
@@ -4617,9 +4618,9 @@ static word_t sk_span_map_page_walk(word_t span, word_t paddr, word_t a3,
             else { word_t *tp = (word_t *)tpidrro_el0; *tp = 0; CallSupervisor(3); }
             word_t a3r = a3;
             if (a3 == 0) {
-                sk_pair_t pr = sk_span_leaf_walk_v2((char *)span, paddr, dom2, l19, cap, a4, 0);
-                a3r = pr.hi;
-                if (pr.lo != 0) { do { CallSupervisor(4); } while (l19 == 1); }
+                word_t pr = sk_span_leaf_walk_v2((char *)span, paddr, dom2, l19, cap, a4, 0);
+                a3r = pr;
+                if (pr != 0) { do { CallSupervisor(4); } while (l19 == 1); }
             }
             if (FUN_00118194((void *)(span + 0x80)) != 0) SK_ABORT("VAS abort");
             return a3r;
@@ -4671,10 +4672,10 @@ static word_t sk_span_map_page_walk(word_t span, word_t paddr, word_t a3,
                             if (end_al != base)
                                 for (word_t i = 0; i < n; i++) {
                                     word_t r1 = FUN_000402b4((word_t)&cbA, i);
-                                    word_t r2 = (*(word_t *)*ops)(v, rtype, r1, r1, attr2);
+                                    word_t r2 = (*(word_t (**)(word_t,char,word_t,word_t,word_t))*ops)(v, rtype, r1, r1, attr2);
                                     FUN_000403b0((word_t)&cbB, r2, i, r1);
                                 }
-                        } else (*(void (**)(void))(ops[9]))(v, rtype, attr2, n, &cbA, &cbB);
+                        } else (*(word_t (**)(word_t,char,word_t,word_t,word_t*,word_t*))(ops[9]))(v, rtype, attr2, n, cbA, cbB);
                     } else {
                         while (end_al != cur2) {
                             rtype = *sp2;
@@ -4682,9 +4683,9 @@ static word_t sk_span_map_page_walk(word_t span, word_t paddr, word_t a3,
                             word_t *ops = *(word_t **)(dom3 + 0xb8);
                             if (ops[9] == 0) {
                                 word_t r1 = FUN_000402b4((word_t)&cbA, 0);
-                                v = (*(word_t *)*ops)(v, rtype, r1, r1, attr2);
+                                v = (*(word_t (**)(word_t,char,word_t,word_t,word_t))*ops)(v, rtype, r1, r1, attr2);
                                 FUN_000403b0((word_t)&cbB, v, 0, r1);
-                            } else (*(void (**)(void))(ops[9]))(v, rtype, attr2, 1, &cbA, &cbB);
+                            } else (*(word_t (**)(word_t,char,word_t,word_t,word_t*,word_t*))(ops[9]))(v, rtype, attr2, 1, cbA, cbB);
                             if (sb[3] != 0) break;
                             word_t s = sa[3];
                             sa[3] = s + 0x4000U;
@@ -4732,8 +4733,8 @@ static sk_pair_t sk_spanmap_lock_build(word_t *out, word_t span, word_t a3,
                                        word_t a4, word_t max_gran)
 {
     sk_pair_t ctx = FUN_00034a2c();
+    word_t err = 6;
     if (ctx.hi == 0x65b5c8 && a3 == 0x65b648) {
-        word_t err = 6;
         if ((ctx.lo == 0) || (span == 0)) goto done;
         if ((*(word_t *)(span + 0x50) == ctx.lo) && (*(uint32_t *)(span + 0x20) != 0)) {
             if (((*(uint32_t *)(span + 0x20) >> 0x1a & 1) == 0) || (*(word_t *)(span + 0x10) == 0)) {
@@ -4748,8 +4749,8 @@ static sk_pair_t sk_spanmap_lock_build(word_t *out, word_t span, word_t a3,
                     out[0] = a4;
                     out[1] = n;
                     out[2] = span;
-                    FUN_00032514(6, 0);
-                    word_t dom = FUN_00032cd0();
+                    FUN_00032514(6);
+                    word_t dom = FUN_00032cd0(0);
                     if (out[1] != 0) {
                         if (dom + 0xd0 < dom) SK_FATAL();
                         word_t i = 0;
@@ -4777,7 +4778,7 @@ static sk_pair_t sk_spanmap_lock_build(word_t *out, word_t span, word_t a3,
                                                 if (venda != vstart) {
                                                     word_t j = 0;
                                                     do {
-                                                        word_t cb[8] = { 0x6ad3a8, DAT_004bbfd8, sk_span_retire_page, 0x65b770, rel, j, (word_t)shadow, delta };
+                                                        word_t cb[8] = { 0x6ad3a8, DAT_004bbfd8, (word_t)sk_span_retire_page, 0x65b770, rel, j, (word_t)shadow, delta };
                                                         if (*(word_t **)(sp.lo + 0x50) == (word_t *)&DAT_0064c3f0) FUN_00033b50(&cb);
                                                         else sk_span_retire_page((word_t)&cb);
                                                         j += 0x4000;

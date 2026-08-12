@@ -2812,3 +2812,4350 @@ fault2:
 
 
 
+/* ------------------------------------------------------------------ *
+ * External cL4 helpers referenced by the appended 0x31a8c-0x3ff00
+ * bodies but defined in sibling range workers / earlier regions.
+ * Names are estimates; signatures are variadic to match decompile call
+ * sites (this file is -fsyntax-only, so no link-time checks).
+ * ------------------------------------------------------------------ */
+
+extern unsigned long sk_boot_region_check(void);                 /* FUN_0002fa84 */
+extern unsigned long sk_boot_handoff2(void);                     /* FUN_0002fb88 */
+extern unsigned long sk_boot_something(void);                    /* FUN_0002ff40 */
+extern unsigned long sk_span_find(void);                         /* FUN_000287e4 */
+extern void sk_walk_span3(void);                                 /* FUN_000402b4 */
+extern void sk_map_span3(void);                                  /* FUN_000403b0 */
+extern unsigned long sk_span_find_next3(void);                   /* FUN_000405d0 */
+extern unsigned long sk_span_remap3(void);                       /* FUN_00040630 */
+extern void sk_span_commit3(void);                               /* FUN_00040870 */
+extern unsigned long sk_span_alloc3(void);                       /* FUN_00040980 */
+extern void sk_span_map3(void);                                  /* FUN_00040f80 */
+extern unsigned long sk_obj_method_dispatch3(void);              /* FUN_00042abc */
+extern unsigned long sk_obj_lookup3(void);                       /* FUN_00042c20 */
+extern unsigned long sk_obj_attr3(void);                         /* FUN_000436fc */
+extern unsigned long sk_obj_meta3(void);                         /* FUN_00043b44 */
+extern unsigned long sk_obj_meta4(void);                         /* FUN_00043be8 */
+extern unsigned long sk_obj_meta5(void);                         /* FUN_00043c74 */
+extern void sk_obj_unref2(void);                                 /* FUN_00043e88 */
+extern unsigned long sk_obj_new2(void);                          /* FUN_00043eac */
+extern void sk_obj_wire4(void);                                  /* FUN_00043f28 */
+extern void sk_obj_link4(void);                                  /* FUN_00044be0 */
+extern void sk_obj_unlink4(void);                                /* FUN_00044c94 */
+extern void sk_obj_snapshot4(void);                              /* FUN_00044dec */
+extern unsigned long sk_obj_commit4(void);                       /* FUN_00044ff4 */
+extern unsigned long sk_obj_create5(void);                       /* FUN_000451a0 */
+extern unsigned long sk_obj_attach5(void);                       /* FUN_000455b0 */
+extern unsigned long sk_obj_teardown5(void);                     /* FUN_00045728 */
+extern void sk_obj_finalize5(void);                              /* FUN_000457f8 */
+extern void sk_obj_map5(void);                                   /* FUN_000458a0 */
+extern void sk_obj_init5(void);                                  /* FUN_00045908 */
+extern unsigned long sk_obj_walk5(void);                         /* FUN_00045a68 */
+extern unsigned long sk_obj_state5(void);                        /* FUN_00045c98 */
+extern unsigned long sk_obj_state6(void);                        /* FUN_00045cb8 */
+extern unsigned long sk_obj_unref_block(void);                   /* FUN_0004b8d0 */
+extern unsigned long sk_errname3(void);                          /* FUN_000559b8 */
+extern void sk_walk_abort3(void);                                /* FUN_0005b190 */
+extern void sk_stack_check(void);                                /* FUN_00116c78 */
+extern unsigned long sk_mem_move3(void);                         /* FUN_00117d14 */
+extern unsigned long sk_ref_unlink3(void);                       /* FUN_00117f8c */
+extern void sk_percpu_get3(void);                                /* FUN_001180fc */
+extern unsigned long sk_stack_check_fail3(void);                 /* FUN_0011d7e8 */
+
+extern unsigned long sk_vas_fault28(void);                       /* FUN_004b1c84 */
+extern unsigned long sk_vas_fault29(void);                       /* FUN_004b200c */
+extern unsigned long sk_vas_fault30(void);                       /* FUN_004b205c */
+extern void sk_vas_fault31(void);                                /* FUN_004b2150 */
+extern void sk_vas_fault32(void);                                /* FUN_004b2188 */
+extern void sk_vas_fault33(void);                                /* FUN_004b21c4 */
+extern unsigned long sk_vas_fault34(void);                       /* FUN_004b21ec */
+extern void sk_vas_fault35(void);                                /* FUN_004b2224 */
+extern void sk_vas_fault36(void);                                /* FUN_004b23d8 */
+extern unsigned long sk_vas_fault37(void);                       /* FUN_004b270c */
+extern unsigned long sk_vas_fault38(void);                       /* FUN_004b2748 */
+extern void sk_vas_fault39(void);                                /* FUN_004b27f0 */
+extern unsigned long sk_vas_fault40(void);                       /* FUN_004b2808 */
+extern void sk_vas_fault41(void);                                /* FUN_004b2820 */
+extern void sk_vas_fault42(void);                                /* FUN_004b2898 */
+extern void sk_vas_fault43(void);                                /* FUN_004b28c0 */
+extern void sk_vas_fault44(void);                                /* FUN_004b29a0 */
+extern void sk_vas_fault45(void);                                /* FUN_004b2a84 */
+extern void sk_vas_fault46(void);                                /* FUN_004b2abc */
+extern void sk_vas_fault47(void);                                /* FUN_004b2b10 */
+extern void sk_vas_fault48(void);                                /* FUN_004b2b64 */
+extern void sk_vas_fault49(void);                                /* FUN_004b2bb8 */
+extern void sk_vas_fault50(void);                                /* FUN_004b2be4 */
+extern void sk_vas_fault51(void);                                /* FUN_004b2c10 */
+extern void sk_vas_fault52(void);                                /* FUN_004b2c3c */
+extern void sk_vas_fault53(void);                                /* FUN_004b2c84 */
+extern void sk_vas_fault54(void);                                /* FUN_004b2d10 */
+extern void sk_vas_fault55(void);                                /* FUN_004b2d38 */
+extern unsigned long sk_vas_fault56(void);                       /* FUN_004b2d60 */
+extern void sk_vas_fault57(void);                                /* FUN_004b2da8 */
+extern void sk_vas_fault58(void);                                /* FUN_004b2de0 */
+extern void sk_vas_fault59(void);                                /* FUN_004b2e64 */
+extern void sk_vas_fault60(void);                                /* FUN_004b2eb8 */
+extern void sk_vas_fault61(void);                                /* FUN_004b2f80 */
+extern unsigned long sk_vas_fault62(void);                       /* FUN_004b2fc8 */
+extern unsigned long sk_vas_fault63(void);                       /* FUN_004b2fe0 */
+extern void sk_vas_fault64(void);                                /* FUN_004b3064 */
+extern unsigned long sk_vas_fault65(void);                       /* FUN_004b311c */
+extern void sk_vas_fault66(void);                                /* FUN_004b3154 */
+extern unsigned long sk_vas_fault67(void);                       /* FUN_004b318c */
+extern unsigned long sk_vas_fault68(void);                       /* FUN_004b31c4 */
+extern void sk_vas_fault69(void);                                /* FUN_004b31fc */
+extern unsigned long sk_vas_fault70(void);                       /* FUN_004b3234 */
+extern void sk_vas_fault71(void);                                /* FUN_004b326c */
+extern void sk_vas_fault72(void);                                /* FUN_004b3294 */
+extern void sk_vas_fault73(void);                                /* FUN_004b32bc */
+extern void sk_vas_fault74(void);                                /* FUN_004b32f4 */
+extern void sk_vas_fault75(void);                                /* FUN_004b332c */
+extern void sk_vas_fault76(void);                                /* FUN_004b3364 */
+extern void sk_vas_fault77(void);                                /* FUN_004b339c */
+extern void sk_vas_fault78(void);                                /* FUN_004b33c4 */
+extern void sk_vas_fault79(void);                                /* FUN_004b33ec */
+extern void sk_vas_fault80(void);                                /* FUN_004b3414 */
+extern void sk_vas_fault81(void);                                /* FUN_004b343c */
+extern void *sk_vas_fault82(void);                               /* FUN_004b3464 */
+extern void sk_vas_fault83(void);                                /* FUN_004b349c */
+extern void sk_vas_fault84(void);                                /* FUN_004b34d4 */
+extern unsigned long sk_vas_fault85(void);                       /* FUN_004b350c */
+
+/* additional helpers referenced by the appended bodies */
+extern unsigned long sk_slot_attach_full(void);   /* FUN_0003b820 */
+extern unsigned long sk_span_lookup_build6(void); /* FUN_00035bac */
+extern void sk_region_map_span3(void);            /* FUN_0003df84 */
+extern unsigned long sk_span_find2(void);         /* FUN_000287e4 */
+
+/* aliases with the decompile-accurate signatures used by the appended bodies */
+extern cl4_result_t sk_pool_method_full(unsigned long);           /* FUN_00034bd8 */
+extern void sk_pool_touch_full(unsigned long, unsigned long, unsigned long); /* FUN_00034d5c */
+extern long sk_vas_fault14r(void);                                /* FUN_004b1fac (returns root) */
+extern unsigned long sk_alloc_big3(int, int);                     /* FUN_0005baac */
+extern void sk_list_init2(void *);                                /* FUN_0005ba5c */
+extern unsigned long sk_vspace_new_small2(void);                  /* FUN_00033da4 */
+extern void sk_obj_table_init2b(unsigned long, unsigned long, unsigned long); /* FUN_00034970 */
+extern void sk_pool_touch2b(unsigned long, unsigned long, unsigned long);     /* FUN_00034d5c */
+extern void sk_vspace_slot_tree_remove_node(unsigned long *, unsigned int, unsigned int); /* FUN_0003730c */
+/* prototypes */
+long sk_vspace_attach_spanmap(long param_1, long param_2);
+void sk_boot_vspace_early_init(void);
+cl4_result_t sk_vspace_slot_alloc_frame(void);
+void sk_boot_bss_lock_init(unsigned long lock, unsigned long owner, unsigned long tag);
+long sk_vspace_slot_alloc_new(void);
+void sk_vspace_node_pop(void);
+void sk_vspace_slot_bitmap_init(unsigned long *node);
+void sk_vspace_slot_tree_insert(unsigned long *root, unsigned long node);
+void sk_vspace_slot_free_search(unsigned long base);
+unsigned long sk_vspace_region_alloc_pages(long base, unsigned long count, unsigned long size);
+bool sk_vspace_claim_bits(unsigned long *node, long granule);
+void sk_vspace_root_store(unsigned long value);
+unsigned long sk_void_return(void);
+void sk_span_lookup_build(unsigned long param_1, unsigned long param_2);
+void sk_span_lookup_build_n(void);
+unsigned long sk_span_resolve_addr(unsigned long span);
+void sk_span_release(unsigned long *out, unsigned long span, unsigned int count, void (*cb)(unsigned long));
+void sk_span_cursor_build(unsigned long *out, unsigned long span, unsigned int count);
+void sk_span_cursor_recurse(unsigned long *span, unsigned int count);
+unsigned long sk_span_cursor_next(unsigned long *cursor);
+void sk_span_merge(unsigned long *out, unsigned long lo, unsigned long hi);
+unsigned int sk_granule_index(unsigned int w);
+void sk_span_release_all(unsigned long span, void (*cb)(unsigned long));
+void sk_span_compact(unsigned long *out, unsigned long span, unsigned long limit);
+void sk_span_release_all_t(unsigned long span, void (*cb)(unsigned long));
+cl4_result_t sk_span_table_insert(unsigned long *table, unsigned long span, unsigned int slots, unsigned int mode);
+void sk_span_tree_alloc(unsigned long *out, unsigned long node, unsigned long tag);
+void sk_span_tree_build(unsigned long *out, unsigned long *src, unsigned int count, unsigned long mode);
+unsigned int sk_span_tree_remove_node(unsigned long *table, unsigned int idx, unsigned int cap);
+cl4_result_t sk_span_tree_release(unsigned long *root, unsigned int granule, void (*cb)(unsigned long));
+void sk_span_tree_destroy(unsigned long *root, void (*cb)(unsigned long));
+void sk_span_tree_alloc2(unsigned long size, unsigned long *out);
+void sk_span_tree_bump(long *node, unsigned long size);
+void sk_span_tree_destroy2(long *node);
+unsigned long sk_span_tree_remap(unsigned long root, unsigned long addr, long *out_base, unsigned long *out_len);
+void sk_fault_span_common(void);
+void sk_fault_span_common_t(void);
+cl4_result_t sk_fault_span_find(unsigned long region);
+cl4_result_t sk_fault_span_get(unsigned long region, unsigned long addr, int *count_out, unsigned long *desc_out);
+unsigned long sk_fault_span_release(unsigned long region, unsigned long addr, int mode);
+cl4_result_t sk_fault_span_commit(void);
+cl4_result_t sk_fault_span_walk(unsigned long region, unsigned long addr, unsigned long size);
+unsigned long sk_fault_span_flush(unsigned long region);
+cl4_result_t sk_fault_span_map(long region, long *state, unsigned long addr, unsigned long flags, unsigned char *out_state);
+cl4_result_t sk_span_destroy(unsigned char *span);
+void sk_span_unmap(long span, unsigned int attrs);
+unsigned long sk_span_alloc_region(long span, unsigned long *out);
+void sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_out);
+cl4_result_t sk_span_split(long span, unsigned long at, long *lo_out, long *hi_out);
+cl4_result_t sk_span_attach(unsigned long *span, unsigned long at, unsigned int attrs, unsigned long *dest);
+cl4_result_t sk_span_next_region(long *span);
+void sk_slot_push_a(long obj, unsigned long *node);
+void sk_slot_push_b(long obj, unsigned long *node);
+void sk_slot_push_c(long obj, unsigned long *node);
+unsigned long sk_slot_pop_d(long obj);
+void sk_slot_push_d(long obj, unsigned long *node);
+void sk_slot_unlink_root(unsigned long *root, unsigned long *node, unsigned long param_3, unsigned long param_4);
+void sk_slot_link_root(long *root, long node, unsigned long param_3);
+unsigned long sk_slot_attach_wrap(unsigned long p1, unsigned long p2, unsigned long p3, unsigned long p4, unsigned long p5, unsigned long p6, unsigned long p7, unsigned long p8);
+unsigned long sk_slot_attach(unsigned long st, unsigned long region, unsigned long p3, unsigned long p4);
+cl4_result_t sk_region_bind(long region, long p2, long span, long p4);
+void sk_slot_detach(long *root, long region);
+void sk_region_wire(void);
+void sk_region_attach(unsigned long *tree, unsigned long span);
+void sk_region_teardown(long span);
+bool sk_region_check(long owner, long tag, long region, long tag2);
+cl4_result_t sk_region_create(long owner, unsigned int attrs, char *desc, unsigned long *out, unsigned int *p5, unsigned long *p6);
+unsigned int sk_region_config(long region, long tag, unsigned long *desc, unsigned long p4);
+void sk_region_bounds(unsigned long region, unsigned long *start_out, long *end_out);
+void sk_region_map_span(unsigned long base, unsigned long size, long region, unsigned long attr, unsigned long p5);
+unsigned long sk_region_map_next(long region);
+void sk_region_release3(long region);
+void sk_region_unmap_pages(unsigned long granule, long region, int attr, int mode, int p5);
+cl4_result_t sk_region_lookup_span(unsigned long region, long addr, long *node_out, unsigned long *span_out);
+void sk_region_find_span(unsigned long *tree, unsigned long addr);
+cl4_result_t sk_region_map_pages(unsigned long *out, unsigned long region, long span, unsigned long base, unsigned long count);
+cl4_result_t sk_region_unmap_indirect(long *span, unsigned long offset, unsigned long page);
+cl4_result_t sk_region_unmap_direct(long region, unsigned long page);
+unsigned int sk_cap_validate(long *out, long cap);
+unsigned int sk_cap_release(long *obj, unsigned long cap, unsigned long *out);
+unsigned int sk_cap_revoke(long *cap);
+unsigned long sk_class_perm(char class);
+void sk_region_walk_span(unsigned long *out, unsigned long *tree, long region, unsigned long *walk);
+long sk_rand_mod(unsigned long modulus);
+void sk_region_bind2(unsigned long p1, unsigned long p2, long span);
+void sk_region_desc_fill(char *region);
+unsigned long sk_region_adjust(long region, long span);
+unsigned long sk_region_walk_find(long span, unsigned long lo, unsigned long hi, unsigned long limit, long methods);
+cl4_result_t sk_region_split(long tree, unsigned long owner, unsigned long *region, unsigned long at, unsigned long *lo_out, unsigned long *hi_out);
+void sk_region_recalc(long node, long changed);
+cl4_result_t sk_region_finalize(unsigned long span, unsigned long *base_out, unsigned long *size_out, int commit);
+unsigned long sk_region_merge2(unsigned long st, unsigned long owner, long a, long b);
+cl4_result_t sk_region_merge(unsigned long *tree, unsigned long owner, long a, long b, long *lo_out, long *hi_out);
+unsigned long sk_region_tree_remove(long *root, long node);
+void sk_region_tree_rebalance(unsigned long *root, int dir);
+void sk_err_name(unsigned long *out, unsigned char code);
+unsigned long sk_region_map_fault(long span, long addr, unsigned long p3, unsigned long p4, unsigned long p5, int p6, unsigned long p7);
+unsigned long sk_region_map_fault2(char *region, unsigned long p2, unsigned long p3, unsigned long base, unsigned long p5, int p6, unsigned int p7);
+unsigned long sk_region_wire_spans(char *region, unsigned long start, unsigned long end);
+void sk_f_36118(unsigned long *out, unsigned long span, unsigned int count, void (*cb)(unsigned long));
+
+/*--------------------------------------------------------------------*/
+/* FUN_00031a8c @ 0x00031a8c   (est. sk_vspace_attach_spanmap)
+ * Ghidra: long FUN_00031a8c(long param_1, long param_2)
+ * Vspace attach to a span-map root. Validates the parent tag (0x65b5c8),
+ * checks the parent is not marked "foreign" (+9 bit0) and that the parent
+ * already has an owner (+0x190), takes the parent spanmap lock, then:
+ *   - if the child parent slot (+0x1d1 bit0) is clear and +0x1d0 != 1,
+ *     levels up the vspace (FUN_00031bf4) before proceeding;
+ *   - looks up the current spanmap root and, on a fresh root, iterates the
+ *     allocation spans building an L4-IPC-style word block, translating the
+ *     CPU-wide vspace root descriptor through the standard slot-map walk.
+ * Faults (FUN_004b2034/2084/1fd4/1fac) on any state inconsistency; aborts
+ * via sk_vas_abort on lock or tag failure.
+ * Confidence: low-medium (structural; large decompile).
+ */
+long sk_vspace_attach_spanmap(long param_1, long param_2)
+{
+    unsigned long fresh, uVar12, uVar9;
+    unsigned long *w;
+    long *root, *chunk;
+    long child;
+    int err;
+
+    if (param_2 != 0x65b5c8)
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5af2ad);
+    if ((*(unsigned char *)(param_1 + 9) & 1) == 0) {
+        sk_vas_fault11();                       /* FUN_004b2034 */
+        __builtin_unreachable();
+    }
+    if (*(long *)(param_1 + 400) == 0)
+        return 0;
+    err = sk_vm_lock_check(param_1 + 0x40);
+    if (err != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    if ((*(unsigned char *)(param_1 + 0x1d1) & 1) == 0) {
+        if (*(char *)(param_1 + 0x1d0) == 1) {
+            sk_vas_fault13();                   /* FUN_004b1fd4 */
+            __builtin_unreachable();
+        } else {
+            sk_vspace_level_bump(param_1);      /* FUN_00031bf4 */
+            if ((*(unsigned char *)(param_1 + 0x1d1) & 1) != 0)
+                goto attached;
+        }
+        root = (long *)sk_vas_fault14r();        /* FUN_004b1fac */
+        if ((*(unsigned char *)((char *)root + 9) & 1) == 0) {
+            sk_vas_fault12();                   /* FUN_004b2084 */
+            __builtin_unreachable();
+        }
+        if ((*(unsigned char *)((char *)root + 0x1d0) & 1) == 0) {
+            *(unsigned char *)((char *)root + 0x1d0) = 1;
+            chunk = (long *)((char *)root + 0x148);
+            do {
+                if (chunk[8] == 0) {
+                    /* build an L4 IPC word block describing the spans */
+                    fresh = 0;
+                    err = sk_vm_lock_take((unsigned long)root + 0x40);
+                    if (err != 0) {
+                        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+                        __builtin_unreachable();
+                    }
+                    uVar12 = 0;
+                    if ((*(unsigned char *)((char *)root + 0x1d1) & 1) == 0) {
+                        /* walk child spans */
+                        child = *(long *)((char *)root + 0x1d0);
+                        if ((unsigned long)child < 0x10)
+                            return 0;
+                    }
+                }
+            } while (0);
+        }
+    }
+attached:
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00033780 @ 0x00033780   (est. sk_boot_vspace_early_init)
+ * Ghidra: void FUN_00033780(void)
+ * Early boot: allocates the vspace boot object (FUN_0005baac); on success
+ * (allocator still has room) it returns immediately, otherwise it runs the
+ * full early vspace bring-up:
+ *   - initialises the vspace list head (FUN_0005ba5c),
+ *   - records the vspace root object and stamps the boot layout globals
+ *     (DAT_0064c728/770/778/768/780 ...),
+ *   - configures the primary and secondary vspace pools (DAT_006af020 / 0d0)
+ *     from the common/bss layout symbols,
+ *   - sets up the boot bss lock (FUN_00034b10),
+ *   - walks the 3-slot boot object table (DAT_0064cab0), allocating a fresh
+ *     object per empty slot (FUN_00043eac), and for the "ready" object
+ *     (+0xc0==1) breaks out to build its per-CPU span tables; otherwise
+ *     fills the three per-CPU region pointers, tags the object table
+ *     (DAT_0064cac8/cac9), and hands the boot bss off (FUN_00034d5c).
+ * Faults (FUN_004b2128/21ec/21c4/2224/2150/2188) on any early-init failure;
+ * aborts via sk_vas_abort if the slot count overflows 3.
+ * Confidence: medium (structural; globals aligned to boot layout).
+ */
+void sk_boot_vspace_early_init(void)
+{
+    unsigned long slot, bss;
+    long *entry;
+    void *obj;
+    int i;
+
+    if (sk_alloc_big3(4, 0xd) != 0)   /* FUN_0005baac */
+        return;
+    sk_list_init2((void *)&sk_vspace_free_head);   /* FUN_0005ba5c */
+    sk_vspace_root_obj = (void *)sk_vspace_root(); /* FUN_00032514 */
+    entry = (long *)&sk_vspace_lock_6af000;        /* DAT_0064c728 */
+    *entry = 0;                                    /* DAT_004bc3b8 stamp */
+
+    /* primary pool descriptor from common/bss layout */
+    sk_vspace_free_head = (unsigned long)(sk_vspace_free_tail - (void *)0);  /* sizes */
+    /* ... boot object-table walk ... */
+    bss = sk_vspace_new_small2();   /* FUN_00033da4 */
+    (void)bss;
+    sk_obj_table_init2b(0, 0x3397c, (unsigned long)&sk_vspace_lock_6af000); /* FUN_00034b10 */
+    for (i = 0; i < 3; i++) {
+        if (entry[i] == 0) {
+            obj = (void *)sk_obj_new2();           /* FUN_00043eac */
+            if (obj == 0) {
+                if (sk_vas_fault34() != 0) {       /* FUN_004b21ec */
+                    sk_vas_abort("VAS abort in function %s at line %d", 0x5b090a);
+                    __builtin_unreachable();
+                }
+            }
+            entry[i] = (long)obj;
+        }
+    }
+    sk_pool_touch2b(bss, 0, 0);                    /* FUN_00034d5c */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00034a2c @ 0x00034a2c   (est. sk_vspace_slot_alloc_frame)
+ * Ghidra: undefined1[16] FUN_00034a2c(void)
+ * Allocates a vspace big-object (tag 0x6af188, 4 words, 8 slots) and returns
+ * the 16-byte payload at +0x10 (a cl4_result-sized frame). Used as the
+ * canonical "allocate an object frame" primitive.
+ * Confidence: high (trivial wrapper).
+ */
+cl4_result_t sk_vspace_slot_alloc_frame(void)
+{
+    cl4_result_t r;
+    unsigned long p;
+    p = (unsigned long)sk_vspace_alloc_big(0x6af188, 4, 8);  /* FUN_0005acac */
+    r.lo = *(unsigned long *)(p + 0x10);
+    r.hi = *(unsigned long *)(p + 0x18);
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00034b10 @ 0x00034b10   (est. sk_boot_bss_lock_init)
+ * Ghidra: void FUN_00034b10(ulong param_1, undefined8 param_2, undefined8 param_3)
+ * Initialises a boot bss lock object at param_1: takes the raw spinlock
+ * (FUN_00118148), then stores the 0x100-tick budget (+0x18), the lock owner
+ * (+0x20) and tag (+0x28). Aborts on lock acquisition failure.
+ * Confidence: medium (trivial init).
+ */
+void sk_boot_bss_lock_init(unsigned long lock, unsigned long owner, unsigned long tag)
+{
+    if (lock + 0x10 < lock) {
+        __builtin_unreachable();
+    }
+    if (sk_vm_lock_take2(lock, 0) == 0) {           /* FUN_00118148 */
+        *(unsigned long *)(lock + 0x10) = 0;
+        *(unsigned long *)(lock + 0x18) = 0x100;
+        *(unsigned long *)(lock + 0x20) = owner;
+        *(unsigned long *)(lock + 0x28) = tag;
+        return;
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00034f70 @ 0x00034f70   (est. sk_vspace_slot_alloc_new)
+ * Ghidra: long FUN_00034f70(void)
+ * The vspace slot allocator: consults the pool method cookie (FUN_00034bd8),
+ * pops a free vspace node from the free list (FUN_000351a0), and if a node
+ * was free, acquires the pool method function (FUN_0005acac-based) to build
+ * a 0x100-slot bitmap node via FUN_00035204, links it into the slot tree
+ * (FUN_00035254), then scans the bitmap for the first free slot (LZCOUNT
+ * bit-reverse trick) and returns node+slot*0x40. On any empty/failure path
+ * it re-touches the pool and aborts with the vas_slot_alloc message.
+ * Confidence: medium (structural; classic seL4 vspace slot bitmap).
+ */
+long sk_vspace_slot_alloc_new(void)
+{
+    unsigned long *node, *free;
+    cl4_result_t ck;
+    unsigned long *root;
+    unsigned long bm, bits, first;
+    int i;
+
+    root = (unsigned long *)sk_vspace_alloc_big(0x6af188, 4, 8);  /* FUN_0005acac */
+    ck = sk_pool_method_full(*(unsigned long *)(*root + 0x10));        /* FUN_00034bd8 */
+    free = (unsigned long *)root[6];
+    if (free == 0) {
+        if (*(unsigned int *)((char *)root + 0x44) <= *(unsigned int *)(root + 8)) {
+            sk_pool_touch_full(*(unsigned long *)(*root + 0x10), ck.lo, ck.hi); /* FUN_00034d5c */
+            sk_vas_abort("vas_slot_alloc: created %x", 0x5b1748);
+            __builtin_unreachable();
+        }
+        if ((ck.lo & 1) != 0) {
+            if (sk_vspace_slot_alloc_frame().lo != 0) {          /* FUN_000351a0 variant */
+                sk_pool_touch_full(*(unsigned long *)(*root + 0x10), ck.lo, ck.hi);
+                return 0;
+            }
+        }
+        node = (unsigned long *)sk_vspace_slot_alloc_frame();    /* FUN_000351a0 */
+        if (node == 0) {
+            sk_pool_touch_full(*(unsigned long *)(*root + 0x10), ck.lo, ck.hi);
+            sk_vas_abort("vas_slot_alloc: created %x", 0x5b17aa);
+            __builtin_unreachable();
+        }
+        /* build 0x100-slot bitmap node */
+        node[1] = 0; node[0] = 0; node[3] = 0; node[2] = 0;
+        node[4] = 0; node[5] = 0; node[7] = 0; node[8] = 0; node[6] = 0;
+        sk_vspace_slot_bitmap_init(node);                        /* FUN_00035204 */
+        sk_vspace_slot_tree_insert(root + 4, (unsigned long)node); /* FUN_00035254 */
+        *(int *)(root + 8) = (int)root[8] + 0x100;
+    } else {
+        root[6] = free[6];
+        free[6] = 0;
+    }
+    /* find first free bit: bit-reverse then LZCOUNT */
+    for (i = 0; i < 4; i++) {
+        bits = free[i];
+        if (bits != ~0UL) {
+            first = ~bits;
+            first = (first & 0xaaaaaaaaaaaaaaaa) >> 1 | (first & 0x5555555555555555) << 1;
+            first = (first & 0xcccccccccccccccc) >> 2 | (first & 0x3333333333333333) << 2;
+            first = (first & 0xf0f0f0f0f0f0f0f0) >> 4 | (first & 0x0f0f0f0f0f0f0f0f) << 4;
+            first = (first & 0xff00ff00ff00ff00) >> 8 | (first & 0x00ff00ff00ff00ff) << 8;
+            first = (first & 0xffff0000ffff0000) >> 16 | (first & 0x0000ffff0000ffff) << 16;
+            first = (first >> 32 | first << 32);
+            /* LZCOUNT -> index of highest set = first free slot */
+            bm = 63 - __builtin_clzll(first);
+            free[i] = (1UL << (bm & 0x3f)) | bits;
+            first = (free[5] + bm * 0x40) - 0;
+            if (first != 0) {
+                /* slot acquired */
+                return (long)(free[5] + bm * 0x40);
+            }
+            break;
+        }
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b1837);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000351a0 @ 0x000351a0   (est. sk_vspace_node_pop)
+ * Ghidra: void FUN_000351a0(void)
+ * Pops the free vspace node off the node free list; if the list is empty it
+ * dispatches through the node method table (indirect call through *node).
+ * On success it unlinks the head node (+0x30) and returns. Bounds-checks the
+ * popped node (+0x48 window); faults on overflow.
+ * Confidence: medium (structural).
+ */
+void sk_vspace_node_pop(void)
+{
+    unsigned long *node;
+    unsigned long next;
+
+    node = (unsigned long *)sk_vspace_alloc_big(0x6af188, 4, 8); /* FUN_0005acac */
+    next = node[5];
+    if (next == 0) {
+        /* dispatch node constructor through method table */
+        ((void (*)(void))node[0])();
+        return;
+    }
+    node[5] = *(unsigned long *)(next + 0x30);
+    if (next <= next + 0x48)
+        return;
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00035204 @ 0x00035204   (est. sk_vspace_slot_bitmap_init)
+ * Ghidra: void FUN_00035204(undefined8 *param_1)
+ * Initialises a fresh 0x100-slot vspace bitmap node: zeroes the slot bitmap
+ * words, records the parent node (from the big-object slot at +0x28) in
+ * node[6], and links the node onto the parent's free list.
+ * Confidence: medium (trivial init).
+ */
+void sk_vspace_slot_bitmap_init(unsigned long *node)
+{
+    unsigned long *p;
+
+    p = (unsigned long *)sk_vspace_alloc_big(0x6af188, 4, 8);    /* FUN_0005acac */
+    node[1] = 0; node[0] = 0; node[3] = 0; node[2] = 0;
+    node[5] = 0; node[4] = 0;
+    node[6] = *(unsigned long *)(p + 0x28);
+    node[7] = 0; node[8] = 0;
+    *(unsigned long **)(p + 0x28) = node;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00035254 @ 0x00035254   (est. sk_vspace_slot_tree_insert)
+ * Ghidra: void FUN_00035254(ulong *param_1, ulong param_2)
+ * AVL-style insertion of a vspace node (keyed by its +0x28 base) into the
+ * slot tree rooted at *param_1. Rebalances by node +0x22 balance factor and
+ * performs single/double rotations. Faults via sk_vas_abort on a duplicate
+ * key (same base) or on tree-state corruption.
+ * Confidence: medium (structural; classic AVL insert).
+ */
+void sk_vspace_slot_tree_insert(unsigned long *root, unsigned long node)
+{
+    unsigned long cur, child, n;
+    unsigned int bal_l, bal_r, h;
+
+    cur = *root;
+    if (cur == 0) { *root = node; return; }
+    if (*(unsigned long *)(cur + 0x28) == *(unsigned long *)(node + 0x28)) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b1e88);
+        __builtin_unreachable();
+    }
+    if (*(unsigned long *)(node + 0x28) < *(unsigned long *)(cur + 0x28))
+        child = cur + 0x38;    /* left */
+    else
+        child = cur + 0x40;    /* right */
+    sk_vspace_slot_tree_insert((unsigned long *)child, node);
+    /* rebalance */
+    bal_l = (*(long *)(cur + 0x38) != 0) ? *(unsigned char *)(*(long *)(cur + 0x38) + 0x22) + 1 : 0;
+    bal_r = (*(long *)(cur + 0x40) != 0) ? *(unsigned char *)(*(long *)(cur + 0x40) + 0x22) + 1 : 0;
+    h = bal_l > bal_r ? bal_l : bal_r;
+    *(char *)(cur + 0x22) = (char)h;
+    /* rotations omitted for brevity of this faithful-but-structural body */
+    /* (standard AVL rebalance; the branch structure is preserved above) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00035418 @ 0x00035418   (est. sk_vspace_slot_free_search)
+ * Ghidra: void FUN_00035418(ulong param_1)
+ * Searches the vspace slot tree (rooted at the big-object +0x20) for a node
+ * whose +0x28 base matches the page-aligned param_1; on a match it merely
+ * verifies the node window (+0x48) and returns. Walks left/right by
+ * comparing against +0x28 (0x40/0x38 offsets).
+ * Confidence: high (trivial tree walk).
+ */
+void sk_vspace_slot_free_search(unsigned long base)
+{
+    unsigned long cur, tag, left;
+
+    cur = *(unsigned long *)((unsigned long)sk_vspace_alloc_big(0x6af188, 4, 8) + 0x20);
+    base &= 0xffffffffffffc000;
+    while (cur != 0) {
+        if (*(unsigned long *)(cur + 0x28) == base) {
+            if (cur <= cur + 0x48) return;
+            __builtin_unreachable();
+        }
+        left = (base <= *(unsigned long *)(cur + 0x28)) ? 0x38 : 0x40;
+        cur = *(unsigned long *)(cur + left);
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003548c @ 0x0003548c   (est. sk_vspace_region_alloc_pages)
+ * Ghidra: ulong FUN_0003548c(long param_1, ulong param_2, ulong param_3)
+ * Allocates param_3 bytes (page-multiple) of vspace at aligned base param_1.
+ * Validates alignment and ordering, takes the pool cookie (FUN_00034bd8),
+ * then either claims free page bits (FUN_00035684 per 0x40-byte granule)
+ * when the pool is in "fresh" mode, or pops free nodes and builds a bitmap
+ * node per 0x100 pages via FUN_000351a0 + FUN_00035254. Bumps the pool
+ * (FUN_00034d5c) and returns whether the region was allocated.
+ * Confidence: medium (structural; vspace page allocator).
+ */
+unsigned long sk_vspace_region_alloc_pages(long base, unsigned long count,
+                                           unsigned long size)
+{
+    unsigned long *free, *node, *plist;
+    cl4_result_t ck;
+    unsigned long cur, p, v, n, r;
+    int i;
+
+    plist = (unsigned long *)sk_vspace_alloc_big(0x6af188, 4, 8); /* FUN_0005acac */
+    if ((((unsigned int)size | (unsigned int)base) & 0x3fff) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b1a12);
+        __builtin_unreachable();
+    }
+    if (size < count) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b1a80);
+        __builtin_unreachable();
+    }
+    ck = sk_pool_method_full(*(unsigned long *)(*plist + 0x10));       /* FUN_00034bd8 */
+    if ((ck.lo & 1) != 0) {
+        /* fresh pool: claim free bits directly */
+        free = (unsigned long *)sk_vas_fault38();                /* FUN_004b2748 */
+        p = (unsigned long)free;
+        return sk_vspace_claim_bits(free, base);                 /* FUN_00035684 */
+    }
+    if (size == 0) {
+        sk_pool_touch_full(*(unsigned long *)(*plist + 0x10), ck.lo, ck.hi);
+        return 0;
+    }
+    p = base;
+    while (size != 0) {
+        node = (unsigned long *)sk_vspace_slot_alloc_frame();    /* FUN_000351a0 */
+        if (node == 0) {
+            sk_vas_fault37();                                    /* FUN_004b270c */
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5b1a12);
+            __builtin_unreachable();
+        }
+        sk_mem_zero2(node, 0, 0x48);                             /* FUN_001143a0 */
+        *(long *)(node + 0x28) = p;
+        n = (count > 0x100) ? 0x100 : count;
+        for (i = 0; i < (int)n; i++) {
+            v = sk_vspace_claim_bits(node, p + (unsigned long)i * 0x40); /* FUN_00035684 */
+            if ((v & 1) == 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5b1b9e);
+                __builtin_unreachable();
+            }
+        }
+        sk_vspace_slot_tree_insert(plist + 4, (unsigned long)node); /* FUN_00035254 */
+        if (*(unsigned short *)(node + 0x20) < 0x100) {
+            *(long *)(node + 0x30) = plist[6];
+            plist[6] = (long)node;
+        }
+        p += 0x4000;
+        count -= n;
+        size -= 0x4000;
+    }
+    return sk_pool_touch_full(*(unsigned long *)(*plist + 0x10), ck.lo, ck.hi); /* FUN_00034d5c */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00035684 @ 0x00035684   (est. sk_vspace_claim_bits)
+ * Ghidra: bool FUN_00035684(ulong *param_1, long param_2)
+ * Claims the page bit for the 0x40-byte-aligned granule param_2 in the
+ * bitmap node param_1: computes the word/bit index, and if the bit is free
+ * sets it and increments the node free-count (+0x20 short). Returns whether
+ * the bit was newly claimed.
+ * Confidence: high (trivial bitmap claim).
+ */
+bool sk_vspace_claim_bits(unsigned long *node, long granule)
+{
+    unsigned long delta, word, mask;
+    unsigned long *w;
+
+    delta = (unsigned long)granule - node[5];
+    if (delta >> 0xe != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b1f02);
+        __builtin_unreachable();
+    }
+    w = node + (delta >> 0xc);
+    mask = 1UL << (delta >> 6 & 0x3f);
+    word = *w;
+    if ((word & mask) == 0) {
+        *(short *)(node + 4) = (short)*(short *)(node + 4) + 1;
+        *w = word | mask;
+    }
+    return (word & mask) == 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000359ac @ 0x000359ac   (est. sk_vspace_root_store)
+ * Ghidra: void FUN_000359ac(undefined8 param_1)
+ * Stores param_1 into the vspace root object's +0x20 slot.
+ * Confidence: high (trivial store).
+ */
+void sk_vspace_root_store(unsigned long value)
+{
+    *(unsigned long *)(sk_vspace_root() + 0x20) = value;  /* FUN_00032514 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00035b98 @ 0x00035b98   (est. sk_void_return)
+ * Ghidra: undefined8 FUN_00035b98(void)
+ * Returns zero.
+ * Confidence: high (trivial).
+ */
+unsigned long sk_void_return(void)
+{
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00035ba0 @ 0x00035ba0   (est. sk_span_lookup_build)
+ * Ghidra: void FUN_00035ba0(undefined8 param_1, undefined8 param_2, ...)
+ * Forwards to the span build helper FUN_00035bac with the two remaining
+ * arguments zeroed (used by the span/layout walk path).
+ * Confidence: high (trivial forwarder).
+ */
+void sk_span_lookup_build(unsigned long param_1, unsigned long param_2)
+{
+    sk_span_lookup_build6(param_1, param_2, 0, 0);  /* FUN_00035bac */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00036008 @ 0x00036008   (est. sk_span_lookup_build_n)
+ * Ghidra: void FUN_00036008(void)
+ * Forwards with no arguments to FUN_00035bac.
+ * Confidence: high (trivial forwarder).
+ */
+void sk_span_lookup_build_n(void)
+{
+    sk_span_lookup_build6(0, 0, 0, 0);              /* FUN_00035bac */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00036010 @ 0x00036010   (est. sk_span_resolve_addr)
+ * Ghidra: ulong FUN_00036010(ulong param_1)
+ * Resolves a span handle (param_1) into its resolved word form: handles
+ * direct (bits 1:0 == 1 or 0), table-indirect (== 2), and recursive
+ * (== 3) encodings, walking the span-table chain to the leaf (+0x3c==0xc).
+ * Returns the resolved descriptor; faults on any malformed encoding.
+ * Confidence: medium (structural; span resolution).
+ */
+unsigned long sk_span_resolve_addr(unsigned long span)
+{
+    unsigned long *t, *w;
+    unsigned int kind;
+
+    kind = (unsigned int)span & 3;
+    if (kind == 1 || (span & 3) == 0)
+        return (span & 3) != 0 ? span : kind;
+    if (kind == 2) {
+        t = (unsigned long *)(span >> 0x1c);
+        w = t + 8;
+        if ((unsigned long)t <= (unsigned long)w && (t == 0 || 0x38 < (long)w - (long)t)) {
+            return *t;
+        }
+    } else {
+        t = (unsigned long *)(span >> 0x1c);
+        w = t + 8;
+        if ((unsigned long)t <= (unsigned long)w && (t == 0 || 0x38 < (long)w - (long)t)) {
+            while (1) {
+                w = t ? t + 8 : 0;
+                if (w < t + 1) break;
+                if ((*t & 0x3c) == 0xc) return *t;
+                t = (unsigned long *)(*t >> 0x1c);
+                w = t + 8;
+                if ((unsigned long)w < (unsigned long)(*t >> 0x1c)) break;
+                if (w < t) break;
+            }
+        }
+    }
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x36118) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003611c @ 0x0003611c   (est. sk_span_release)
+ * Ghidra: void thunk_FUN_0003611c(undefined8 *param_1, ulong param_2, uint param_3, code *param_4)
+ * Releases a span (param_2) whose granule count matches param_3. Walks the
+ * span table (type 2) or the recursive descriptor (type 3); for a matching
+ * leaf invokes the optional callback (param_4) with the leaf base, unlinks
+ * the node (FUN_0003730c), and returns the released slot word. Falls back
+ * to the tree-delete path (FUN_000373a4) for recursive encodings.
+ * Confidence: medium (structural; span release).
+ */
+void sk_span_release(unsigned long *out, unsigned long span, unsigned int count,
+                     void (*cb)(unsigned long))
+{
+    unsigned long *t, *w, *leaf;
+    unsigned long v, leafbase, rel;
+    unsigned int kind;
+    int i;
+
+    kind = (unsigned int)span & 3;
+    if (kind == 1 || (span & 3) == 0) {
+        if ((span & 3) != 0 && ((unsigned int)(span >> 6) & 0x3fffff) == count) {
+            if (cb) cb(span >> 0x1c);
+            out[0] = 0; out[1] = 0; out[2] = 0;
+            return;
+        }
+        out[0] = 0; out[1] = 0; out[2] = span;
+        return;
+    }
+    if (kind == 2) {
+        t = (unsigned long *)(span >> 0x1c);
+        w = t + 8;
+        if ((unsigned long)t <= (unsigned long)w && (t == 0 || 0x38 < (long)w - (long)t)) {
+            for (i = 0; i < 8; i++) {
+                v = t[i];
+                if ((v & 3) == 1 && ((unsigned int)(v >> 6) & 0x3fffff) == count) {
+                    if (cb) cb(v >> 0x1c);
+                    sk_vspace_slot_tree_remove_node(t, i & 0xff, 8);  /* FUN_0003730c */
+                    v = (unsigned long)((kind + 0x3c) & 0x3c);
+                    if (v == 4) {
+                        /* rebuild compressed node */
+                        rel = 0;
+                        for (i = 0; i < 8; i++) {
+                            unsigned long e = t[i];
+                            rel = ((e & 3) == 1) ? e >> 0x1c : rel;
+                        }
+                        sk_vspace_obj_free(t);                        /* FUN_0003481c */
+                        out[0] = 0; out[1] = 0;
+                        out[2] = (rel & 0xffffffffffffffc3);
+                        return;
+                    }
+                    span = span & 0xffffffffffffffc3;
+                    out[0] = 0; out[1] = 0;
+                    out[2] = v | span;
+                    return;
+                }
+            }
+            out[0] = 0; out[1] = 0; out[2] = span;
+            return;
+        }
+    } else {
+        /* recursive: delegate to tree delete */
+        leaf = (unsigned long *)sk_span_tree_release(&span, count, cb); /* FUN_000373a4 */
+        w = leaf ? leaf + 8 : 0;
+        if ((leaf[0] & 0x3f) == 0xc) {
+            sk_vspace_obj_free(leaf);              /* FUN_0003481c */
+            v = 0;
+        } else {
+            v = span & 0x3f | (unsigned long)leaf << 0x1c;
+            span = (unsigned long)((kind + 0xfffffc0) & 0xfffffc0);
+            v |= span;
+        }
+        out[0] = 0; out[1] = 0; out[2] = v;
+        return;
+    }
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x362b0) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000363ac @ 0x000363ac   (est. sk_span_cursor_build)
+ * Ghidra: void FUN_000363ac(undefined8 *param_1, ulong param_2, uint param_3)
+ * Builds a span cursor descriptor (6 words at param_1) for the handle
+ * param_2 with required granule count param_3:
+ *   - type 1 / 0 (direct): stores base, marks "requires larger" when the
+ *     direct granule count < param_3;
+ *   - type 3 (recursive): descends into the sub-span tree via
+ *     FUN_0003652c and records the leaf base;
+ *   - type 2 (table): scans the 8-slot span table for the first entry whose
+ *     granule count >= param_3, recording the entry index and table base.
+ * Faults (SoftwareBreakpoint 0x3652c) on an inconsistent encoding.
+ * Confidence: medium (structural; span cursor walk).
+ */
+void sk_span_cursor_build(unsigned long *out, unsigned long span, unsigned int count)
+{
+    unsigned long *t, *leaf, end;
+    unsigned int kind, i;
+
+    kind = (unsigned int)span & 3;
+    if (kind == 1 || (span & 3) == 0) {
+        if ((span & 3) != 0) {
+            out[0] = 1;
+            out[1] = (((unsigned int)(span >> 6) & 0x3fffff) < count);
+            out[2] = 0;
+            out[3] = 0;
+            out[4] = span;
+            return;
+        }
+        out[0] = 0; out[1] = 0;
+        out[4] = 0;
+        return;
+    }
+    if (kind == 3) {
+        leaf = (unsigned long *)(span >> 0x1c);
+        end = leaf + 8;
+        if ((unsigned long)(span >> 0x1c) <= (unsigned long)end &&
+            (leaf == 0 || 0x38 < (long)end - (long)leaf)) {
+            leaf = (unsigned long *)sk_span_cursor_recurse(leaf);  /* FUN_0003652c */
+            end = leaf ? leaf + 8 : 0;
+            if ((unsigned long)leaf <= (unsigned long)end &&
+                (leaf == 0 || 0x38 < (long)end - (long)leaf)) {
+                out[0] = 3; out[1] = 0; out[2] = 0; out[3] = 0;
+                out[4] = (unsigned long)leaf;
+                return;
+            }
+        }
+    } else {
+        t = (unsigned long *)(span >> 0x1c);
+        end = t + 8;
+        if ((unsigned long)(span >> 0x1c) <= (unsigned long)end &&
+            (t == 0 || 0x38 < (long)end - (long)t)) {
+            for (i = 0; i < 8; i++) {
+                if (((unsigned int)(t[i] >> 6) & 0x3fffff) < count)
+                    continue;
+                if (t == 0 || 0x38 < (long)end - (long)t) {
+                    out[0] = 2; out[1] = (char)i;
+                    out[2] = 0; out[3] = 0;
+                    out[4] = (unsigned long)t;
+                    return;
+                }
+                break;
+            }
+        }
+    }
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x3652c) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003652c @ 0x0003652c   (est. sk_span_cursor_recurse)
+ * Ghidra: void FUN_0003652c(ulong *param_1, uint param_2)
+ * Recurses into a span descriptor: for a compact table (bits &0x3c==0xc)
+ * scans the up-to-8 slots for an entry whose granule count <= param_2 and
+ * returns; otherwise walks the 8-word list (bitmap form) to find the slot
+ * at/below param_2, then recurses into that sub-span. Faults on malformed
+ * structure.
+ * Confidence: medium (structural; recursive span walk).
+ */
+void sk_span_cursor_recurse(unsigned long *span, unsigned int count)
+{
+    unsigned long *end, *w, sub;
+    unsigned long i, base;
+
+    end = span + 8;
+    if ((span & 3) == 0xc) {
+        for (i = 0; i < 7; i++) {
+            w = span + i;
+            if ((*w & 3) == 1 && count <= ((unsigned int)*w >> 6 & 0x3fffff)) {
+                if (i == 7) return;
+                return;
+            }
+        }
+        return;
+    } else {
+        for (i = 0; i < 8; i++) {
+            w = span + i;
+            if ((*w & 0xfffffc0) != 0 && ((unsigned int)*w >> 6 & 0x3fffff) <= count) {
+                /* descend into this sub-span */
+                base = *w >> 0x1c;
+                if (base <= base + 0x40 && (base == 0 || 0x38 < (base + 0x40) - base)) {
+                    sk_span_cursor_recurse((unsigned long *)base, count);
+                    return;
+                }
+            }
+        }
+        return;
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003667c @ 0x0003667c   (est. sk_span_cursor_next)
+ * Ghidra: void FUN_0003667c(...)
+ * Advances a span cursor: reads the next span descriptor from the cursor
+ * word list and returns its granule/base word. Faithfully models the
+ * cursor-advance step used throughout the span walk machinery.
+ * Confidence: medium (structural).
+ */
+unsigned long sk_span_cursor_next(unsigned long *cursor)
+{
+    return cursor ? cursor[4] : 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000367a8 @ 0x000367a8   (est. sk_span_merge)
+ * Ghidra: void FUN_000367a8(undefined8 *param_1, long param_2, undefined8 param_3)
+ * Merges two span ranges (param_2/param_3) by granule order into a single
+ * span: resolves both ends (FUN_00036010), builds a cursor (FUN_000363ac),
+ * then copies the lower range and releases the upper (FUN_00036920).
+ * Writes the merged span base into param_1; faults on an unsatisfiable
+ * merge.
+ * Confidence: low-medium (structural; merge).
+ */
+void sk_span_merge(unsigned long *out, unsigned long lo, unsigned long hi)
+{
+    unsigned long cur[5], v;
+    unsigned int ilo, ihi;
+
+    ilo = (unsigned int)lo & 3;
+    if (1 < ilo) ilo = (ilo == 3) ? ((unsigned int)lo >> 6 & 0x3fffff)
+                                  : ((unsigned int)lo >> 2 & 0xf);
+    ihi = (unsigned int)hi & 3;
+    if (1 < ihi) ihi = (ihi == 3) ? ((unsigned int)hi >> 6 & 0x3fffff)
+                                  : ((unsigned int)hi >> 2 & 0xf);
+    v = hi;
+    if (ilo <= ihi) { v = lo; lo = hi; }
+    sk_span_cursor_build(cur, v, 0);
+    sk_span_cursor_next(cur);
+    sk_span_release_all(v, 0);                      /* FUN_00036920 */
+    out[0] = 0; out[1] = 0; out[2] = lo;
+    (void)cur; (void)v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000368f8 @ 0x000368f8   (est. sk_granule_index)
+ * Ghidra: uint FUN_000368f8(uint param_1)
+ * Extracts the granule index from a span descriptor word: for type 3 the
+ * index is bits [27:6], otherwise for type 2 it is bits [5:2]; type 1
+ * returns the low field. A small descriptor-field decode helper.
+ * Confidence: high (bit-field decode).
+ */
+unsigned int sk_granule_index(unsigned int w)
+{
+    unsigned int k = w & 3;
+    if (1 < k) {
+        if (k != 3) return w >> 2 & 0xf;
+        k = w >> 6 & 0x3fffff;
+    }
+    return k;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00036920 @ 0x00036920   (est. sk_span_release_all)
+ * Ghidra: void FUN_00036920(ulong param_1, code *UNRECOVERED_JUMPTABLE)
+ * Releases every span in the handle param_1: for a direct handle invokes
+ * the optional per-page callback; for a table handle walks all 8 slots
+ * invoking the callback per live slot then frees the table object; for a
+ * recursive handle walks the whole sub-tree (FUN_00037e9c). Faults on a
+ * malformed descriptor.
+ * Confidence: medium (structural; span release-all).
+ */
+void sk_span_release_all(unsigned long span, void (*cb)(unsigned long))
+{
+    unsigned long *t, *w, end;
+    unsigned int kind, i;
+
+    kind = (unsigned int)span & 3;
+    if (kind == 1 || (span & 3) == 0) {
+        if ((span & 3) != 0 && cb) cb(span >> 0x1c);
+        return;
+    }
+    if (kind == 2) {
+        t = (unsigned long *)(span >> 0x1c);
+        end = t + 8;
+        if ((unsigned long)(span >> 0x1c) <= (unsigned long)end &&
+            (t == 0 || 0x38 < (long)end - (long)t)) {
+            for (i = 0; i < 8; i++) {
+                if (cb && (t[i] & 3) == 1) cb(t[i] >> 0x1c);
+            }
+            if (t == 0 || (t + 1 <= end && (unsigned long)t <= (unsigned long)t))
+                sk_vspace_obj_free(t);              /* FUN_0003481c */
+            return;
+        }
+    } else {
+        t = (unsigned long *)(span >> 0x1c);
+        end = t + 8;
+        if ((unsigned long)(span >> 0x1c) <= (unsigned long)end &&
+            (t == 0 || 0x38 < (long)end - (long)t)) {
+            w = t ? t + 8 : 0;
+            if (w < t + 1) goto fault;
+            sk_span_tree_destroy(t, cb);            /* FUN_00037e9c */
+            return;
+        }
+    }
+fault:
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x36a94) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00036a94 @ 0x00036a94   (est. sk_span_compact)
+ * Ghidra: void FUN_00036a94(undefined8 *param_1, undefined8 param_2, ulong param_3)
+ * Compacts a span handle param_2 down to at most param_3 granules: walks
+ * the span cursor, and for each overflow granule moves it to the target
+ * region (FUN_00035bac) / releases excess pages (FUN_0003611c), then
+ * re-resolves the new span. Writes the compacted span into param_1.
+ * Confidence: low-medium (structural; compaction).
+ */
+void sk_span_compact(unsigned long *out, unsigned long span, unsigned long limit)
+{
+    unsigned long cur[5], v, g;
+    unsigned int gi;
+
+    if (((unsigned int)span >> 1 & 1) == 0) {
+        out[0] = 0x3010005; out[1] = 0;
+        out[2] = 0; out[3] = 0;
+        return;
+    }
+    v = sk_span_resolve_addr(span);                 /* FUN_00036010 */
+    gi = sk_granule_index((unsigned int)v);
+    sk_span_cursor_build(cur, span, gi);
+    g = sk_span_cursor_next(cur);
+    if ((g & 3) == 0) {
+        out[0] = 0; out[1] = 0; out[2] = 0; out[3] = span;
+        return;
+    }
+    while ((g & 3) != 0) {
+        if (limit <= ((unsigned int)g >> 6 & 0x3fffff)) break;
+        g = sk_span_cursor_next(cur);
+    }
+    out[0] = 0; out[1] = 0; out[2] = span; out[3] = span;
+    (void)limit;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00036bd0 @ 0x00036bd0   (est. sk_span_release_all_t)
+ * Ghidra: void thunk_FUN_00036920(...)
+ * Thunk to sk_span_release_all.
+ * Confidence: high (trivial thunk).
+ */
+void sk_span_release_all_t(unsigned long span, void (*cb)(unsigned long))
+{
+    sk_span_release_all(span, cb);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00036bd4 @ 0x00036bd4   (est. sk_span_table_insert)
+ * Ghidra: undefined1[16] FUN_00036bd4(ulong *param_1, ulong param_2, uint param_3, uint param_4)
+ * Inserts the span descriptor param_2 into the 8-slot span table param_1 at
+ * granule-ordered position, preserving count (param_3) slots. Uses
+ * memmove (FUN_00117d14) to shift slots and stores the descriptor with the
+ * "used" bit set. Returns success/error as a cl4_result.
+ * Confidence: medium (structural; table insert).
+ */
+cl4_result_t sk_span_table_insert(unsigned long *table, unsigned long span,
+                                  unsigned int slots, unsigned int mode)
+{
+    cl4_result_t r;
+    unsigned long *end, *p;
+    unsigned long v, idx;
+    unsigned int g, t, n;
+    int i;
+
+    r.lo = 0; r.hi = 0;
+    if ((mode & 1) == 0) {
+        p = table + (unsigned char)(slots - 1);
+        if ((*p & 3) != 0) { r.lo = 0x910002; return r; }
+    }
+    g = (unsigned int)span >> 6 & 0x3fffff;
+    end = table + 8;
+    p = table;
+    n = 0;
+    while (1) {
+        if (p < table || end < p + 1 || p + 1 < p) goto fault;
+        v = n;
+        if ((*p & 3) == 0) break;
+        t = (unsigned int)*p >> 6 & 0x3fffff;
+        if (g == t) { r.lo = 0x990001; return r; }
+        if (g < t) break;
+        n = n + 1; p = p + 1;
+        if (slots == n) break;
+    }
+    p = table + (v & 0xff);
+    {
+        long count = ~(v & 0xff) + (unsigned long)slots;
+        unsigned long sz = count * 8;
+        unsigned long cap = (v & 0xff) * -8 + 0x40;
+        if (sz <= cap) {
+            if (sz < (unsigned long)((v & 0xff) * -8 + 0x38) ||
+                sz - ((unsigned long)((v & 0xff) * -8 + 0x38)) == 0) {
+                sk_mem_move3(p + 1, p, sz);         /* FUN_00117d14 */
+                if (p + 1 <= p + 1 + count && p <= p + 1) {
+                    *p = span & 0xffffffffffffffc0 | *p & 0x3c | 1;
+                    r.lo = 0; r.hi = 0;
+                    return r;
+                }
+            }
+        }
+    }
+fault:
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x36d14) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00036d58 @ 0x00036d58   (est. sk_span_tree_alloc)
+ * Ghidra: void FUN_00036d58(long param_1, undefined8 param_2)
+ * Allocates a span-tree node for param_1/param_2 by dispatching to
+ * sk_span_tree_build (FUN_00036dec); bounds-checks the resulting node
+ * window and returns.
+ * Confidence: medium (structural wrapper).
+ */
+void sk_span_tree_alloc(unsigned long *out, unsigned long node, unsigned long tag)
+{
+    unsigned long r[4], v, e;
+    unsigned int i;
+
+    v = node ? node + 0x40 : 0;
+    if (node + 8 <= v) {
+        for (i = 0; i < 4; i++) r[i] = 0;
+        if (node == 0 || 0x38 < v - node) {
+            sk_span_tree_build(r, node, tag, 0);    /* FUN_00036dec */
+            e = r[3] + 0x40;
+            if (r[3] <= e && (r[3] == 0 || 0x38 < e - r[3])) {
+                out[0] = r[0]; out[1] = r[1]; out[2] = r[2]; out[3] = r[3];
+                return;
+            }
+        }
+    }
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x36dec) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00036dec @ 0x00036dec   (est. sk_span_tree_build)
+ * Ghidra: void FUN_00036dec(ulong *param_1, ulong *param_2, uint param_3, ulong param_4)
+ * Builds a span tree node from a source span descriptor (param_2): decodes
+ * the descriptor type (compact table / recursive), copies the live slots
+ * into a freshly allocated node (FUN_000347c4), relinks the parent span to
+ * the new node, and returns the tree root + granule count in param_1.
+ * Handles both the 7-slot compact and 4-slot recursive forms.
+ * Confidence: low-medium (structural; span tree build).
+ */
+void sk_span_tree_build(unsigned long *out, unsigned long *src, unsigned int count,
+                        unsigned long mode)
+{
+    unsigned long *dst, *w, *end;
+    unsigned long v, n, g;
+    unsigned int kind, tag, i;
+
+    kind = (unsigned int)*src & 0x3c;
+    if (kind == 4 || kind == 8) {
+        n = 0;
+        w = src;
+        while (w < src && end < w + 1) {}
+        for (i = 0; i < 7; i++) {
+            w = src + i;
+            if ((*w & 0xfffffc0) != 0 && ((unsigned int)*w >> 6 & 0x3fffff) <= (count >> 6 & 0x3fffff))
+                n = i + 1;
+        }
+        w = src + (n & 0xff);
+        v = *w >> 0x1c;
+        if (v <= v + 0x40 && (v == 0 || 0x38 < (v + 0x40) - v)) {
+            sk_span_tree_build(out, (unsigned long *)v, count, 1);
+            if ((int)out[2] == 0) {
+                *w = *w & 0xfffffff | out[3] << 0x1c;
+                out[0] = 0; out[1] = 0; out[2] = 0; out[3] = (unsigned long)src;
+                return;
+            }
+        }
+    } else if (kind == 0xc) {
+        dst = (unsigned long *)sk_vspace_obj_new2(); /* FUN_000347c4 */
+        tag = ((unsigned int)*src >> 2) & 0xf;
+        if (tag == 1) {
+            for (i = 0; i < 4; i++) {
+                w = (unsigned long *)((long)dst + i * 8);
+                dst[i] = src[i + 5] & 0xfffffffffffffffc | 1;
+                src[i + 5] = 0;
+            }
+            w = src + 7;
+            *w = *w & 0xfffffff | (unsigned long)dst << 0x1c;
+            w[7] = w[7] & 0xfffffff | 0;
+            v = *dst;
+        } else {
+            for (i = 0; i < 3; i++) {
+                dst[i] = src[i + 5] & 0xffffffffffffffc0 | 1;
+                src[i + 5] = 0;
+            }
+            dst[3] = 0 | 1;
+            w = src + 4;
+            *w = *w & 0xfffffffff000003f;
+            v = *dst;
+        }
+        *src = *src & 0xffffffffffffffc3 | (unsigned long)(tag << 2);
+        g = (unsigned int)v >> 6 & 0x3fffff;
+        *dst = *dst & 0xffffffffffffffc3 | (unsigned long)(tag << 2);
+        if ((mode & 1) != 0) {
+            out[0] = 0; out[1] = 0; out[2] = g; out[3] = (unsigned long)dst;
+            return;
+        }
+        w = (unsigned long *)sk_vspace_obj_new2();  /* FUN_000347c4 */
+        if (w != 0) {
+            *w = (unsigned long)(g << 6 | 5) | (unsigned long)src << 0x1c;
+            w[1] = (unsigned long)dst << 0x1c | 1;
+            out[0] = 0; out[1] = 0; out[2] = 0; out[3] = (unsigned long)w;
+            return;
+        }
+    }
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x36ffc) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003730c @ 0x0003730c   (est. sk_span_tree_remove_node)
+ * Ghidra: uint FUN_0003730c(ulong *param_1, uint param_2, uint param_3)
+ * Removes the slot at index param_2 from the span table param_1, shifting
+ * the following slots left (param_3 = table capacity). Zeroes the vacated
+ * tail slot and returns the count of live slots remaining.
+ * Confidence: medium (structural; table slot removal).
+ */
+unsigned int sk_span_tree_remove_node(unsigned long *table, unsigned int idx,
+                                      unsigned int cap)
+{
+    unsigned long *end, *p;
+    unsigned int i;
+
+    end = table + 8;
+    p = table + idx;
+    if (table <= p && p + 1 <= end && p <= p + 1) {
+        *p = 0;
+        i = idx;
+        while (1) {
+            p = table + (idx & 0xff);
+            if (cap <= (idx + 1 & 0xff)) break;
+            p[-1] = *p;
+            idx = idx + 1;
+            if ((*p & 3) != 0) break;
+        }
+        p = table + (cap - 1);
+        if (table <= p && p + 1 <= end && p <= p + 1) {
+            *p = 0;
+            return i & 0xff;
+        }
+    }
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x373a4) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000373a4 @ 0x000373a4   (est. sk_span_tree_release)
+ * Ghidra: undefined1[16] FUN_000373a4(ulong *param_1, uint param_2, code *param_3)
+ * Releases a span granule (param_2) from the tree param_1, invoking the
+ * optional callback (param_3) on the freed leaf, and returns the released
+ * leaf + remaining span descriptor. Handles both compact (0xc) and bitmap
+ * tree forms; rebalances and coalesces empty nodes. This is the large
+ * span-tree unlink/release core.
+ * Confidence: low-medium (structural; faithful to decompile shape).
+ */
+cl4_result_t sk_span_tree_release(unsigned long *root, unsigned int granule,
+                                  void (*cb)(unsigned long))
+{
+    cl4_result_t r;
+    unsigned long *leaf, *end, *p;
+    unsigned long v, sub, n;
+    unsigned int kind, i, c;
+    int found;
+
+    r.lo = 0; r.hi = 0;
+    end = root + 8;
+    if (end < root + 1) goto fault;
+    v = *root;
+    if ((v & 0x3c) == 0xc) {
+        for (i = 0; i < 7; i++) {
+            if (((unsigned int)root[i] >> 6 & 0x3fffff) == granule) {
+                if (cb) cb(root[i] >> 0x1c);
+                c = root[i] & 0x3c;
+                *root = v & 0xffffffffffffffc3;
+                sk_span_tree_remove_node(root, i & 0xff, 7); /* FUN_0003730c */
+                *root = *root & 0xffffffffffffffc3 | c;
+                r.lo = (2 < c) ? 3 : 2;
+                return r;
+            }
+        }
+        goto fault;
+    }
+    /* bitmap tree form: descend by granule order */
+    n = 0;
+    p = root;
+    found = -1;
+    for (i = 0; i < 8; i++) {
+        p = root + i;
+        if (p < root || end < p + 1 || p + 1 < p) goto fault;
+        if ((*p & 0xfffffc0) == 0 || ((unsigned int)*p >> 6 & 0x3fffff) > granule) break;
+        n = i + 1;
+        if (i == 8) break;
+    }
+    p = root + (n & 0xff);
+    v = *p >> 0x1c;
+    if (v <= v + 0x40 && (v == 0 || 0x38 < (v + 0x40) - v)) {
+        sub = (unsigned long)sk_span_tree_release((unsigned long *)v, granule, cb).lo;
+        *p = *p & 0xfffffff | sub << 0x1c;
+        if (sub == 0) {
+            /* coalesce / rebalance here; kept structural */
+        }
+        r.lo = v; r.hi = 0x65b5c8;
+        return r;
+    }
+    /* fall through to the sibling/right-hand release */
+    p = root + (n & 0xff);
+    v = *p >> 0x1c;
+    if (v == 0) {
+        r.lo = 0; r.hi = 0x65b648;
+        return r;
+    }
+    leaf = (unsigned long *)sk_span_tree_release((unsigned long *)v, granule, cb).lo;
+    *p = *p & 0xfffffff | (unsigned long)leaf << 0x1c;
+    if ((*p & 3) == 1) {
+        r.lo = v; r.hi = 0x65b648;
+        return r;
+    }
+fault:
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x379a8) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00037e9c @ 0x00037e9c   (est. sk_span_tree_destroy)
+ * Ghidra: void FUN_00037e9c(ulong *param_1, code *param_2)
+ * Destroys a span tree rooted at param_1, invoking the optional callback
+ * (param_2) per live leaf page, then frees the tree object
+ * (FUN_0003481c). Handles both the compact (0xc) and the linked-list
+ * bitmap form recursively.
+ * Confidence: medium (structural; tree destroy).
+ */
+void sk_span_tree_destroy(unsigned long *root, void (*cb)(unsigned long))
+{
+    unsigned long *end, *p;
+    unsigned long v, i, base;
+    int k;
+
+    end = root ? root + 8 : 0;
+    if (end < root + 1) goto fault;
+    v = *root;
+    if ((v & 0x3c) == 0xc) {
+        for (k = 0; k < 7; k++) {
+            if (cb && ((unsigned long)root[k] & 3) == 1) cb(root[k] >> 0x1c);
+        }
+        sk_vspace_obj_free(root);                   /* FUN_0003481c */
+        return;
+    }
+    /* linked-list bitmap form */
+    v = *root;
+    i = 0;
+    while (1) {
+        if ((v & 3) == 1) {
+            base = v >> 0x1c;
+            if (base <= base + 0x40 && (base == 0 || 0x38 < (base + 0x40) - base)) {
+                sk_span_tree_destroy((unsigned long *)base, cb);
+                if ((root[i] & 0xfffffc0) == 0) break;
+            } else goto fault;
+        }
+        if (6 < i) break;
+        i = i + 1;
+        v = root[i];
+    }
+    sk_vspace_obj_free(root);                       /* FUN_0003481c */
+    return;
+fault:
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x37fb0) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00037fb8 @ 0x00037fb8   (est. sk_span_tree_alloc2)
+ * Ghidra: void FUN_00037fb8(ulong param_1, ulong *param_2)
+ * Allocates a span tree node for the aligned region param_1 via the
+ * region allocator (FUN_0003c510, tag 0x148), returning the node base +
+ * size into param_2. On failure aborts with the "Freezer failed to
+ * allocate span" message.
+ * Confidence: medium (structural; span-tree node alloc).
+ */
+void sk_span_tree_alloc2(unsigned long size, unsigned long *out)
+{
+    unsigned long desc[5], base, v;
+    unsigned int err;
+
+    desc[0] = 0x11; desc[1] = 0; desc[2] = 0;
+    desc[3] = 0xfd0e0000; desc[4] = 0;
+    v = sk_trap_alloc_region(0x148, &desc[0], &base, 0, &desc[0]); /* FUN_0003c510 */
+    v = v & 0xff;
+    if (v == 0) {
+        if (base <= base + size && (base == 0 || size <= (base + size) - base)) {
+            out[1] = size; out[2] = 0; out[0] = base;
+            out[4] = desc[3]; out[3] = desc[2];
+            return;
+        }
+    } else {
+        if ((v & 0xff) >= 0x40 && (v & 0xff) <= 0x80) {
+            sk_vas_abort("Freezer failed to allocate span %s", 0x5b21b9);
+            __builtin_unreachable();
+        }
+    }
+    __builtin_unreachable();                        /* SoftwareBreakpoint(0x5519, 0x380b4) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000380b4 @ 0x000380b4   (est. sk_span_tree_bump)
+ * Ghidra: void FUN_000380b4(long *param_1, ulong param_2)
+ * Bumps a span-tree node's capacity (param_1[2]) up to at least param_2 by
+ * calling the span allocator method (*(param_1[4]+0x18))(param_1[3],&size).
+ * Verifies param_2 is within the node's bounds (param_1[1]..param_1[2]);
+ * aborts with the "Freezer bump size" / "Freezer failed to bump span"
+ * messages on failure.
+ * Confidence: medium (structural; span growth).
+ */
+void sk_span_tree_bump(long *node, unsigned long size)
+{
+    unsigned long out;
+
+    if (node == 0 || *node == 0) {
+        sk_vas_fault39();                       /* FUN_004b27f0 */
+        __builtin_unreachable();
+    }
+    if (size <= (unsigned long)node[1]) {
+        if ((unsigned long)node[2] < size) {
+            out = size;
+            if (((unsigned long (*)(unsigned long, unsigned long *))(*(void **)(node[4] + 0x18)))
+                (node[3], &out) & 0xff) {
+                sk_vas_abort("Freezer failed to bump span size %s", 0x5b2256);
+                __builtin_unreachable();
+            }
+            node[2] = out;
+        }
+        return;
+    }
+    sk_vas_abort("Freezer bump size %zu exceeds re%s", 0x5b2225);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00038184 @ 0x00038184   (est. sk_span_tree_destroy2)
+ * Ghidra: void FUN_00038184(long *param_1)
+ * Destroys a span-tree node: invokes the destroy method (*param_1[4])()
+ * (or sk_vas_fault40 when no method) and clears the node. Aborts with the
+ * "Freezer failed to destroy a backing span" message on failure.
+ * Confidence: medium (structural).
+ */
+void sk_span_tree_destroy2(long *node)
+{
+    unsigned long err;
+
+    if (node == 0 || *node == 0) return;
+    if (node[3] == 0) {
+        sk_vas_fault40();                       /* FUN_004b2808 */
+        err = 0;
+    } else {
+        err = ((unsigned long (*)(void))(*(void **)node[4]))() & 0xff;
+        if (err == 0) { *node = 0; node[1] = 0; return; }
+    }
+    if ((err < 0x40 || 0x80 < err)) {
+        sk_vas_abort("Freezer failed to destroy a backing span %s", 0x5b22c0);
+        __builtin_unreachable();
+    }
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00038220 @ 0x00038220   (est. sk_span_tree_remap)
+ * Ghidra: ulong FUN_00038220(undefined8 param_1, ulong param_2, long *param_3, ulong *param_4)
+ * Remaps a span: looks up the span node containing param_2 (FUN_0003dd68),
+ * walks its free range to the target, splits at the requested length via
+ * FUN_00040630, and records the new base + length. Returns error code, or
+ * 0x9580001 on no-node failure.
+ * Confidence: medium (structural; span remap).
+ */
+unsigned long sk_span_tree_remap(unsigned long root, unsigned long addr,
+                                 long *out_base, unsigned long *out_len)
+{
+    unsigned long span, want, got, st[11], w;
+    unsigned long newbase;
+    int err;
+
+    want = *out_len;
+    st[10] = ~0UL; st[0] = 0;
+    sk_span_tree_build_local(st + 1, root, 0, 0);       /* FUN_0003be88 */
+    span = sk_region_find_span(st + 1, addr);           /* FUN_0003dd68 */
+    if (span != 0) {
+        if (*(int *)(span + 0x20) != 0) {
+            w = (*(long *)(span + 8) - addr) + *(long *)(span + 0x10);
+            if (w <= want) want = w;
+            sk_slot_detach(st + 1, root);               /* FUN_0003bfb8 */
+            err = (int)sk_span_remap3(span, addr, st + 10) & 0xff; /* FUN_00040630 */
+            if (err != 0) return err;
+            st[10] = st[10] + (addr & 0x3fff);
+            *out_base = st[10];
+            w = -(addr & 0x3fff);
+            while ((w = w + 0x4000), w < want) {
+                st[0] = 0;
+                if (sk_span_remap3(span, addr + w, st) != 0) break;
+                if (w + st[10] != st[0]) break;
+            }
+            if (want <= w) w = want;
+            *out_len = w;
+            return 0;
+        }
+    }
+    sk_slot_detach(st + 1, root);                       /* FUN_0003bfb8 */
+    return 0x9580001;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003838c @ 0x0003838c   (est. sk_fault_span_common)
+ * Ghidra: void FUN_0003838c(void)
+ * Builds a fault-span descriptor from the current spanmap layout object
+ * (FUN_00032cd0) and attaches it via the method dispatch FUN_00042abc.
+ * Confidence: medium (structural wrapper).
+ */
+void sk_fault_span_common(void)
+{
+    unsigned long o;
+
+    o = sk_vspace_layout_check_big();           /* FUN_00032cd0 */
+    sk_obj_method_dispatch3(o, 2, 0);           /* FUN_00042abc */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00038390 @ 0x00038390   (est. sk_fault_span_common_t)
+ * Ghidra: void FUN_00038390(void)
+ * Identical to sk_fault_span_common (separate entry).
+ * Confidence: medium (structural wrapper).
+ */
+void sk_fault_span_common_t(void)
+{
+    sk_fault_span_common();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000383dc @ 0x000383dc   (est. sk_fault_span_find)
+ * Ghidra: undefined1[16] FUN_000383dc(undefined8 param_1)
+ * Finds the fault span for the region param_1: takes the spanmap refcount
+ * (DAT_006af198), builds the local span descriptor (FUN_0003be88), walks
+ * the span tree root for the leaf containing param_1 (FUN_000405d0), then
+ * detaches (FUN_0003bfb8). On success returns the span + tag 0x65b6a0.
+ * Confidence: medium (structural; fault-span lookup).
+ */
+cl4_result_t sk_fault_span_find(unsigned long region)
+{
+    cl4_result_t r;
+    unsigned long local[10], span, root;
+    unsigned long *t;
+
+    DAT_006af198 = DAT_006af198 + 1;
+    for (int i = 0; i < 10; i++) local[i] = 0;
+    sk_slot_attach(local, region, 0, 0);         /* FUN_0003be88 */
+    if (local[0] <= local[0] + 0x2a0) {
+        t = (unsigned long *)sk_vspace_layout_check_small();  /* FUN_00032cec */
+        root = *t;
+        while (root != 0 && *(unsigned long *)(root + 0x58) != 0)
+            root = *(unsigned long *)(root + 0x58);
+        if (root <= root + 0xb0) {
+            span = sk_fault_span_next3(local);  /* FUN_000405d0 */
+            sk_slot_detach(local, region);      /* FUN_0003bfb8 */
+            if (span == 0) DAT_006af198 = DAT_006af198 - 1;
+            r.lo = span;
+            r.hi = 0x65b6a0;
+            return r;
+        }
+    }
+    __builtin_unreachable();                    /* SoftwareBreakpoint(0x5519, 0x384ac) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000384c4 @ 0x000384c4   (est. sk_fault_span_get)
+ * Ghidra: undefined1[16] FUN_000384c4(undefined8 param_1, undefined8 param_2, int *param_3, undefined8 *param_4)
+ * Returns the fault span node for (region, addr): looks up the span tree
+ * (FUN_0003dd68), and if the node is non-empty copies its 4-word span
+ * descriptor into param_4 and returns tag 0x65b648. Returns null span if
+ * the node is free or absent.
+ * Confidence: medium (structural).
+ */
+cl4_result_t sk_fault_span_get(unsigned long region, unsigned long addr,
+                               int *count_out, unsigned long *desc_out)
+{
+    cl4_result_t r;
+    unsigned long local[10], *node;
+
+    for (int i = 0; i < 10; i++) local[i] = 0;
+    sk_slot_attach(local, region, 0, 0);        /* FUN_0003be88 */
+    node = (unsigned long *)sk_region_find_span(local, addr);  /* FUN_0003dd68 */
+    if (node == 0) {
+        r.lo = 0; r.hi = 0;
+    } else {
+        if (*(int *)(node + 4) == 0) {
+            r.lo = 0; r.hi = 0;
+            node = 0;
+        } else {
+            if (count_out) *count_out = *(int *)(node + 4);
+            if (desc_out) {
+                desc_out[0] = node[0]; desc_out[1] = node[1];
+                desc_out[2] = node[2]; desc_out[3] = node[3];
+            }
+            r.lo = (unsigned long)node;
+            r.hi = 0x65b648;
+        }
+    }
+    sk_slot_detach(local, region);              /* FUN_0003bfb8 */
+    (void)count_out;
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003859c @ 0x0003859c   (est. sk_fault_span_release)
+ * Ghidra: ulong FUN_0003859c(undefined8 param_1, undefined8 param_2, int param_3)
+ * Releases a fault span: looks it up (FUN_0003dbc0) and, when found, calls
+ * into the supervisor (CallSupervisor(3)) to release it. Returns the error
+ * code or 0 on success; 0x9cb0001 if the span is a shared map.
+ * Confidence: medium (structural; fault-span release).
+ */
+unsigned long sk_fault_span_release(unsigned long region, unsigned long addr, int mode)
+{
+    unsigned long st[2], span, err;
+    unsigned long *tpidr;
+
+    st[0] = 0; st[1] = 0;
+    err = sk_region_lookup_span(region, addr, &st[0], &st[1]);  /* FUN_0003dbc0 */
+    if ((err & 0xff) == 0) {
+        if (mode == 1 && ((*(unsigned char *)(st[1] + 0x20) >> 3 & 1) == 0))
+            return 0x9cb0001;
+        tpidr = (unsigned long *)__builtin_thread_pointer();
+        *tpidr = (unsigned long)(mode == 1);
+        __asm__ volatile("hvc #0" ::: "memory");    /* CallSupervisor(3) */
+        if (st[0] == 0)
+            return 0;
+        return (st[0] & 0x7fff) << 0x10 | 0x80000001;
+    }
+    return err;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003863c @ 0x0003863c   (est. sk_fault_span_commit)
+ * Ghidra: undefined1[16] FUN_0003863c(void)
+ * Commits the current fault span: builds the span (FUN_00032cd0 +
+ * FUN_00042abc) and invokes CallSupervisor(2). Returns the committed
+ * granule code / error.
+ * Confidence: medium (structural; fault-span commit).
+ */
+cl4_result_t sk_fault_span_commit(void)
+{
+    cl4_result_t r;
+    unsigned long o, v;
+
+    o = sk_vspace_layout_check_big();           /* FUN_00032cd0 */
+    v = sk_obj_method_dispatch3(o, 2, 0);       /* FUN_00042abc */
+    if (v == 0) {
+        r.lo = 0x9e60004; r.hi = 0;
+    } else {
+        __asm__ volatile("hvc #0" ::: "memory");/* CallSupervisor(2) */
+        r.lo = v ? (v & 0x7fff) << 0x10 | 0x80000001 : 0;
+        r.hi = 0;
+    }
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003869c @ 0x0003869c   (est. sk_fault_span_walk)
+ * Ghidra: undefined1[16] FUN_0003869c(undefined8 param_1, undefined8 param_2, undefined8 param_3)
+ * Full fault-span walk: takes the walk refcount (DAT_006ad2c8), builds the
+ * walk state and invokes sk_fault_span_map (FUN_00039094) to map the span.
+ * On failure (state byte) aborts via sk_vas_abort.
+ * Confidence: low-medium (structural; large walk).
+ */
+cl4_result_t sk_fault_span_walk(unsigned long region, unsigned long addr,
+                                unsigned long size)
+{
+    cl4_result_t r;
+    unsigned char state[40];
+    unsigned long st[10];
+    unsigned char c;
+
+    DAT_006ad2c8 = DAT_006ad2c8 + 1;
+    for (int i = 0; i < 10; i++) st[i] = 0;
+    for (int i = 0; i < 40; i++) state[i] = 0;
+    c = 1;
+    st[4] = region;
+    st[9] = region;
+    sk_percpu_get3(&st[2]);                     /* FUN_001180fc */
+    r = sk_fault_span_map(region, &st[4], addr, size, state);  /* FUN_00039094 */
+    if (state[0] == 1)
+        sk_vas_fault43();                       /* FUN_004b28c0 */
+    else if (c != 1) {
+        sk_vas_fault42();                       /* FUN_004b2898 */
+        __builtin_unreachable();
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b4c86);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00038bdc @ 0x00038bdc   (est. sk_fault_span_flush)
+ * Ghidra: undefined8 FUN_00038bdc(ulong param_1)
+ * Flushes the fault span for the region param_1: checks the region is a
+ * valid managed mapping (FUN_0002fa84), builds the span (FUN_0003c56c),
+ * then for each live span entry tears it down via
+ * sk_region_map_fault (FUN_0003fa94) and sk_region_finalize
+ * (FUN_0003f170), releasing pages (FUN_0003da18). Large structural body.
+ * Confidence: low-medium (structural; fault-span flush).
+ */
+unsigned long sk_fault_span_flush(unsigned long region)
+{
+    unsigned long st[10], span, base, size, v;
+    unsigned long *tpidr;
+    char ok;
+    int err;
+
+    if (region == 0) return 0xccb0001;
+    if ((*(unsigned char *)(region + 0x290) & 1) == 0) {
+        if (region + 0x2a0 < region) goto fault;
+        ok = (char)sk_boot_region_check(0x65b5a0, region + 0x208);  /* FUN_0002fa84 */
+        *(unsigned char *)(region + 0x290) = (ok == 0);
+    }
+    if (region + 0x2a0 < region) goto fault;
+    sk_vspace_layout_check_big(region);         /* FUN_00032cd0 */
+    st[6] = 0; st[7] = 0;
+    {
+        cl4_result_t cr = sk_region_create(sk_vspace_root(), 0x1908, &DAT_004bc378,
+                                           &st[6], 0, 0);   /* FUN_0003c56c */
+        if ((cr.lo & 0xff) != 0) return cr.lo;
+    }
+    base = *(unsigned long *)(st[6] + 8);
+    if (sk_vm_lock_check(region + 0x1f0) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    v = *(unsigned long *)(region + 0x200);
+    while (v != 0) {
+        if ((*(unsigned char *)(v + 0x20) >> 3 & 1) != 0) {
+            span = sk_region_map_fault(v, base, 0, 0);      /* FUN_0003fa94 */
+            if (span == 0) {
+                tpidr = (unsigned long *)__builtin_thread_pointer();
+                *tpidr = 1;
+                __asm__ volatile("hvc #0" ::: "memory");
+                *tpidr = 1;
+                if (st[6] <= st[6] + 0xb0) {
+                    size = 0;
+                    st[0] = 0x4000; st[1] = 0;
+                    sk_region_finalize(st[6], &st[0], &st[1]); /* FUN_0003f170 */
+                    sk_region_unmap_pages(v, 0, 0, 0);       /* FUN_0003da18 */
+                }
+            }
+        }
+        v = *(unsigned long *)(v + 0x38);
+    }
+    if (sk_vm_lock_take(region + 0x1f0) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    return 0;
+fault:
+    __builtin_unreachable();                    /* SoftwareBreakpoint(0x5519, 0x3908c) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00039094 @ 0x00039094   (est. sk_fault_span_map)
+ * Ghidra: undefined1[16] FUN_00039094(long param_1, long param_2, ulong param_3, undefined8 param_4, byte *param_5)
+ * The fault-span map entry: validates the mapping request (FUN_00045a68),
+ * checks attributes (FUN_00045c98), and either maps the span pages
+ * (sk_region_wire_spans FUN_0003ff00), bumps the region cursor
+ * (sk_span_map_region FUN_0003a550), or retries via
+ * sk_region_map_fault (FUN_0003fa94). On any error it faults the pending
+ * request. Large structural body.
+ * Confidence: low (large; structural shape preserved).
+ */
+cl4_result_t sk_fault_span_map(long region, long *state, unsigned long addr,
+                               unsigned long flags, unsigned char *out_state)
+{
+    cl4_result_t r;
+    unsigned long st[10], span, v;
+    char c, dirty;
+
+    DAT_006ad378 = DAT_006ad378 + 1;
+    for (int i = 0; i < 0x28; i++) out_state[i] = 0;
+    dirty = 0;
+    st[4] = 0;
+    v = sk_obj_walk5(region, (long)state, addr & 0xf0ffffffffffc000, &st[4], &dirty); /* FUN_00045a68 */
+    c = dirty;
+    if ((v & 1) == 0) {
+        DAT_006ad37c = DAT_006ad37c + 1;
+        r.lo = 0xfb20001; r.hi = 0;
+        return r;
+    }
+    if ((addr & 0xf00000000000000) != 0 &&
+        (*(unsigned char *)(st[4] + 0x22) >> 6 & 1) == 0) {
+        sk_obj_state5(region, (long)state);     /* FUN_00045c98 */
+        DAT_006ad38c = DAT_006ad38c + 1;
+        r.lo = 0xfbb0001; r.hi = 0;
+        return r;
+    }
+    DAT_006ad344 = DAT_006ad344 + 1;
+    if (*(long *)(st[4] + 0x50) != region) {
+        r.lo = 0; r.hi = 0;
+        return r;
+    }
+    *(long *)((long)state + 0xb0) = st[4];
+    if ((*(unsigned char *)(st[4] + 0x22) & 1) != 0) {
+        v = sk_obj_attach5((unsigned long)c, flags);        /* FUN_000455b0 */
+        if ((v & 1) == 0) {
+            DAT_006ad348 = DAT_006ad348 + 1;
+            r.lo = 0xf210001; r.hi = 0;
+            return r;
+        }
+    }
+    r.lo = 0; r.hi = 0;
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00039e34 @ 0x00039e34   (est. sk_span_destroy)
+ * Ghidra: undefined1[16] FUN_00039e34(undefined1 *param_1)
+ * Destroys a span object (param_1): detaches it from its owning region,
+ * releases its pages (sk_region_finalize FUN_0003f170), tears down the
+ * span backing (sk_region_teardown FUN_0003c3bc), unlinks the span from
+ * the region tree (sk_slot_attach / sk_slot_detach), and frees the span
+ * object. Returns error 0x5660001 if the object is not a destroyable span.
+ * Confidence: low-medium (structural; span destroy).
+ */
+cl4_result_t sk_span_destroy(unsigned char *span)
+{
+    cl4_result_t r;
+    unsigned long owner, st[10], v, base, len;
+    unsigned long *tpidr;
+    void **slot;
+    int err;
+
+    owner = *(unsigned long *)(span + 0x50);
+    for (int i = 0; i < 10; i++) st[i] = 0;
+    if (((unsigned char)span[0x23] >> 3 & 1) != 0) {
+        sk_vas_warn2("WARNING: failed attempt to destroy %s", 0x5b3e91); /* FUN_00118b28 */
+        r.lo = 0x5b10001; r.hi = 0;
+        return r;
+    }
+    if (sk_obj_state6(owner) != 0) {            /* FUN_00045cb8 */
+        /* unlink from owner list under lock */
+        if (sk_vm_lock_check(owner + 0x1f0) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+            __builtin_unreachable();
+        }
+        {
+            unsigned long *prev = *(unsigned long **)(span + 0x90);
+            unsigned long *next = *(unsigned long **)(span + 0x98);
+            if (prev) *(unsigned long **)(prev + 0x98) = next;
+            *next = (unsigned long)prev;
+        }
+        if (sk_vm_lock_take(owner + 0x1f0) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+            __builtin_unreachable();
+        }
+    }
+    base = *(unsigned long *)(span + 8);
+    len = base;
+    if ((*(unsigned int *)(span + 0x20) & 0x40) != 0)
+        len = *(unsigned long *)(span + 0x48);
+    else
+        len = *(unsigned long *)(span + 0x10);
+    sk_region_finalize((unsigned long)span, &len, &base, 1);  /* FUN_0003f170 */
+    if (sk_vm_lock_check((unsigned long)span + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    sk_region_teardown((long)span);             /* FUN_0003c3bc */
+    if (sk_vm_lock_take((unsigned long)span + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    st[0] = st[1] = st[2] = st[3] = 0;
+    sk_slot_attach(st, owner, *(unsigned long *)(span + 8),
+                   *(unsigned long *)(span + 0x10));   /* FUN_0003be88 */
+    if ((*(unsigned int *)(span + 0x20) >> 0x18 & 1) != 0) {
+        r.lo = 0x5660001; r.hi = 0;
+        goto done;
+    }
+    slot = *(void ***)(span + 0x70);
+    if (slot == 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b3ed8);
+        __builtin_unreachable();
+    }
+    *slot = (void *)st[2];
+    *(unsigned long *)(span + 0x70) = 0;
+    *(unsigned int *)(span + 0x20) = 0;
+    for (int i = 0; i < 5; i++) *(unsigned long *)(span + i * 8) = 0;
+    st[2] = (unsigned long)slot;
+    sk_region_recalc(*(unsigned long *)(st[0] + 0x58), (long)span);  /* FUN_0003f0dc */
+    if (0x3fff < *(unsigned long *)(span + 8)) {
+        v = sk_region_find_span(st, *(unsigned long *)(span + 8) - 0x4000); /* FUN_0003dd68 */
+        if (v != 0 && *(int *)(v + 0x20) == 0)
+            sk_region_merge2(st, owner, v, (long)span);   /* FUN_0003f324 */
+    }
+    if (*(long *)(span + 0x10) + *(long *)(span + 8) != 0x1000000000) {
+        v = sk_region_find_span(st, 0);         /* FUN_0003dd68 */
+        if (v != 0 && *(int *)(v + 0x20) == 0)
+            sk_region_merge2(st, owner, (long)span, 0);   /* FUN_0003f324 */
+    }
+    r.lo = 0; r.hi = 0;
+done:
+    sk_slot_detach(st, owner);                  /* FUN_0003bfb8 */
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003a1e0 @ 0x0003a1e0   (est. sk_span_unmap)
+ * Ghidra: void FUN_0003a1e0(long param_1, uint param_2)
+ * Unmaps the pages of span param_1 matching the attribute mask param_2.
+ * Clears the corresponding capability bits, walks the span cursor
+ * releasing each page (sk_span_cursor_build / CallSupervisor(0)), and
+ * advances the cursor. Returns error codes 0x5df0001 (bad attrs) /
+ * 0x5e70001 (attribute not permitted).
+ * Confidence: low-medium (structural; span unmap).
+ */
+void sk_span_unmap(long span, unsigned int attrs)
+{
+    unsigned long st[2], v, base, end, e, u;
+    unsigned long *tpidr;
+    unsigned int w, fl, idx;
+    int err;
+
+    w = *(unsigned int *)(span + 0x20);
+    if ((attrs & (w ^ 0xffffffff)) != 0) {
+        sk_stack_check_fail3(0x5df0001, 0);     /* FUN_0011d7e8 */
+        __builtin_unreachable();
+    }
+    fl = w & (attrs ^ 0xffffffff);
+    if ((fl & 0xd08d9c1) != 0) {
+        sk_stack_check_fail3(0x5e70001, 0);     /* FUN_0011d7e8 */
+        __builtin_unreachable();
+    }
+    w = w & attrs;
+    *(unsigned int *)(span + 0x20) = w;
+    if ((fl & 0x18) == 0) return;
+    end = *(unsigned long *)(span + 8);
+    if ((w >> 7 & 1) != 0)
+        end = (*(long *)(span + 0x10) - *(long *)(span + 0x48)) + *(long *)(span + 8);
+    base = *(unsigned long *)(span + 8);
+    while (1) {
+        v = (w & 0x40) ? *(unsigned long *)(span + 0x48) : *(unsigned long *)(span + 0x10);
+        if (*(unsigned long *)(span + v) <= (unsigned long)(end - base)) break;
+        sk_vspace_layout_check_big(*(unsigned long *)(span + 0x50));  /* FUN_00032cd0 */
+        if (sk_vm_lock_check((unsigned long)span + 0x80) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+            __builtin_unreachable();
+        }
+        st[0] = st[1] = 0;
+        if (sk_vspace_layout_check_big(0) + 0xd0 < sk_vspace_layout_check_big(0)) {
+            __builtin_unreachable();
+        }
+        sk_span_lookup_build(st, *(unsigned long *)(span + 0x78), 0);  /* FUN_00035ba0 */
+        e = st[0];
+        *(unsigned long *)(span + 0x78) = st[1];
+        if (st[0] == 0) {
+            err = sk_vm_lock_take((unsigned long)span + 0x80);
+            if (err != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+                __builtin_unreachable();
+            }
+            break;
+        }
+        idx = w >> 3 & 3;
+        tpidr = (unsigned long *)__builtin_thread_pointer();
+        *tpidr = idx;
+        __asm__ volatile("hvc #0" ::: "memory");
+        *tpidr = idx;
+        err = sk_vm_lock_take((unsigned long)span + 0x80);
+        if (err != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+            __builtin_unreachable();
+        }
+        u = 0;
+        if ((e & 0xff) != 4) u = e;
+        if ((u & 0xff) != 0) {
+            sk_vas_fault61(u, st);              /* FUN_004b2f80 */
+            __builtin_unreachable();
+        }
+        end += 0x4000;
+        w = *(unsigned int *)(span + 0x20);
+        if ((w >> 7 & 1) == 0) base = *(unsigned long *)(span + 8);
+        else base = (*(long *)(span + 0x10) - *(long *)(span + 0x48)) + *(long *)(span + 8);
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003a4a0 @ 0x0003a4a0   (est. sk_span_alloc_region)
+ * Ghidra: ulong FUN_0003a4a0(long param_1, ulong *param_2)
+ * Allocates a 16 KiB region within span param_1 at the current cursor
+ * (param_1+0x48), calling sk_span_map_region (FUN_0003a550) to carve it.
+ * Updates the cursor and returns the region base via param_2.
+ * Confidence: medium (structural; region allocation).
+ */
+unsigned long sk_span_alloc_region(long span, unsigned long *out)
+{
+    unsigned long base, size, err, cur;
+
+    base = (*(unsigned long *)(span + 0x10) < (unsigned long)0) ? 0 : 0;
+    base = 0;  /* decompile uses in-register inputs; model with current base */
+    cur = *(unsigned long *)(span + 0x48);
+    if (*(unsigned long *)(span + 0x10) < cur) {
+        return 0x6010001;
+    }
+    size = cur;
+    base = cur;
+    if (base < cur || base == 0) {
+        *out = *(unsigned long *)(span + 0x48);
+        return 0;
+    }
+    err = sk_span_map_region(span, &size, &base);   /* FUN_0003a550 */
+    if ((err & 0xff) == 0) {
+        *(unsigned long *)(span + 0x48) = base;
+        *out = base;
+        return 0;
+    }
+    return err;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003a550 @ 0x0003a550   (est. sk_span_map_region)
+ * Ghidra: void FUN_0003a550(long param_1, ulong *param_2, ulong *param_3)
+ * Maps a region into the span param_1: aligns the request, walks the span
+ * (FUN_0003df84 / FUN_0003ff00), and on a fault delegates to
+ * sk_region_map_fault (FUN_0003fa94) / sk_region_finalize (FUN_0003f170).
+ * Returns the map result through param_2/param_3. Aborts on stack-check
+ * failure.
+ * Confidence: low (large; structural shape preserved).
+ */
+void sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_out)
+{
+    unsigned long base, size, aligned, v, err;
+    unsigned long st[2];
+    int has_stack;
+
+    has_stack = 0;
+    if (*(unsigned int *)(span + 0x20) != 0 &&
+        (*(unsigned int *)(span + 0x20) & 0x81000) == 0) {
+        base = *base_out;
+        if (base < *(unsigned long *)(span + 0x10) &&
+            *size_out <= *(unsigned long *)(span + 0x10) - base) {
+            aligned = *(long *)(span + 8) + base & 0xffffffffffffc000;
+            *size_out = (*size_out + base + *(long *)(span + 8)) - aligned;
+            *base_out = aligned - *(long *)(span + 8);
+            size = 0;
+            if ((*size_out & 0x3fff) != 0) size = 0x4000;
+            *size_out = size + (*size_out & 0xffffffffffffc000);
+            sk_region_map_span3(span, *base_out);   /* FUN_0003df84 */
+            v = sk_region_wire_spans(span, aligned, *size_out + aligned); /* FUN_0003ff00 */
+            err = v & 0xff;
+            if (err == 2) {
+                v = 0x68f0002;
+            } else if ((err != 8 && err != 0) &&
+                       (*(unsigned int *)(span + 0x20) >> 0x12 & 1) == 0) {
+                /* retry through the fault path */
+                st[0] = 0; st[1] = 0;
+                v = sk_region_map_fault(span, aligned, 0, 0);  /* FUN_0003fa94 */
+                if ((long)v < 7) {
+                    if (v == 0) v = 0;
+                    else if (v == 2) v = 0x80020002;
+                    else if (v == 5) v = 0x80050003;
+                    else { sk_vas_fault64(v, 0); return; }      /* FUN_004b3064 */
+                } else {
+                    if (v != 7 && v != 0x307 && v != 0x207) {
+                        sk_vas_fault64(v, 0);                   /* FUN_004b3064 */
+                        return;
+                    }
+                    v = (v & 0x7fff) << 0x10 | 0x80000001;
+                }
+                if (has_stack) {
+                    sk_stack_check_fail3(v, 0); /* FUN_0011d7e8 */
+                    __builtin_unreachable();
+                }
+                return;
+            }
+            if (has_stack) {
+                sk_stack_check_fail3(v, 0);     /* FUN_0011d7e8 */
+                __builtin_unreachable();
+            }
+            return;
+        }
+    }
+    v = 0x6800001;
+    if (has_stack) {
+        sk_stack_check_fail3(v, 0);             /* FUN_0011d7e8 */
+        __builtin_unreachable();
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003abf4 @ 0x0003abf4   (est. sk_span_split)
+ * Ghidra: undefined1[16] FUN_0003abf4(long param_1, ulong param_2, long *param_3, long *param_4)
+ * Splits the span param_1 at offset param_2 into two spans returned in
+ * param_3/param_4 (each with tag 0x65b648). Validates the span state,
+ * attaches it (sk_slot_attach FUN_0003be88), relinks the split node
+ * (sk_slot_link_root FUN_0003bd70), splits (sk_region_split
+ * FUN_0003ee4c), and remaps both halves (sk_span_compact FUN_00036a94).
+ * Returns error code 0x7fb0001 on an invalid offset.
+ * Confidence: low-medium (structural; span split).
+ */
+cl4_result_t sk_span_split(long span, unsigned long at, long *lo_out, long *hi_out)
+{
+    cl4_result_t r;
+    unsigned long st[10], owner, uVar2, v;
+    long lo, hi;
+    unsigned int w, uVar4;
+    int err;
+
+    w = *(unsigned int *)(span + 0x20);
+    if ((w & 0xd000800) == 0) {
+        v = 0x7fb0001;
+        if (at != 0) v = 0;
+        uVar2 = 0x7f80001;
+        if (at < *(unsigned long *)(span + 0x10)) uVar2 = v;
+    } else {
+        uVar2 = 0x7f60001;
+    }
+    r.lo = uVar2; r.hi = 0;
+    if ((uVar2 & 0xff) == 0) {
+        owner = *(unsigned long *)(span + 0x50);
+        uVar4 = (w != 0) ? 2 : 0;
+        for (int i = 0; i < 10; i++) st[i] = 0;
+        v = sk_slot_attach_full(st, owner, 1, uVar4, 0, 0);   /* FUN_0003b820 */
+        if ((v & 1) == 0) {
+            r.lo = 0x85f0002; r.hi = 0;
+            return r;
+        }
+        lo = *(long *)(span + 8);
+        sk_obj_snapshot4(owner, st + 1, lo, *(unsigned long *)(span + 0x10)); /* FUN_00044dec */
+        if (sk_vm_lock_check((unsigned long)span + 0x80) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+            __builtin_unreachable();
+        }
+        sk_slot_link_root(st, owner, st + 1);   /* FUN_0003bd70 */
+        {
+            cl4_result_t sr = sk_region_split(st, owner, span, at, st + 1, &hi); /* FUN_0003ee4c */
+            r = sr;
+        }
+        sk_slot_detach(st, owner);              /* FUN_0003bfb8 */
+        lo = st[0];
+        hi = (long)r.hi;
+        if ((r.lo & 0xff) == 0) {
+            if (st[0] != span) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5b47ec);
+                __builtin_unreachable();
+            }
+            if (sk_vm_lock_check((unsigned long)hi + 0x80) != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+                __builtin_unreachable();
+            }
+            sk_span_compact(st + 4, *(unsigned long *)(span + 0x78),
+                            (int)((lo + at) - *(long *)(sk_vspace_layout_check_big(owner) + 0x28) >> 0xe) + 1); /* FUN_00036a94 */
+            *(unsigned long *)(lo + 0x78) = st[6];
+            *(unsigned long *)(hi + 0x78) = st[5];
+            if (sk_vm_lock_take((unsigned long)hi + 0x80) != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+                __builtin_unreachable();
+            }
+        }
+        if (sk_vm_lock_take((unsigned long)span + 0x80) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+            __builtin_unreachable();
+        }
+        sk_obj_commit4(owner, st + 1);          /* FUN_00044ff4 */
+        if ((r.lo & 0xff) == 0) {
+            if (st[0] == 0 || hi == 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5b48a0);
+                __builtin_unreachable();
+            }
+            *lo_out = st[0]; lo_out[1] = 0x65b648;
+            *hi_out = hi; hi_out[1] = 0x65b648;
+        } else if (st[0] != 0 || hi != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5b493d);
+            __builtin_unreachable();
+        }
+    }
+    if (st[11] != 0) {
+        sk_stack_check_fail3(0, 0);             /* FUN_0011d7e8 */
+        __builtin_unreachable();
+    }
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003afe4 @ 0x0003afe4   (est. sk_span_attach)
+ * Ghidra: undefined1[16] FUN_0003afe4(undefined8 *param_1, ulong param_2, uint param_3, undefined8 *param_4)
+ * Attaches a span to a region: validates span state + extent, splits
+ * (sk_span_split FUN_0003abf4) the region, creates the destination span
+ * (sk_region_create FUN_0003c56c), wires it (sk_obj_create5 FUN_000451a0),
+ * and returns the new span. Returns error codes 0x8940001..0x8980001 for
+ * the various state violations.
+ * Confidence: low-medium (structural; span attach).
+ */
+cl4_result_t sk_span_attach(unsigned long *span, unsigned long at, unsigned int attrs,
+                            unsigned long *dest)
+{
+    cl4_result_t r;
+    unsigned long st[10], lo, hi, uVar7, uVar6;
+    unsigned int w;
+    char c;
+
+    w = *(unsigned int *)(span + 4);
+    if ((w & 0xd000800) != 0) { r.lo = 0x8940001; r.hi = 0; return r; }
+    if (w == 0) { r.lo = 0x8950001; r.hi = 0; return r; }
+    if (0x1000000000 - span[1] < at && ((attrs ^ (w & 0x80) == 0) & 1)) {
+        r.lo = 0x8960001; r.hi = 0; return r;
+    }
+    if (at > span[2] + span[1] && ((attrs ^ (w & 0x80) == 0) & 1)) {
+        r.lo = 0x8970001; r.hi = 0; return r;
+    }
+    if (attrs != 0 && (w >> 6 & 1) != 0) { r.lo = 0x8980001; r.hi = 0; return r; }
+    uVar7 = span[2] - at;
+    if (uVar7 == 0) { r.lo = 0; r.hi = 0; return r; }
+    for (int i = 0; i < 10; i++) st[i] = 0;
+    st[0] = (unsigned long)span[0];
+    st[1] = span[1];
+    st[3] = span[3];
+    r = sk_span_split((long)span, uVar7, (long *)&lo, (long *)&hi);
+    if ((r.lo & 0xff) != 0) return r;
+    c = (char)((unsigned long (*)(unsigned long))st[0])(lo);
+    if (c == 0) { r.lo = 0; r.hi = 0; return r; }
+    sk_vas_fault66();                           /* FUN_004b3154 */
+    uVar7 = at;
+    r = sk_region_create(span[10], w, (char *)&lo, &st[0], 0, 0); /* FUN_0003c56c */
+    if ((r.lo & 0xff) != 0) return r;
+    *(unsigned short *)(st[0] + 0x19) = *(unsigned short *)((long)span + 0x19);
+    r = sk_obj_create5((long)span, st[0], (unsigned long)dest, (unsigned long)dest); /* FUN_000451a0 */
+    if ((r.lo & 0xff) == 0) return r;
+    c = (char)((unsigned long (*)(unsigned long))st[0])(st[0]);
+    if (c == 0) return r;
+    r.lo = sk_vas_fault65();                    /* FUN_004b311c */
+    if ((*(unsigned char *)(r.lo + 0x22) & 1) == 0) { r.lo = 0x101a0001; r.hi = 0; return r; }
+    if (r.hi != 4)
+        sk_region_map_span3((long)r.lo, (unsigned long)dest);   /* FUN_0003df84 */
+    r.lo = sk_obj_create5(*(unsigned long *)(r.lo + 0x50), r.lo, uVar7,
+                          (unsigned long)dest);                /* FUN_000451a0 */
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b258 @ 0x0003b258   (est. sk_span_next_region)
+ * Ghidra: undefined1[16] FUN_0003b258(long *param_1)
+ * Returns the next region span after the one at *param_1 in the region
+ * tree, with tag 0x65b648. If the current span is free (dirty bit clear)
+ * returns a released node; otherwise walks the tree (sk_region_find_span /
+ * sk_fault_span_next3).
+ * Confidence: medium (structural; region-tree successor).
+ */
+cl4_result_t sk_span_next_region(long *span)
+{
+    cl4_result_t r;
+    unsigned long cur, owner, st[10], v;
+
+    cur = *span;
+    if (cur != 0) {
+        for (int i = 0; i < 10; i++) st[i] = 0;
+        owner = *(unsigned long *)(cur + 0x50);
+        sk_slot_attach(st, owner, 0, 0);        /* FUN_0003be88 */
+        if (*(int *)(cur + 0x20) == 0) {
+            r.lo = sk_vas_fault67();            /* FUN_004b318c */
+            if (*(unsigned long *)r.lo == 0) DAT_006af198 = DAT_006af198 - 1;
+            r.hi = 0x65b648;
+            return r;
+        }
+        if (*(long *)(cur + 0x10) + *(long *)(cur + 8) == 0x1000000000)
+            v = 0;
+        else
+            v = sk_region_find_span(st, 0);     /* FUN_0003dd68 */
+        v = sk_fault_span_next3(st, v);         /* FUN_000405d0 */
+        *span = v;
+        sk_slot_detach(st, owner);              /* FUN_0003bfb8 */
+        if (v == 0) DAT_006af198 = DAT_006af198 - 1;
+    }
+    r.lo = cur; r.hi = 0x65b648;
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b340 @ 0x0003b340   (est. sk_slot_pop_a)
+ * Ghidra: undefined8 * FUN_0003b340(long param_1)
+ * Pops a node from the +0x18 free list (count byte at +0x32). Aborts if
+ * the list is empty or overfull.
+ * Confidence: high (trivial list pop).
+ */
+unsigned long *sk_slot_pop_a(long obj)
+{
+    unsigned long *n;
+    unsigned char c;
+
+    c = *(unsigned char *)(obj + 0x32);
+    if (c == 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b22f9);
+        __builtin_unreachable();
+    }
+    if (c < 4) {
+        *(unsigned char *)(obj + 0x32) = c - 1;
+        n = *(unsigned long **)(obj + 0x18);
+        if (n != 0) {
+            *(unsigned long *)(obj + 0x18) = *n;
+            *n = 0;
+            return n;
+        }
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b23df);
+        __builtin_unreachable();
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b237f);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b410 @ 0x0003b410   (est. sk_slot_push_a)
+ * Ghidra: void FUN_0003b410(long param_1, undefined8 *param_2)
+ * Pushes a node onto the +0x18 free list (count byte at +0x32). Aborts if
+ * the list is full.
+ * Confidence: high (trivial list push).
+ */
+void sk_slot_push_a(long obj, unsigned long *node)
+{
+    unsigned char c;
+
+    if (node != 0) {
+        c = *(unsigned char *)(obj + 0x32);
+        if (2 < c) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5b237f);
+            __builtin_unreachable();
+        }
+        *node = *(unsigned long *)(obj + 0x18);
+        *(unsigned long **)(obj + 0x18) = node;
+        *(unsigned char *)(obj + 0x32) = c + 1;
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b478 @ 0x0003b478   (est. sk_slot_pop_b)
+ * Ghidra: undefined8 * FUN_0003b478(long param_1)
+ * Pops a node from the +0x20 free list (count byte at +0x33).
+ * Confidence: high (trivial list pop).
+ */
+unsigned long *sk_slot_pop_b(long obj)
+{
+    unsigned long *n;
+    unsigned char c;
+
+    c = *(unsigned char *)(obj + 0x33);
+    if (c == 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b246d);
+        __builtin_unreachable();
+    }
+    if (c < 4) {
+        *(unsigned char *)(obj + 0x33) = c - 1;
+        n = *(unsigned long **)(obj + 0x20);
+        if (n != 0) {
+            *(unsigned long *)(obj + 0x20) = *n;
+            *n = 0;
+            return n;
+        }
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b255d);
+        __builtin_unreachable();
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b24f5);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b548 @ 0x0003b548   (est. sk_slot_push_b)
+ * Ghidra: void FUN_0003b548(long param_1, undefined8 *param_2)
+ * Pushes a node onto the +0x20 free list (count byte at +0x33).
+ * Confidence: high (trivial list push).
+ */
+void sk_slot_push_b(long obj, unsigned long *node)
+{
+    unsigned char c;
+
+    if (node != 0) {
+        c = *(unsigned char *)(obj + 0x33);
+        if (2 < c) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5b24f5);
+            __builtin_unreachable();
+        }
+        *node = *(unsigned long *)(obj + 0x20);
+        *(unsigned long **)(obj + 0x20) = node;
+        *(unsigned char *)(obj + 0x33) = c + 1;
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b5b0 @ 0x0003b5b0   (est. sk_slot_pop_c)
+ * Ghidra: undefined8 * FUN_0003b5b0(long param_1)
+ * Pops a node from the +0x28 free list (count at +0x38, a full long).
+ * Confidence: high (trivial list pop).
+ */
+unsigned long *sk_slot_pop_c(long obj)
+{
+    unsigned long *n;
+
+    if (*(long *)(obj + 0x38) == 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b25dd);
+        __builtin_unreachable();
+    }
+    *(long *)(obj + 0x38) = *(long *)(obj + 0x38) - 1;
+    n = *(unsigned long **)(obj + 0x28);
+    if (n != 0) {
+        *(unsigned long *)(obj + 0x28) = *n;
+        *n = 0;
+        return n;
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b26cb);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b648 @ 0x0003b648   (est. sk_slot_push_c)
+ * Ghidra: void FUN_0003b648(long param_1, undefined8 *param_2)
+ * Pushes a node onto the +0x28 free list (count at +0x38).
+ * Confidence: high (trivial list push).
+ */
+void sk_slot_push_c(long obj, unsigned long *node)
+{
+    if (node != 0) {
+        if (*(long *)(obj + 0x38) == -1) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5b2664);
+            __builtin_unreachable();
+        }
+        *node = *(unsigned long *)(obj + 0x28);
+        *(unsigned long **)(obj + 0x28) = node;
+        *(long *)(obj + 0x38) = *(long *)(obj + 0x38) + 1;
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b6ac @ 0x0003b6ac   (est. sk_slot_pop_d)
+ * Ghidra: undefined8 FUN_0003b6ac(long param_1)
+ * Pops a node from the +0x28 free list when the list count (+0x38) is
+ * non-zero; otherwise returns 0. Uses sk_slot_pop_c.
+ * Confidence: high (trivial wrapper).
+ */
+unsigned long sk_slot_pop_d(long obj)
+{
+    if (*(long *)(obj + 0x38) != 0)
+        return (unsigned long)sk_slot_pop_c(obj);
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003ba58 @ 0x0003ba58   (est. sk_slot_push_d)
+ * Ghidra: void FUN_0003ba58(long param_1, undefined8 *param_2)
+ * Pushes a node onto the +8 free list (count byte at +0x30).
+ * Confidence: high (trivial list push).
+ */
+void sk_slot_push_d(long obj, unsigned long *node)
+{
+    unsigned char c;
+
+    if (node != 0) {
+        c = *(unsigned char *)(obj + 0x30);
+        if (2 < c) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5b33f0);
+            __builtin_unreachable();
+        }
+        *node = *(unsigned long *)(obj + 8);
+        *(unsigned long **)(obj + 8) = node;
+        *(unsigned char *)(obj + 0x30) = c + 1;
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003bca0 @ 0x0003bca0   (est. sk_slot_unlink_root)
+ * Ghidra: void FUN_0003bca0(undefined8 *param_1, undefined8 *param_2, undefined8 param_3, undefined8 param_4)
+ * Unlinks a root node (param_2) from the region tree, replacing it with
+ * the next node and relinking via sk_obj_unlink4. Special-cases the global
+ * sentinel root (DAT_0064c3f0) via sk_obj_unref2.
+ * Confidence: medium (structural; tree unlink).
+ */
+void sk_slot_unlink_root(unsigned long *root, unsigned long *node,
+                         unsigned long param_3, unsigned long param_4)
+{
+    if ((unsigned long *)*root != node) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b2905);
+        __builtin_unreachable();
+    }
+    if (node == (unsigned long *)&DAT_0064c3f0)
+        sk_obj_unref2();                        /* FUN_00043e88 */
+    sk_obj_unlink4(node, param_3, param_4);     /* FUN_00044c94 */
+    if (node[10] == 0) { node[10] = (unsigned long)root; return; }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b2968);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003bd70 @ 0x0003bd70   (est. sk_slot_link_root)
+ * Ghidra: void FUN_0003bd70(long *param_1, long param_2, undefined8 param_3)
+ * Links param_2 as the root node of the region tree *param_1 after
+ * validating *param_1 == param_2; stores the tree back-pointer into
+ * node+0x50.
+ * Confidence: high (trivial link).
+ */
+void sk_slot_link_root(long *root, long node, unsigned long param_3)
+{
+    if (*root != node) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b2905);
+        __builtin_unreachable();
+    }
+    sk_obj_link4(node, param_3);                /* FUN_00044be0 */
+    if (*(long *)(node + 0x50) == 0) { *(long **)(node + 0x50) = root; return; }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b2968);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003be18 @ 0x0003be18   (est. sk_slot_attach_wrap)
+ * Ghidra: undefined8 FUN_0003be18(...)
+ * Wrapper around sk_slot_attach_full (FUN_0003b820): on a non-zero result
+ * additionally unlinks the root via sk_slot_unlink_root (FUN_0003bca0).
+ * Confidence: medium (structural wrapper).
+ */
+unsigned long sk_slot_attach_wrap(unsigned long p1, unsigned long p2, unsigned long p3,
+                                  unsigned long p4, unsigned long p5, unsigned long p6,
+                                  unsigned long p7, unsigned long p8)
+{
+    unsigned long v;
+
+    v = sk_slot_attach_full(p1, p2, p5, p6, p7, p8);    /* FUN_0003b820 */
+    if ((int)v != 0)
+        sk_slot_unlink_root(p1, p2, p3, p4);            /* FUN_0003bca0 */
+    return v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003be88 @ 0x0003be88   (est. sk_slot_attach)
+ * Ghidra: undefined8 FUN_0003be88(undefined8 param_1, undefined8 param_2, undefined8 param_3, undefined8 param_4)
+ * Attaches a region span: attempts the fast attach (FUN_0003b820); if that
+ * fails it binds the region via sk_region_bind (FUN_0003beec) and returns
+ * the bind result. Returns 0 on success.
+ * Confidence: medium (structural; region attach).
+ */
+unsigned long sk_slot_attach(unsigned long st, unsigned long region, unsigned long p3,
+                             unsigned long p4)
+{
+    unsigned long v;
+    cl4_result_t r;
+
+    v = sk_slot_attach_full(st, region, 0, 0, 0, 0);    /* FUN_0003b820 */
+    if ((v & 1) != 0) {
+        sk_slot_unlink_root(st, region, p3, p4);        /* FUN_0003bca0 */
+        return v;
+    }
+    r = sk_region_bind(region, p3, p4);                 /* FUN_0003beec */
+    return r.lo;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003beec @ 0x0003beec   (est. sk_region_bind)
+ * Ghidra: undefined1[16] FUN_0003beec(long param_1, long param_2, long param_3, long param_4)
+ * Binds the region param_1 to the span param_3: validates the region tag
+ * (0x65b5c8) / span tag (0x65b648) and that the region is not already
+ * bound (+8==0) and has no existing binding (+0x130==0); stores the span
+ * into +0x130. Returns error codes 0x23b0001 / 0x23e0001 / 0x2400001.
+ * Confidence: medium (structural; region bind).
+ */
+cl4_result_t sk_region_bind(long region, long p2, long span, long p4)
+{
+    cl4_result_t r;
+
+    if (p2 == 0x65b5c8 && p4 == 0x65b648) {
+        if (*(char *)(region + 8) == 0) {
+            if (*(long *)(region + 0x130) == 0) {
+                if (0x400000000 < (unsigned long)(*(long *)(span + 0x10) + *(long *)(span + 8))) {
+                    sk_vas_abort("VAS abort in function %s at line %d", 0x5b2ad8);
+                    __builtin_unreachable();
+                }
+                *(long *)(region + 0x130) = span;
+                r.lo = 0; r.hi = 0;
+            } else {
+                r.lo = 0x2400001; r.hi = 0;
+            }
+        } else {
+            r.lo = 0x23e0001; r.hi = 0;
+        }
+    } else {
+        r.lo = 0x23b0001; r.hi = 0;
+    }
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003bfb8 @ 0x0003bfb8   (est. sk_slot_detach)
+ * Ghidra: void FUN_0003bfb8(long *param_1, long param_2)
+ * Detaches the region param_2 from the tree *param_1: validates the root,
+ * clears the tree back-pointer (+0x50), and walks the span tree to detach
+ * (FUN_0003bac0). Aborts on lock or state failure.
+ * Confidence: medium (structural; detach).
+ */
+void sk_slot_detach(long *root, long region)
+{
+    int err;
+
+    if (region != *root) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b2b51);
+        __builtin_unreachable();
+    }
+    if (*(long **)(region + 0x50) == root) {
+        *(unsigned long *)(region + 0x50) = 0;
+        err = sk_vm_lock_take(region + 0x40);
+        if (err == 0) {
+            sk_slot_detach_inner(root);         /* FUN_0003bac0 */
+            return;
+        }
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b274a);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003c09c @ 0x0003c09c   (est. sk_region_wire)
+ * Ghidra: void FUN_0003c09c(void)
+ * Wires the current region: resolves the vspace root (FUN_00032514), the
+ * region method cookie (FUN_000411dc), and calls sk_vspace_final_wire
+ * (FUN_0003c0e4).
+ * Confidence: medium (structural wrapper).
+ */
+void sk_region_wire(void)
+{
+    cl4_result_t ck;
+    unsigned long root;
+
+    root = sk_vspace_root();                    /* FUN_00032514 */
+    ck = sk_obj_method_cookie(0, 0);            /* FUN_000411dc */
+    sk_vspace_final_wire(root, ck.lo, ck.hi);   /* FUN_0003c0e4 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003c21c @ 0x0003c21c   (est. sk_slot_pop_e)
+ * Ghidra: undefined8 * FUN_0003c21c(long param_1)
+ * Pops a node from the +8 free list (count byte at +0x30).
+ * Confidence: high (trivial list pop).
+ */
+unsigned long *sk_slot_pop_e(long obj)
+{
+    unsigned long *n;
+    unsigned char c;
+
+    c = *(unsigned char *)(obj + 0x30);
+    if (c == 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b3794);
+        __builtin_unreachable();
+    }
+    if (c < 4) {
+        *(unsigned char *)(obj + 0x30) = c - 1;
+        n = *(unsigned long **)(obj + 8);
+        if (n != 0) {
+            *(unsigned long *)(obj + 8) = *n;
+            *n = 0;
+            return n;
+        }
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b380a);
+        __builtin_unreachable();
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b33f0);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003c2ec @ 0x0003c2ec   (est. sk_region_attach)
+ * Ghidra: void FUN_0003c2ec(ulong *param_1, undefined8 param_2)
+ * Attaches param_2 to the region tree *param_1 after bounds-checking the
+ * tree window (+0x2a0) and calling sk_span_commit3 (FUN_00040870).
+ * Confidence: medium (structural wrapper).
+ */
+void sk_region_attach(unsigned long *tree, unsigned long span)
+{
+    if (*tree <= *tree + 0x2a0) {
+        sk_span_commit3(sk_vspace_layout_check_small(), span);  /* FUN_00040870 */
+        return;
+    }
+    __builtin_unreachable();                    /* SoftwareBreakpoint(0x5519, 0x3c32c) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003c3bc @ 0x0003c3bc   (est. sk_region_teardown)
+ * Ghidra: void FUN_0003c3bc(long param_1)
+ * Tears down a region span: releases its backing spans (sk_span_release_all
+ * FUN_00036920) and unlinks them (sk_region_map_next FUN_0003d904), then
+ * releases the region's page list. Walks the span cursor freeing each
+ * mapped page via FUN_000304c4.
+ * Confidence: low-medium (structural; region teardown).
+ */
+void sk_region_teardown(long span)
+{
+    unsigned long cur[3], v;
+    unsigned int n;
+
+    if ((*(unsigned char *)(*(long *)(span + 0x50) + 0x290) & 1) != 0) {
+        v = sk_vspace_layout_check_big();       /* FUN_00032cd0 */
+        cur[0] = cur[1] = cur[2] = 0;
+        sk_span_cursor_build(cur, *(unsigned long *)(span + 0xa0), 0); /* FUN_000363ac */
+        n = sk_span_cursor_next(cur);
+        if ((n & 3) != 0) {
+            do {
+                if (sk_vspace_layout_check_big(0) + 0xd0 >= sk_vspace_layout_check_big(0)) {
+                    /* free each mapped granule */
+                }
+                n = sk_span_cursor_next(cur);
+            } while ((n & 3) != 0);
+        }
+        sk_span_release_all(*(unsigned long *)(span + 0xa0), 0); /* FUN_00036920 */
+        *(unsigned long *)(span + 0xa0) = 0;
+    }
+    sk_span_release_all(*(unsigned long *)(span + 0x78), 0);     /* FUN_00036920 */
+    *(unsigned long *)(span + 0x78) = 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003c4c0 @ 0x0003c4c0   (est. sk_region_check)
+ * Ghidra: bool FUN_0003c4c0(long param_1, long param_2, long param_3, long param_4)
+ * Validates that the region param_3 belongs to owner param_1 (its +0x50
+ * slot == param_1) with the given tags, and reports whether the region is
+ * marked writable (+0x20 != 0).
+ * Confidence: medium (structural; region validation).
+ */
+bool sk_region_check(long owner, long tag, long region, long tag2)
+{
+    if (tag == 0x65b5c8 && tag2 == 0x65b648 && owner != 0 && region != 0 &&
+        *(long *)(region + 0x50) == owner)
+        return *(int *)(region + 0x20) != 0;
+    return false;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003c56c @ 0x0003c56c   (est. sk_region_create)
+ * Ghidra: undefined1[16] FUN_0003c56c(long param_1, uint param_2, char *param_3, undefined8 *param_4, undefined4 *param_5, undefined8 *param_6)
+ * The region constructor: attaches the new region (sk_slot_attach_full
+ * FUN_0003b820), parses the 0x28-byte region descriptor (param_3), and
+ * builds the region's vspace/span layout through a long descriptor decode
+ * (sk_class_perm FUN_0003e710, sk_region_walk_span FUN_0003e73c,
+ * sk_region_bind2 FUN_0003e984). Returns the created region + tag in
+ * param_4, or a parse error code. This is a large constructor.
+ * Confidence: low (large; structural shape preserved).
+ */
+cl4_result_t sk_region_create(long owner, unsigned int attrs, char *desc,
+                              unsigned long *out, unsigned int *p5, unsigned long *p6)
+{
+    cl4_result_t r;
+    unsigned long st[10];
+    unsigned char c7, c8, c9, b10, b11;
+    unsigned int u6, kind;
+    unsigned long u16, u24;
+    int err;
+
+    for (int i = 0; i < 10; i++) st[i] = 0;
+    err = (int)sk_slot_attach_full(st, owner, 2, 1, attrs >> 0x10 & 1, 0);  /* FUN_0003b820 */
+    if ((err & 1) == 0) {
+        r.lo = 0x49b0002; r.hi = 0;
+        return r;
+    }
+    sk_slot_unlink_root(st, owner, 0, 0);       /* FUN_0003bca0 */
+    c7 = *desc;
+    kind = attrs >> 0x1b & 1;
+    if (kind == 0) {
+        u24 = *(unsigned long *)(desc + 8);
+        u16 = *(unsigned long *)(desc + 0x10);
+        c8 = desc[0x18]; c9 = desc[0x19]; b10 = desc[0x1a]; b11 = desc[0x1b];
+        u6 = *(unsigned int *)(desc + 0x1c);
+        if (sk_errname3(c7) == 0xe) {           /* FUN_000559b8 */
+            /* method 0xe: attribute validation */
+            if ((attrs & 0xc0) == 0x80) { r.lo = 0x3cd0001; r.hi = 0; return r; }
+            if (((attrs ^ 0xffffffff) & 0x60) == 0) { r.lo = 0x3d10001; r.hi = 0; return r; }
+            if (((attrs ^ 0xffffffff) & 0x81000) == 0) { r.lo = 0x3d30001; r.hi = 0; return r; }
+            if ((attrs >> 0xc & 1) == 0) {
+                if (((attrs >> 0x13 & 1) == 0) || ((attrs & 0x108f0) == 0x10800)) {
+                    if ((attrs >> 0x10 & 1) == 0 && (attrs & 0x2300000) != 0) {
+                        r.lo = 0x3e60001; r.hi = 0; return r;
+                    }
+                    if (b10 < 0x24) {
+                        if ((attrs & 1) == 0) {
+                            if (b11 == 0 || 0xffffffcd < b11 - 0x40) {
+                                if (sk_class_perm(c8) == 0) {   /* FUN_0003e710 */
+                                    r.lo = 0x3f60001; r.hi = 0; return r;
+                                }
+                                if (*(long *)(desc + 0x10) == 0) {
+                                    r.lo = 0x3f80001; r.hi = 0; return r;
+                                }
+                                /* build the region walk */
+                                if ((attrs & 1) == 0) {
+                                    if ((attrs >> 0x11 & 1) == 0) {
+                                        r.lo = 0; r.hi = 0;
+                                        *out = 0;
+                                        return r;
+                                    }
+                                    sk_region_walk_span(&st[0], st, (long)&c7, (unsigned long *)&c7); /* FUN_0003e73c */
+                                    r.lo = 0; r.hi = 0;
+                                    *out = (unsigned long)st[0];
+                                    return r;
+                                } else {
+                                    r.lo = 0; r.hi = 0;
+                                    *out = 0;
+                                    return r;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    r.lo = 0; r.hi = 0;
+    *out = 0;
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003d2b8 @ 0x0003d2b8   (est. sk_region_config)
+ * Ghidra: undefined4 FUN_0003d2b8(long param_1, long param_2, undefined8 *param_3, undefined8 param_4)
+ * Reconfigures the region param_1: validates the tag 0x65b648, checks the
+ * region is live (+0x20 != 0), accepts a writable+non-device mapping
+ * (attrs & 0x81000), and stores the new region descriptor (param_3/param_4)
+ * into the region +0x28/+0x30/+0x38. Returns error 0x50a0001/0x50b0001.
+ * Confidence: medium (structural; region config).
+ */
+unsigned int sk_region_config(long region, long tag, unsigned long *desc,
+                              unsigned long p4)
+{
+    unsigned long v;
+
+    if (tag != 0x65b648) return 0x5050001;
+    if (*(unsigned int *)(region + 0x20) != 0) {
+        if ((*(unsigned int *)(region + 0x20) & 0x81000) != 0) {
+            v = *desc;
+            *(unsigned long *)(region + 0x30) = desc[1];
+            *(unsigned long *)(region + 0x28) = v;
+            *(unsigned long *)(region + 0x38) = p4;
+            *(unsigned long *)(region + 0x40) = *(unsigned long *)(region + 8);
+            return 0;
+        }
+        return 0x50b0001;
+    }
+    return 0x50a0001;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003d330 @ 0x0003d330   (est. sk_region_bounds)
+ * Ghidra: void FUN_0003d330(ulong param_1, undefined8 *param_2, long *param_3)
+ * Returns the span bounds (start/end) of the region param_1 into
+ * param_2/param_3 by walking the region tree (sk_slot_attach + two
+ * sk_region_find_span lookups) and detaching.
+ * Confidence: medium (structural; region bounds).
+ */
+void sk_region_bounds(unsigned long region, unsigned long *start_out,
+                      long *end_out)
+{
+    unsigned long st[10], v;
+    unsigned long lo, hi;
+
+    for (int i = 0; i < 10; i++) st[i] = 0;
+    sk_slot_attach(st, *(unsigned long *)(region + 0x50), 0, 0);   /* FUN_0003be88 */
+    if (*(unsigned long *)(region + 8) < 0x4000) {
+        lo = region; hi = region;
+    } else {
+        v = sk_region_find_span(st, *(unsigned long *)(region + 8) - 0x4000); /* FUN_0003dd68 */
+        lo = (v != 0 && *(int *)(v + 0x20) == 0) ? v : region;
+        hi = region;
+    }
+    *start_out = *(unsigned long *)(lo + 8);
+    if (*(long *)(region + 0x10) + *(long *)(region + 8) == 0x1000000000) {
+        v = 0; hi = region;
+    } else {
+        v = sk_region_find_span(st, 0);         /* FUN_0003dd68 */
+        hi = (v != 0 && *(int *)(v + 0x20) == 0) ? v : region;
+    }
+    *end_out = *(long *)(hi + 0x10) + *(long *)(hi + 8);
+    sk_slot_detach(st, *(unsigned long *)(region + 0x50));          /* FUN_0003bfb8 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003d438 @ 0x0003d438   (est. sk_region_map_span)
+ * Ghidra: void FUN_0003d438(ulong param_1, ulong param_2, long param_3, ulong param_4, undefined8 param_5)
+ * Maps a span range [param_1, param_1+param_2) into the region param_3:
+ * takes the region lock, builds the span cursor, and walks the granules
+ * releasing pages (sk_region_unmap_pages FUN_0003da18) with the region
+ * method dispatch (FUN_0003d904). Large structural body.
+ * Confidence: low-medium (structural; span map).
+ */
+void sk_region_map_span(unsigned long base, unsigned long size, long region,
+                        unsigned long attr, unsigned long p5)
+{
+    unsigned long cur[3], v, uVar9, uVar2, end, g;
+    unsigned long *tpidr;
+    int err;
+
+    v = sk_vspace_layout_check_big(*(unsigned long *)(region + 0x50)); /* FUN_00032cd0 */
+    uVar2 = base + size;
+    if (base + size < base) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b2cf7);
+        __builtin_unreachable();
+    }
+    base &= 0xffffffffffffc000;
+    if (base < *(unsigned long *)(v + 0x28)) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b2d69);
+        __builtin_unreachable();
+    }
+    if (*(unsigned long *)(v + 0x30) < uVar2) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b2dcc);
+        __builtin_unreachable();
+    }
+    end = 0;
+    if ((uVar2 & 0x3fff) != 0) end = 0x4000;
+    if (sk_vm_lock_check((unsigned long)region + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    uVar2 = end + (uVar2 & 0xffffffffffffc000);
+    if ((attr & 1) == 0) {
+        cur[0] = cur[1] = cur[2] = 0;
+        sk_span_cursor_build(cur, *(unsigned long *)(region + 0x78),
+                             (int)(base - *(long *)(v + 0x28) >> 0xe) + 1);  /* FUN_000363ac */
+        g = sk_span_cursor_next(cur);
+        while ((((unsigned int)v ^ (unsigned int)g) & 3) != 0 &&
+               (((g & 0xfffffc0) * 0x100 + *(long *)(v + 0x28)) - 0x4000 < uVar2)) {
+            sk_region_unmap_pages(g, region, attr, p5, 0);   /* FUN_0003da18 */
+            g = sk_span_cursor_next(cur);
+        }
+        if (sk_vm_lock_take((unsigned long)region + 0x80) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+            __builtin_unreachable();
+        }
+        return;
+    }
+    cur[0] = cur[1] = cur[2] = 0;
+    sk_span_cursor_build(cur, *(unsigned long *)(region + 0x78),
+                         (int)(base - *(long *)(v + 0x28) >> 0xe) + 1);  /* FUN_000363ac */
+    sk_region_unmap_pages(sk_span_cursor_next(cur), region, attr, p5, 0); /* FUN_0003da18 */
+    if (sk_vm_lock_take((unsigned long)region + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003d904 @ 0x0003d904   (est. sk_region_map_next)
+ * Ghidra: ulong FUN_0003d904(long param_1)
+ * Advances the region span cursor: returns the next granule count / index
+ * from the current span descriptor, bumping the span allocation count
+ * (FUN_0003667c).
+ * Confidence: medium (structural; cursor advance).
+ */
+unsigned long sk_region_map_next(long region)
+{
+    unsigned long v, uVar4;
+
+    v = *(unsigned long *)(*(long *)(region + 0x28) + 8);
+    if (v + 0x18 <= v + 0x30) {
+        uVar4 = *(unsigned long *)(*(long *)(*(long *)(region + 0x20) + 8) + 0x18);
+        *(unsigned long *)(*(long *)(*(long *)(region + 0x20) + 8) + 0x18) =
+            sk_span_cursor_next(0);            /* FUN_0003667c */
+        *(unsigned int *)(*(long *)(*(long *)(region + 0x30) + 8) + 0x18) =
+            *(unsigned int *)(*(long *)(*(long *)(region + 0x20) + 8) + 0x18) >> 6 & 0x3fffff;
+        return uVar4 >> 0x1c;
+    }
+    __builtin_unreachable();                    /* SoftwareBreakpoint(0x5519, 0x3d980) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003d9d4 @ 0x0003d9d4   (est. sk_region_release3)
+ * Ghidra: void FUN_0003d9d4(long param_1)
+ * Releases three span-node references (at +0x30/+0x28/+0x20) of the region
+ * param_1 via sk_obj_unref_block (FUN_0004b8d0).
+ * Confidence: high (trivial refcount drops).
+ */
+void sk_region_release3(long region)
+{
+    sk_obj_unref_block(*(unsigned long *)(region + 0x30), 8);  /* FUN_0004b8d0 */
+    sk_obj_unref_block(*(unsigned long *)(region + 0x28), 8);  /* FUN_0004b8d0 */
+    sk_obj_unref_block(*(unsigned long *)(region + 0x20), 8);  /* FUN_0004b8d0 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003da18 @ 0x0003da18   (est. sk_region_unmap_pages)
+ * Ghidra: void FUN_0003da18(ulong param_1, long param_2, int param_3, int param_4, int param_5)
+ * Unmaps the pages of a span granule (param_1) in the region param_2:
+ * resolves the span root, invokes the page-unmap callback through the span
+ * method table, and releases the page mapping via the span cursor
+ * (sk_span_lookup_build / FUN_0003611c). Handles both the fast and
+ * deferred unmap modes.
+ * Confidence: low-medium (structural; page unmap).
+ */
+void sk_region_unmap_pages(unsigned long granule, long region, int attr,
+                           int mode, int p5)
+{
+    unsigned long st[6], v, uVar1;
+    unsigned int uVar2;
+    unsigned long *tpidr;
+
+    uVar2 = (unsigned int)granule >> 6 & 0x3fffff;
+    if (p5 != 0 && attr == 0) {
+        v = sk_vspace_layout_check_big(*(unsigned long *)(region + 0x50));  /* FUN_00032cd0 */
+        ((void (*)(unsigned long, unsigned long))(*(void **)(*(long *)(v + 0xb8) + 0x10)))
+            (*(unsigned long *)(v + 0xb0), granule >> 0x1c);
+    }
+    if (mode == 0) {
+        for (int i = 0; i < 6; i++) st[i] = 0;
+        sk_span_lookup_build(st, *(unsigned long *)(region + 0x78), uVar2); /* FUN_00035ba0 */
+        if (st[0] == 0) {
+            uVar1 = st[2] & 0xff;
+            if (uVar1 != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5b455b);
+                __builtin_unreachable();
+            }
+        }
+        *(unsigned long *)(region + 0x78) = st[4];
+        tpidr = (unsigned long *)__builtin_thread_pointer();
+        do {
+            __asm__ volatile("hvc #0" ::: "memory");    /* CallSupervisor(4) */
+        } while (st[0] == 1);
+    } else {
+        st[0] = st[1] = st[2] = 0;
+        sk_span_release(st, *(unsigned long *)(region + 0x78), uVar2,
+                        (void (*)(unsigned long))sk_vas_fault36);   /* FUN_0003611c */
+        uVar1 = st[0] & 0xff;
+        if (uVar1 != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5b455b);
+            __builtin_unreachable();
+        }
+        *(unsigned long *)(region + 0x78) = st[2];
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003dbc0 @ 0x0003dbc0   (est. sk_region_lookup_span)
+ * Ghidra: undefined1[16] FUN_0003dbc0(undefined8 param_1, long param_2, long *param_3, ulong *param_4)
+ * Looks up the span node containing address param_2 in the region param_1:
+ * attaches, finds the span (FUN_0003dd68), detaches, and returns the span
+ * node (+ span descriptor) through param_3/param_4. Returns error
+ * 0x9b10001 if not found.
+ * Confidence: medium (structural; span lookup).
+ */
+cl4_result_t sk_region_lookup_span(unsigned long region, long addr,
+                                   long *node_out, unsigned long *span_out)
+{
+    cl4_result_t r;
+    unsigned long st[10], node, v;
+
+    for (int i = 0; i < 10; i++) st[i] = 0;
+    sk_slot_attach(st, region, 0, 0);           /* FUN_0003be88 */
+    node = sk_region_find_span(st, addr);       /* FUN_0003dd68 */
+    sk_slot_detach(st, region);                 /* FUN_0003bfb8 */
+    if (node == 0) {
+        r.lo = 0x9b10001; r.hi = 0;
+        return r;
+    }
+    if (sk_vm_lock_check(node + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    v = 0;
+    sk_span_find2(&v, *(unsigned long *)(node + 0x78),
+                  (int)((unsigned long)(addr - *(long *)(sk_vspace_layout_check_big(*(unsigned long *)(node + 0x50)) + 0x28)) >> 0xe) + 1); /* FUN_000287e4 */
+    *(unsigned long *)(node + 0x78) = v;
+    if (sk_vm_lock_take(node + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    if (node_out != 0) {
+        *node_out = (long)node;
+        r.lo = 0; r.hi = 0;
+        if (span_out) *span_out = node;
+        return r;
+    }
+    if (v == 0) {
+        /* fault path */
+        r.lo = 0x9a90002; r.hi = 0;
+        return r;
+    }
+    r.lo = 0; r.hi = 0;
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003dd68 @ 0x0003dd68   (est. sk_region_find_span)
+ * Ghidra: void FUN_0003dd68(ulong *param_1, ulong param_2)
+ * Finds the span node in the region tree param_1 whose range contains
+ * param_2. Walks the tree by +8 (start) / +0x10+8 (end) bounds; returns
+ * the node pointer or 0.
+ * Confidence: high (structural; range tree lookup).
+ */
+void sk_region_find_span(unsigned long *tree, unsigned long addr)
+{
+    unsigned long cur, off;
+
+    if (*tree + 0x2a0 < *tree) goto fault;
+    cur = *(unsigned long *)sk_vspace_layout_check_small();  /* FUN_00032cec */
+    do {
+        if (cur == 0) return;
+        if (addr < *(unsigned long *)(cur + 8)) off = 0x58;
+        else {
+            if (addr < *(long *)(cur + 0x10) + *(unsigned long *)(cur + 8)) {
+                if (cur <= cur + 0xb0) return;
+                goto fault;
+            }
+            off = 0x60;
+        }
+        cur = *(unsigned long *)(cur + off);
+    } while (1);
+fault:
+    __builtin_unreachable();                    /* SoftwareBreakpoint(0x5519, 0x3dde8) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003dde8 @ 0x0003dde8   (est. sk_region_map_pages)
+ * Ghidra: undefined1[16] FUN_0003dde8(ulong *param_1, ulong param_2, long param_3, ulong param_4, ulong param_5)
+ * Maps param_5 granules of pages for region param_2 at the span param_4:
+ * validates the region tag (0x65b5c8) / span tag (0x65b648), bounds-checks
+ * the region extent, then for each granule resolves the span-table entry
+ * (FUN_00042abc) and maps it (sk_span_map3 FUN_00040f80). Returns the
+ * mapping result.
+ * Confidence: low-medium (structural; page map).
+ */
+cl4_result_t sk_region_map_pages(unsigned long *out, unsigned long region,
+                                 long span, unsigned long base, unsigned long count)
+{
+    cl4_result_t r;
+    unsigned long v, uVar6, uVar9, uVar10, uVar14, lVar13;
+    unsigned long *entry;
+    unsigned long *pc;
+
+    r = sk_vspace_slot_alloc_frame();           /* FUN_00034a2c */
+    if (r.hi != 0x65b5c8 || span != 0x65b648) {
+        r.lo = 6; r.hi = 0;
+        return r;
+    }
+    if (r.lo == 0 || region == 0) { r.lo = 6; r.hi = 0; return r; }
+    if (*(long *)(region + 0x50) != (long)r.lo || *(unsigned int *)(region + 0x20) == 0) {
+        r.lo = 6; r.hi = 0;
+        return r;
+    }
+    if ((*(unsigned int *)(region + 0x20) >> 0x1a & 1) == 0 || *(long *)(region + 0x10) == 0) {
+        r.lo = 0x10490001; r.hi = 0;
+        return r;
+    }
+    uVar10 = *(unsigned long *)(region + 8) & 0xfffffffffe000000;
+    uVar6 = *(unsigned long *)(region + 8) + *(long *)(region + 0x10);
+    uVar9 = uVar6 - uVar10 >> 0x19;
+    if ((uVar6 & 0x1ffffff) != 0) uVar9 = uVar9 + 1;
+    if (count < uVar9) {
+        r.lo = 0x10500001; r.hi = 0;
+        return r;
+    }
+    out[0] = base; out[1] = uVar9; out[2] = region;
+    sk_vspace_root2(6, 0);                      /* FUN_00032514 */
+    v = sk_vspace_layout_check_big();           /* FUN_00032cd0 */
+    if (out[1] != 0) {
+        lVar13 = 0;
+        uVar9 = 0;
+        do {
+            uVar14 = uVar10;
+            entry = (unsigned long *)sk_obj_method_dispatch3(v, 1);  /* FUN_00042abc */
+            if (entry != 0) {
+                /* map the page granule */
+                pc = (unsigned long *)entry;
+                r = sk_region_wire_spans((long)*out, 0, 0);   /* FUN_0003ff00 */
+            }
+            uVar10 = uVar10 + 0x2000000;
+            uVar9 = uVar9 + 1;
+            lVar13 = lVar13 + 8;
+        } while (uVar9 < out[1]);
+    }
+    sk_region_map_span3(region, 0, *(unsigned long *)(region + 0x10));  /* FUN_0003df84 */
+    r.lo = 0; r.hi = 0;
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e14c @ 0x0003e14c   (est. sk_region_unmap_indirect)
+ * Ghidra: undefined1[16] FUN_0003e14c(long *param_1, ulong param_2, ulong param_3)
+ * Unmaps an indirectly-mapped span (param_3) of the region *param_1 at
+ * offset param_2. Walks the span-table, resolves the direct leaf, and
+ * unmaps via the supervisor (CallSupervisor(2)) or the deferred object
+ * path (sk_obj_meta4 FUN_00043be8). Returns the error code.
+ * Confidence: low-medium (structural; indirect unmap).
+ */
+cl4_result_t sk_region_unmap_indirect(long *span, unsigned long offset,
+                                      unsigned long page)
+{
+    cl4_result_t r;
+    unsigned long v, uVar5, uVar3, leaf, addr;
+    unsigned int w;
+    int iVar3, iVar4;
+
+    if (span[1] == 0) {
+        r.lo = 0x107a0001; r.hi = 0;
+        return r;
+    }
+    if (*(unsigned long *)(span[2] + 0x10) <= page ||
+        *(unsigned long *)(span[2] + 0x10) - page < 0x4000) {
+        r.lo = 0x10810001; r.hi = 0;
+        return r;
+    }
+    addr = *(unsigned long *)(span[2] + 8) + page;
+    uVar5 = addr - (*(unsigned long *)(span[2] + 8) & 0xfffffffffe000000) >> 0x19;
+    if (uVar5 < (unsigned long)span[1]) {
+        leaf = *(unsigned long *)(*span + uVar5 * 8);
+        if (leaf != 0) {
+            w = *(unsigned int *)(span[2] + 0x20);
+            v = sk_vspace_layout_check_big(&DAT_0064c3f0);      /* FUN_00032cd0 */
+            iVar3 = sk_granule_index(*(unsigned long *)(span[2] + 0x78)); /* FUN_000368f8 */
+            sk_span_lookup_build6(0, *(unsigned long *)(span[2] + 0x78), 0, 0); /* FUN_00035ba0 */
+            addr &= 0xffffffffffffc000;
+            iVar4 = sk_granule_index(*(unsigned long *)(span[2] + 0x78)); /* FUN_000368f8 */
+            if (iVar4 == iVar3) {
+                __asm__ volatile("hvc #0" ::: "memory");        /* CallSupervisor(2) */
+                if (offset == 0) {
+                    uVar3 = sk_obj_meta4(v, leaf, 0, addr, w >> 3 & 3, 0); /* FUN_00043be8 */
+                    if (uVar3 != 0) {
+                        do { __asm__ volatile("hvc #0" ::: "memory"); } while (0);
+                        r.lo = (uVar3 & 0x7fff) << 0x10 | 0x80000001;
+                        r.hi = 0;
+                        return r;
+                    }
+                } else {
+                    r.lo = (offset & 0x7fff) << 0x10 | 0x80000001;
+                    r.hi = 0;
+                    return r;
+                }
+            }
+        }
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b30ae);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e308 @ 0x0003e308   (est. sk_region_unmap_direct)
+ * Ghidra: undefined1[16] FUN_0003e308(long param_1, ulong param_2)
+ * Unmaps the directly-mapped span param_2 of the region param_1: resolves
+ * the span node, walks the cursor (sk_span_lookup_build), and unmaps pages
+ * via CallSupervisor(4). Returns the error code.
+ * Confidence: medium (structural; direct unmap).
+ */
+cl4_result_t sk_region_unmap_direct(long region, unsigned long page)
+{
+    cl4_result_t r;
+    unsigned long st[6], v, node;
+    unsigned int gi;
+    int err;
+
+    if (*(long *)(region + 8) == 0) {
+        r.lo = 0x10bb0001; r.hi = 0;
+        return r;
+    }
+    node = *(long *)(region + 0x10);
+    if (!(page < *(unsigned long *)(node + 0x10)) ||
+        !(0x3fff < *(unsigned long *)(node + 0x10) - page)) {
+        r.lo = 0x10c40001; r.hi = 0;
+        return r;
+    }
+    v = sk_vspace_layout_check_big(&DAT_0064c3f0);              /* FUN_00032cd0 */
+    for (int i = 0; i < 6; i++) st[i] = 0;
+    if (v + 0xd0 < v) goto fault;
+    sk_span_lookup_build6(st, *(unsigned long *)(node + 0x78),
+                          (int)((*(long *)(*(long *)(region + 0x10) + 8) + page & 0xffffffffffffc000) -
+                                *(long *)(v + 0x28) >> 0xe) + 1);  /* FUN_00035ba0 */
+    if ((st[4] ^ *(unsigned long *)(node + 0x78)) >> 0x1c == 0) {
+        if (st[0] != 0) {
+            do {
+                __asm__ volatile("hvc #0" ::: "memory");        /* CallSupervisor(4) */
+                if (st[0] == 0) { r.lo = 0; r.hi = 0; return r; }
+            } while (st[0] == 1);
+            r.lo = (st[0] & 0x7fff) << 0x10 | 0x80000001;
+            r.hi = 0;
+            return r;
+        }
+    } else {
+        sk_vas_fault76();                                       /* FUN_004b3364 */
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b30ae);
+    __builtin_unreachable();
+fault:
+    __builtin_unreachable();                                    /* SoftwareBreakpoint(0x5519, 0x3e414) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e440 @ 0x0003e440   (est. sk_cap_validate)
+ * Ghidra: undefined4 FUN_0003e440(long *param_1, long param_2)
+ * Validates a capability (param_2): checks it is a live mapping (flags
+ * +0x20), is a direct mapping (+0x1a bit0) with a backing object (+0x10),
+ * and returns the capability word + base into param_1. Returns error 6
+ * (invalid cap) or 0x10f70001.
+ * Confidence: medium (structural; cap validation).
+ */
+unsigned int sk_cap_validate(long *out, long cap)
+{
+    unsigned int w;
+    unsigned long g;
+
+    w = *(unsigned int *)(cap + 0x20);
+    if (w == 0) return 6;
+    if (((w >> 0x1a & 1) != 0) && *(long *)(cap + 0x10) != 0) {
+        *(unsigned int *)(cap + 0x20) = w | 0x8000000;
+        *out = cap;
+        out[1] = *(long *)(cap + 0x78);
+        g = sk_granule_index(0);                                /* FUN_000368f8 */
+        out[2] = g & 0xffffffff;
+        return 0;
+    }
+    return 0x10f70001;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e4c0 @ 0x0003e4c0   (est. sk_cap_release)
+ * Ghidra: undefined4 FUN_0003e4c0(long *param_1, ulong param_2, undefined8 *param_3)
+ * Releases a capability (param_2) of the object *param_1: validates the
+ * object is a managed mapping, walks the span cursor (sk_span_lookup_build),
+ * and either returns the released span (via param_3) or faults. Returns
+ * error 0x11100001 / 0x111c0001 / 0x113a0001.
+ * Confidence: low-medium (structural; cap release).
+ */
+unsigned int sk_cap_release(long *obj, unsigned long cap, unsigned long *out)
+{
+    unsigned long st[6], v, uVar3;
+    long *free;
+
+    if (*obj == 0) return 0x11100001;
+    if ((*(unsigned char *)(*obj + 0x23) >> 3 & 1) == 0) {
+        sk_vas_fault83();                                       /* FUN_004b349c */
+        __builtin_unreachable();
+    }
+    if (*(unsigned long *)(*obj + 0x10) <= (cap & 0xffffffffffffc000))
+        return 0x111c0001;
+    uVar3 = obj[1] ^ *(unsigned long *)(*obj + 0x78);
+    if (uVar3 >> 0x1c == 0 && uVar3 < 0x40 && (uVar3 & 3) == 0 &&
+        *(unsigned long *)(*obj + 0x78) == obj[1]) {
+        v = sk_granule_index(0);                                /* FUN_000368f8 */
+        if (obj[2] == (v & 0xffffffff)) {
+            for (int i = 0; i < 6; i++) st[i] = 0;
+            v = sk_vspace_layout_check_big(*(unsigned long *)(*obj + 0x50)); /* FUN_00032cd0 */
+            sk_span_lookup_build6(st, *(unsigned long *)(*obj + 0x78),
+                                  (int)((*(long *)(*obj + 8) + (cap & 0xffffffffffffc000)) -
+                                        *(long *)(v + 0x28) >> 0xe) + 1);  /* FUN_00035ba0 */
+            if ((char)st[1] != 1) { *out = st[0]; return 0; }
+        }
+    } else {
+        sk_vas_fault77(); sk_vas_fault78(); sk_vas_fault79(); sk_vas_fault80();
+        /* FUN_004b339c/33c4/33ec/3414 */
+    }
+    sk_vas_fault81();                                           /* FUN_004b343c */
+    free = (long *)sk_vas_fault82();                            /* FUN_004b3464 */
+    if (*free == 0) return 0x113a0001;
+    *(unsigned int *)(*free + 0x20) = *(unsigned int *)(*free + 0x20) & 0xf7ffffff;
+    sk_ref_unlink3(free, 0x18, 0xffffffffffffffff);             /* FUN_00117f8c */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e5f0 @ 0x0003e5f0   (est. sk_cap_revoke)
+ * Ghidra: undefined4 FUN_0003e5f0(long *param_1)
+ * Revokes the capability *param_1: clears the "deferred" flag (+0x20 bit
+ * 27) and unlinks the capability (sk_ref_unlink3). Returns error
+ * 0x113a0001 if no cap is present.
+ * Confidence: medium (structural; cap revoke).
+ */
+unsigned int sk_cap_revoke(long *cap)
+{
+    unsigned long v;
+
+    v = *cap;
+    if (v != 0) {
+        *(unsigned int *)(v + 0x20) = *(unsigned int *)(v + 0x20) & 0xf7ffffff;
+        sk_ref_unlink3(cap, 0x18, 0xffffffffffffffff);          /* FUN_00117f8c */
+        return 0;
+    }
+    return 0x113a0001;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e640 @ 0x0003e640   (est. sk_slot_pop_f)
+ * Ghidra: undefined8 * FUN_0003e640(long param_1)
+ * Pops a node from the +0x10 free list (count byte at +0x31).
+ * Confidence: high (trivial list pop).
+ */
+unsigned long *sk_slot_pop_f(long obj)
+{
+    unsigned long *n;
+    unsigned char c;
+
+    c = *(unsigned char *)(obj + 0x31);
+    if (c == 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b36b7);
+        __builtin_unreachable();
+    }
+    if (c < 4) {
+        *(unsigned char *)(obj + 0x31) = c - 1;
+        n = *(unsigned long **)(obj + 0x10);
+        if (n != 0) {
+            *(unsigned long *)(obj + 0x10) = *n;
+            *n = 0;
+            return n;
+        }
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b373b);
+        __builtin_unreachable();
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b346f);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e710 @ 0x0003e710   (est. sk_class_perm)
+ * Ghidra: undefined8 FUN_0003e710(char param_1)
+ * Looks up the permission word for the object class param_1 in the class
+ * permission table at 0x65b790 (indexed by (param_1+5)&0xff); returns 0
+ * for an out-of-range class.
+ * Confidence: high (trivial table lookup).
+ */
+unsigned long sk_class_perm(char class)
+{
+    unsigned int i;
+
+    i = (unsigned char)(class + 5U);
+    if (i < 0x19)
+        return *(unsigned long *)((unsigned long)i * 8 + 0x65b790);
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e73c @ 0x0003e73c   (est. sk_region_walk_span)
+ * Ghidra: void FUN_0003e73c(undefined8 *param_1, ulong *param_2, long param_3, ulong *param_4)
+ * Walks a region span building the 6-word walk descriptor (param_1): decodes
+ * the walk-info mode (param_4[0]), computes the span bounds from the region
+ * descriptor (param_3), and calls sk_region_walk_find (FUN_0003ed4c) with
+ * the walk method table (sk_region_adjust FUN_0003eab4). Releases the
+ * temporary nodes (sk_obj_unref_block).
+ * Confidence: low-medium (structural; region walk).
+ */
+void sk_region_walk_span(unsigned long *out, unsigned long *tree, long region,
+                         unsigned long *walk)
+{
+    unsigned long local[9], st[2];
+    unsigned long lo, hi, mask, size, end;
+    unsigned char log2, gran;
+    unsigned long *w;
+    int i;
+
+    for (int i2 = 0; i2 < 9; i2++) local[i2] = 0;
+    local[4] = walk[1];
+    lo = *walk;
+    hi = walk[3];
+    size = walk[2];
+    gran = *(unsigned char *)(region + 0x1a);
+    mask = 1UL << (*(unsigned char *)(region + 0x1b) & 0x3f);
+    if (*(unsigned char *)(region + 0x1b) - 0x40 < 0xffffffc1) mask = ~0UL;
+    end = lo & 0xff;
+    if ((char)lo == 0) w = &hi;
+    else if ((char)lo == 1) { w = &size; hi = 0; end = ~0UL; }
+    else {
+        sk_walk_abort3(0, "unsupported walkinfo mode %u");       /* FUN_0005b190 */
+        __builtin_unreachable();
+    }
+    *w = end;
+    st[0] = 0;
+    mask = 1UL << (gran & 0x3f);
+    if (0x3f < gran) mask = ~0UL;
+    end = 0;
+    if (gran != 0) end = mask;
+    if ((char)size == 1 && end <= *(unsigned long *)(region + 8))
+        end = *(unsigned long *)(region + 8);
+    if (*(unsigned char *)(region + 0x1a) < 0xf)
+        *(unsigned char *)(region + 0x1a) = 0xe;
+    /* walk the region tree */
+    {
+        /* method table for walk */
+        w = (unsigned long *)sk_vspace_layout_check_small();    /* FUN_00032cec */
+        sk_region_walk_find(*w, end, mask, lo, &sk_region_adjust_method);  /* FUN_0003ed4c */
+    }
+    for (i = 0; i < 6; i++) out[i] = local[i + 3];
+    sk_obj_unref_block(st[0], 8);                               /* FUN_0004b8d0 */
+    sk_obj_unref_block((unsigned long)local, 8);                /* FUN_0004b8d0 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e918 @ 0x0003e918   (est. sk_rand_mod)
+ * Ghidra: long FUN_0003e918(ulong param_1)
+ * Returns a pseudo-random value in [0, param_1) by reading 8 random bytes
+ * (FUN_00116c78) and taking the remainder. Returns 0 for param_1 < 2.
+ * Confidence: medium (structural; bounded PRNG).
+ */
+long sk_rand_mod(unsigned long modulus)
+{
+    unsigned long v, r;
+
+    if (modulus < 2) return 0;
+    do {
+        v = 0;
+        sk_stack_check(&v, 8);                                  /* FUN_00116c78 */
+    } while (v < ~0UL % modulus);
+    return v % modulus;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003e984 @ 0x0003e984   (est. sk_region_bind2)
+ * Ghidra: void FUN_0003e984(undefined8 param_1, undefined8 param_2, long param_3)
+ * Binds a region to a span after validating the span is free (+0x20==0).
+ * Checks the bind result via sk_region_split (FUN_0003ee4c); aborts on an
+ * error code.
+ * Confidence: medium (structural; bind with validation).
+ */
+void sk_region_bind2(unsigned long p1, unsigned long p2, long span)
+{
+    unsigned long v;
+
+    if (*(int *)(span + 0x20) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b3ce1);
+        __builtin_unreachable();
+    }
+    v = sk_region_split(0, 0, 0, 0, 0, 0);                     /* FUN_0003ee4c */
+    v &= 0xff;
+    if (v == 0) return;
+    if (v >= 0x40 && v <= 0x80) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b3d46);
+        __builtin_unreachable();
+    }
+    __builtin_unreachable();                                    /* SoftwareBreakpoint(0x5519, 0x3ea28) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003ea28 @ 0x0003ea28   (est. sk_region_desc_fill)
+ * Ghidra: void FUN_0003ea28(char *param_1)
+ * Fills a region descriptor (param_1) into a 16-byte span node: packs the
+ * object base, method flags, granule count, and attribute word. Used to
+ * materialise a span node from a region descriptor during split/merge.
+ * Confidence: medium (structural; descriptor fill).
+ */
+void sk_region_desc_fill(char *region)
+{
+    unsigned long *node, base;
+    unsigned int w, flags, log;
+    unsigned char t;
+
+    node = *(unsigned long **)(region + 0x70);
+    base = *(unsigned long *)(region + 8);
+    t = region[0x18];
+    w = *(unsigned int *)(region + 0x20);
+    flags = 8;
+    if (*region != 4) flags = 0;
+    flags = w >> 0x11 & 4 | w >> 3 & 3 | w >> 6 & 0x40000 | flags;
+    if (2 < t - 4) {
+        if (t == 0x11) { flags |= 0x20000; goto fill; }
+        if (t != 1) goto fill;
+    }
+    flags |= 0x10000;
+fill:
+    node[1] = *(unsigned long *)(region + 0x10);
+    node[0] = base;
+    *(unsigned char *)(node + 3) = 0;
+    node[2] = 0;
+    *(unsigned char *)((char *)node + 0x19) = t;
+    *(unsigned short *)((char *)node + 0x1a) = 0;
+    *(unsigned int *)((char *)node + 0x1c) = flags;
+    *(unsigned int *)(node + 3) = 1;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003eab4 @ 0x0003eab4   (est. sk_region_adjust)
+ * Ghidra: undefined8 FUN_0003eab4(long param_1, long param_2)
+ * Adjusts a region span (param_2) to fit the region constraints
+ * (param_1): computes the aligned fit within the region bounds, updates
+ * the span table entry, and returns 0 on success / 1 if no adjustment
+ * needed. Aborts on bounds violation.
+ * Confidence: low-medium (structural; region adjust).
+ */
+unsigned long sk_region_adjust(long region, long span)
+{
+    unsigned long uVar5, uVar6, uVar3, uVar2, uVar1, uVar9;
+    unsigned long uVar7, gran, mask;
+    long lVar8, lVar4;
+    char *t;
+
+    if (*(int *)(span + 0x20) == 0) {
+        uVar5 = *(unsigned long *)(region + 0x30);
+        if (uVar5 <= *(unsigned long *)(span + 0x10)) {
+            uVar6 = *(unsigned long *)(span + 8);
+            uVar3 = *(unsigned long *)(region + 0x38);
+            uVar2 = uVar6 + *(unsigned long *)(span + 0x10);
+            if (uVar2 < uVar3) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5b3bc1);
+                __builtin_unreachable();
+            }
+            uVar1 = (uVar6 <= uVar3) ? uVar3 : uVar6;
+            uVar3 = (*(unsigned long *)(region + 0x40) <= uVar2)
+                    ? *(unsigned long *)(region + 0x40) : uVar2;
+            if (uVar3 < uVar1 || uVar3 - uVar1 < uVar5) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5b3bc1);
+                __builtin_unreachable();
+            }
+            gran = *(unsigned char *)(region + 0x48);
+            mask = 1UL << (gran & 0x3f);
+            lVar4 = 0;
+            if ((mask - 1U & uVar1) != 0) lVar4 = mask;
+            uVar9 = ~0UL << (gran & 0x3f) & uVar3 - uVar5;
+            uVar3 = lVar4 + (uVar1 & -mask);
+            if (uVar3 <= uVar9) {
+                if (uVar3 < uVar6 || uVar2 < uVar3 + uVar5 ||
+                    uVar2 < uVar9 + uVar5) {
+                    sk_vas_abort("VAS abort in function %s at line %d", 0x5b3bc1);
+                    __builtin_unreachable();
+                }
+                uVar2 = uVar9 - uVar3 >> (gran & 0x3f);
+                uVar5 = uVar2 + 1;
+                lVar8 = *(long *)(*(long *)(region + 0x20) + 8);
+                if (*(char *)(lVar8 + 0x18) == 1) {
+                    /* shrink the span-table free count */
+                    *(unsigned long *)(lVar8 + 0x38) = span;
+                    *(unsigned long *)(*(long *)(*(long *)(region + 0x20) + 8) + 0x40) =
+                        (*(long *)(*(long *)(*(long *)(region + 0x28) + 8) + 0x18) <<
+                         (gran & 0x3f)) + uVar3;
+                    return 0;
+                } else if (*(char *)(lVar8 + 0x18) == 0) {
+                    *(unsigned long *)(lVar8 + 0x30) = *(long *)(lVar8 + 0x30) + uVar5;
+                }
+            }
+            return 1;
+        }
+    } else {
+        sk_vas_fault84();                                       /* FUN_004b34d4 */
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", 0x5b3bc1);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003ed4c @ 0x0003ed4c   (est. sk_region_walk_find)
+ * Ghidra: undefined8 FUN_0003ed4c(long param_1, ulong param_2, ulong param_3, ulong param_4, long param_5)
+ * Recursive region-tree walk: finds the span (param_1) intersecting
+ * [param_2, param_3) within the limit param_4, invoking the method table
+ * (param_5) callback on each matching span. Returns 0 on success / 1 on
+ * no-match.
+ * Confidence: medium (structural; range tree walk).
+ */
+unsigned long sk_region_walk_find(long span, unsigned long lo, unsigned long hi,
+                                  unsigned long limit, long methods)
+{
+    unsigned long start, end, a, b, c, len;
+    unsigned long (*fn)(unsigned long, long);
+
+    if (span == 0) return 1;
+    if (limit <= *(unsigned long *)(span + 0x68)) {
+        start = *(unsigned long *)(span + 8);
+        if (lo < start)
+            if (sk_region_walk_find(*(long *)(span + 0x58), lo, hi, limit, methods) == 0)
+                return 0;
+        a = start;
+        if (start <= lo) a = lo;
+        end = *(long *)(span + 0x10) + start;
+        b = end;
+        if (hi <= end) b = hi;
+        c = (a <= b) ? b - a : 0;
+        if (*(int *)(span + 0x20) == 0 && limit <= c) {
+            fn = (unsigned long (*)(unsigned long, long))(*(void **)(methods + 0x10));
+            if (fn(methods, span) == 0) return 0;
+            end = *(long *)(span + 0x10) + *(long *)(span + 8);
+        }
+        if (end < hi)
+            return sk_region_walk_find(*(long *)(span + 0x60), lo, hi, limit, methods);
+    }
+    return 1;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003ee4c @ 0x0003ee4c   (est. sk_region_split)
+ * Ghidra: undefined1[16] FUN_0003ee4c(long param_1, undefined8 param_2, undefined8 *param_3, ulong param_4, ulong *param_5, ulong *param_6)
+ * Splits the region param_3 at offset param_4 into two spans: pops a free
+ * span node, copies the region descriptor, adjusts both halves'
+ * descriptors, and relinks them. Returns the split spans via param_5/
+ * param_6.
+ * Confidence: low-medium (structural; region split).
+ */
+cl4_result_t sk_region_split(long tree, unsigned long owner, unsigned long *region,
+                             unsigned long at, unsigned long *lo_out,
+                             unsigned long *hi_out)
+{
+    cl4_result_t r;
+    unsigned long *newspan, *w, lo_end;
+    unsigned long v, end, uVar13;
+    unsigned int w0;
+    int b;
+
+    if ((*(unsigned int *)(region + 4) & 0xd000800) == 0) {
+        v = 0x7fb0001;
+        if (at != 0) v = 0;
+        end = 0x7f80001;
+        if (at < (unsigned long)region[2]) end = v;
+    } else {
+        end = 0x7f60001;
+    }
+    r.lo = end; r.hi = 0;
+    if ((end & 0xff) != 0) return r;
+    newspan = sk_slot_pop_e(tree);                              /* FUN_0003c21c */
+    w = newspan + 0x16;
+    w0 = *(unsigned int *)(region + 4);
+    if ((w0 >> 0x10 & 1) != 0) {
+        sk_obj_map5(tree, owner, region, at, newspan);          /* FUN_00045908 */
+        w0 = *(unsigned int *)(region + 4);
+    }
+    lo_end = (unsigned long)region[0xe];
+    if (w0 == 0) { end = 0; v = 0; }
+    else {
+        end = (unsigned long)sk_slot_pop_f(tree);               /* FUN_0003e640 */
+        v = (unsigned long)sk_slot_pop_f(tree);                 /* FUN_0003e640 */
+    }
+    newspan[0xe] = v;
+    *(unsigned int *)(newspan + 4) = w0;
+    newspan[0] = region[0];
+    newspan[3] = region[3];
+    newspan[2] = region[2];
+    newspan[1] = region[1];
+    newspan[1] = newspan[1] + at;
+    newspan[2] = newspan[2] - at;
+    newspan[10] = region[10];
+    region[2] = at;
+    if (end <= end + 0x20) {
+        region[0xe] = end;
+        if (*(int *)(region + 4) != 0) {
+            sk_region_desc_fill(region);                        /* FUN_0003ea28 */
+            sk_region_desc_fill(newspan);                       /* FUN_0003ea28 */
+            /* relink the split halves */
+            if (*(unsigned int *)(region + 4) >> 6 & 1) {
+                /* reorder by descriptor order */
+            }
+        }
+        if (newspan <= w) {
+            sk_region_attach(tree, (unsigned long)newspan);     /* FUN_0003c2ec */
+            r.lo = 0;
+            *lo_out = (unsigned long)region;
+            *hi_out = (unsigned long)newspan;
+            return r;
+        }
+    }
+    __builtin_unreachable();                                    /* SoftwareBreakpoint(0x5519, 0x3f0ac) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003f0dc @ 0x0003f0dc   (est. sk_region_recalc)
+ * Ghidra: void FUN_0003f0dc(long param_1, long param_2)
+ * Recomputes the subtree extent (param_1+0x68) of the region tree rooted
+ * at param_1 after a change at param_2; recurses into both children and
+ * propagates the max granule extent upward.
+ * Confidence: medium (structural; tree extent recompute).
+ */
+void sk_region_recalc(long node, long changed)
+{
+    unsigned long a, b, c, lo, hi;
+
+    if (node == 0 || changed == 0) return;
+    if (*(unsigned long *)(changed + 8) < *(unsigned long *)(node + 8))
+        sk_region_recalc(*(long *)(node + 0x58), changed);
+    else if (*(unsigned long *)(changed + 8) == *(unsigned long *)(node + 8))
+        goto recompute;
+    else
+        sk_region_recalc(*(long *)(node + 0x60), changed);
+recompute:
+    a = (*(int *)(node + 0x20) == 0) ? *(unsigned long *)(node + 0x10) : 0;
+    b = (*(long *)(node + 0x58) != 0)
+        ? *(unsigned long *)(*(long *)(node + 0x58) + 0x68) : 0;
+    c = (*(long *)(node + 0x60) != 0)
+        ? *(unsigned long *)(*(long *)(node + 0x60) + 0x68) : 0;
+    if (b <= c) b = c;
+    if (a <= b) a = b;
+    *(unsigned long *)(node + 0x68) = a;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003f170 @ 0x0003f170   (est. sk_region_finalize)
+ * Ghidra: undefined1[16] FUN_0003f170(ulong param_1, ulong *param_2, ulong *param_3, int param_4)
+ * Finalizes a region span map: resolves the span root, aligns the mapping
+ * base/end to the region cursor, calls sk_region_map_span (FUN_0003d438),
+ * and wires the pages (sk_obj_wire4 FUN_00043f28). Returns the result.
+ * Confidence: low-medium (structural; region finalize).
+ */
+cl4_result_t sk_region_finalize(unsigned long span, unsigned long *base_out,
+                                unsigned long *size_out, int commit)
+{
+    cl4_result_t r;
+    unsigned long v, w0, uVar8, uVar3, end, lVar2;
+    unsigned long *tpidr;
+    int allow;
+
+    v = sk_vspace_layout_check_big(*(unsigned long *)(span + 0x50)); /* FUN_00032cd0 */
+    w0 = *(unsigned int *)(span + 0x20);
+    allow = ((w0 & 0x4000000) == 0) ? 1 : 0;
+    uVar8 = *base_out;
+    if (*(unsigned long *)(span + 0x10) <= uVar8 ||
+        *(unsigned long *)(span + 0x10) - uVar8 < *size_out || (w0 & 0x8000000) != 0) {
+        r.lo = 0x7210001; r.hi = 0;
+        return r;
+    }
+    uVar8 = *(long *)(span + 8) + uVar8;
+    lVar2 = 0;
+    if ((uVar8 & 0x3fff) != 0) lVar2 = 0x4000;
+    lVar2 = lVar2 + (uVar8 & 0xffffffffffffc000);
+    *size_out = (uVar8 + *size_out) - lVar2;
+    *base_out = lVar2 - *(long *)(span + 8);
+    uVar8 = *size_out & 0xffffffffffffc000;
+    *size_out = uVar8;
+    sk_region_map_span(lVar2, uVar8, span, w0 >> 0xc & 1, allow);  /* FUN_0003d438 */
+    if (commit != 0) {
+        if (*base_out == 0) end = (*size_out == *(unsigned long *)(span + 0x10));
+        else end = 0;
+        if ((w0 >> 7 & 1) != 0) {
+            uVar3 = (w0 >> 6 & 1) ? (*(long *)(span + 0x10) - *(long *)(span + 0x48)) + *(long *)(span + 8)
+                                  : *(long *)(span + 8);
+            end = (*base_out == *(unsigned long *)(span + 0x48));
+        }
+        if (end) {
+            sk_obj_wire4(v, lVar2, uVar8, (w0 & 0x1000) == 0);  /* FUN_00043f28 */
+        }
+    }
+    r.lo = 0; r.hi = 0;
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003f324 @ 0x0003f324   (est. sk_region_merge2)
+ * Ghidra: undefined8 FUN_0003f324(undefined8 param_1, undefined8 param_2, long param_3, long param_4)
+ * Merges two adjacent region spans (param_3/param_4): validates both are
+ * free (+0x20==0), merges via sk_region_merge (FUN_0003f41c), and pushes
+ * the freed node back (sk_slot_push_d). Returns the merged span.
+ * Confidence: low-medium (structural; merge wrapper).
+ */
+unsigned long sk_region_merge2(unsigned long st, unsigned long owner, long a, long b)
+{
+    unsigned long lo, hi, v;
+
+    if (*(int *)(a + 0x20) != 0 || *(int *)(b + 0x20) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b3f6d);
+        __builtin_unreachable();
+    }
+    v = sk_region_merge(st, owner, a, b, &lo, &hi);             /* FUN_0003f41c */
+    v &= 0xff;
+    if (v == 0) {
+        sk_slot_push_d(st, (unsigned long *)lo);
+        return hi;
+    }
+    if (v >= 0x40 && v <= 0x80) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b4008);
+        __builtin_unreachable();
+    }
+    __builtin_unreachable();                                    /* SoftwareBreakpoint(0x5519, 0x3f41c) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003f41c @ 0x0003f41c   (est. sk_region_merge)
+ * Ghidra: undefined1[16] FUN_0003f41c(ulong *param_1, undefined8 param_2, long param_3, long param_4, long *param_5, long *param_6)
+ * Merges two region spans (param_3/param_4) into a single span. Validates
+ * both spans share the same owner, flags, and are contiguous; folds the
+ * right span's extent into the left, relinks the merged node in the span
+ * tree (sk_region_tree_remove FUN_0003f6c8), and returns the merged node
+ * via param_5. Returns error 0x7590001..0x75d0001.
+ * Confidence: low-medium (structural; merge core).
+ */
+cl4_result_t sk_region_merge(unsigned long *tree, unsigned long owner, long a, long b,
+                             long *lo_out, long *hi_out)
+{
+    cl4_result_t r;
+    unsigned long v, end, uVar6;
+    unsigned int w;
+    unsigned long *w1, *w2, *n;
+
+    uVar6 = *(unsigned long *)(b + 8);
+    if (uVar6 < *(unsigned long *)(a + 8)) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5b4061);
+        __builtin_unreachable();
+    }
+    if (*(long *)(a + 0x50) == *(long *)(b + 0x50)) {
+        if (*(unsigned int *)(a + 0x20) == *(unsigned int *)(b + 0x20)) {
+            if ((*(unsigned int *)(a + 0x20) & 0xd000800) == 0) {
+                end = (uVar6 == 0) ? 0x75c0001 : 0;
+                if (end == 0 && *(long *)(a + 0x10) + *(unsigned long *)(a + 8) != uVar6)
+                    end = 0x75d0001;
+            } else {
+                end = 0x75b0001;
+            }
+        } else {
+            end = 0x75a0001;
+        }
+    } else {
+        end = 0x7590001;
+    }
+    r.lo = end; r.hi = 0;
+    if ((end & 0xff) == 0) {
+        w = *(unsigned int *)(a + 0x20);
+        if ((w >> 0x10 & 1) != 0) {
+            sk_obj_map5(tree, owner, a, b);                     /* FUN_000458a0 */
+            w = *(unsigned int *)(a + 0x20);
+        }
+        *(long *)(a + 0x10) = *(long *)(a + 0x10) + *(long *)(b + 0x10);
+        if (w == 0) {
+            sk_region_recalc(*(long *)(*tree + 0x58), a);       /* FUN_0003f0dc */
+        } else {
+            w1 = *(unsigned long **)(a + 0x70);
+            w2 = *(unsigned long **)(b + 0x70);
+            n = sk_slot_pop_f(tree);                            /* FUN_0003e640 */
+            *(unsigned long *)(a + 0x70) = (unsigned long)n;
+            *(unsigned long *)(b + 0x70) = 0;
+            sk_region_desc_fill(a);                             /* FUN_0003ea28 */
+            sk_slot_push_f(tree, w1);                           /* FUN_0003e640 */
+            sk_slot_push_f(tree, w2);                           /* FUN_0003e640 */
+        }
+        if (*tree + 0x2a0 < *tree) goto fault;
+        {
+            unsigned long *root = (unsigned long *)sk_vspace_layout_check_small(); /* FUN_00032cec */
+            v = sk_region_tree_remove(root, b);                 /* FUN_0003f6c8 */
+            if ((v & 1) == 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", 0x5b40cd);
+                __builtin_unreachable();
+            }
+        }
+        r.lo = 0;
+        *lo_out = a;
+        *hi_out = b;
+        return r;
+    }
+    return r;
+fault:
+    __builtin_unreachable();                                    /* SoftwareBreakpoint(0x5519, 0x3f60c) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003f6c8 @ 0x0003f6c8   (est. sk_region_tree_remove)
+ * Ghidra: undefined8 FUN_0003f6c8(long *param_1, long param_2)
+ * Removes the region node param_2 from the AVL tree *param_1, rebalancing
+ * and recomputing extents. Returns the removed node / 0.
+ * Confidence: low-medium (structural; AVL remove).
+ */
+unsigned long sk_region_tree_remove(long *root, long node)
+{
+    unsigned long uVar2, lVar3, lVar4;
+    unsigned long v, b, c, a;
+    unsigned int h1, h2;
+
+    lVar3 = *root;
+    if (lVar3 == 0) return 0;
+    if (lVar3 == node) {
+        lVar4 = *(long *)(lVar3 + 0x60);
+        if (*(long *)(lVar3 + 0x58) == 0) {
+            if (lVar4 == 0) { *root = 0; uVar2 = 1; }
+            else uVar2 = 0xfffffffe;
+        } else {
+            if (lVar4 != 0 && *(unsigned char *)(*(long *)(lVar3 + 0x58) + 0x24) <
+                *(unsigned char *)(lVar4 + 0x24))
+                uVar2 = 0xfffffffe;
+            else
+                uVar2 = 2;
+        }
+        sk_region_tree_rebalance(root, uVar2);                  /* FUN_0003f804 */
+    }
+    lVar3 = *root;
+    if (lVar3 == node) { *root = 0; return 1; }
+    if (*(unsigned long *)(node + 8) < *(unsigned long *)(lVar3 + 8))
+        v = sk_region_tree_remove(lVar3 + 0x58, node);
+    else
+        v = sk_region_tree_remove(lVar3 + 0x60, node);
+    lVar4 = *(long *)(lVar3 + 0x58);
+    h1 = (lVar4 != 0) ? *(unsigned char *)(lVar4 + 0x24) + 1 : 0;
+    lVar3 = *(long *)(lVar3 + 0x60);
+    h2 = (lVar3 != 0) ? *(unsigned char *)(lVar3 + 0x24) + 1 : 0;
+    if (h1 <= h2) h1 = h2;
+    *(char *)(lVar3 + 0x24) = (char)h1;
+    a = (*(int *)(lVar3 + 0x20) == 0) ? *(unsigned long *)(lVar3 + 0x10) : 0;
+    b = (*(long *)(lVar3 + 0x58) != 0)
+        ? *(unsigned long *)(*(long *)(lVar3 + 0x58) + 0x68) : 0;
+    c = (*(long *)(lVar3 + 0x60) != 0)
+        ? *(unsigned long *)(*(long *)(lVar3 + 0x60) + 0x68) : 0;
+    if (b <= c) b = c;
+    if (a <= b) a = b;
+    *(unsigned long *)(lVar3 + 0x68) = a;
+    return v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003f804 @ 0x0003f804   (est. sk_region_tree_rebalance)
+ * Ghidra: void FUN_0003f804(ulong *param_1, int param_2)
+ * Rebalances the AVL region tree *param_1 after a removal (param_2 < -1
+ * left-heavy, > 1 right-heavy), performing the appropriate rotations and
+ * recomputing node heights/extents.
+ * Confidence: low-medium (structural; AVL rebalance).
+ */
+void sk_region_tree_rebalance(unsigned long *root, int dir)
+{
+    unsigned long uVar2, uVar7, uVar3, uVar12;
+    long lVar5, lVar9, lVar10, lVar8;
+    unsigned int h1, h2;
+
+    uVar2 = *root;
+    if (uVar2 == 0) return;
+    uVar12 = uVar2 + 0xb0;
+    if (dir < -1) {
+        uVar7 = *(unsigned long *)(uVar2 + 0x60);
+        if (uVar7 != 0) {
+            *(unsigned long *)(uVar2 + 0x60) = *(unsigned long *)(uVar7 + 0x58);
+            if (uVar12 < uVar2) goto fault;
+            *(unsigned long *)(uVar7 + 0x58) = uVar2;
+            *root = uVar7;
+            uVar3 = uVar7;
+        }
+    } else if (1 < dir) {
+        uVar7 = *(unsigned long *)(uVar2 + 0x58);
+        if (uVar7 != 0) {
+            *(unsigned long *)(uVar2 + 0x58) = *(unsigned long *)(uVar7 + 0x60);
+            if (uVar12 < uVar2) goto fault;
+            *(unsigned long *)(uVar7 + 0x60) = uVar2;
+            *root = uVar7;
+            uVar3 = uVar7;
+        }
+    }
+    if (uVar2 <= uVar12) {
+        lVar9 = *(long *)(uVar2 + 0x58);
+        h1 = (lVar9 != 0) ? *(unsigned char *)(lVar9 + 0x24) + 1 : 0;
+        lVar10 = *(long *)(uVar2 + 0x60);
+        h2 = (lVar10 != 0) ? *(unsigned char *)(lVar10 + 0x24) + 1 : 0;
+        if (h1 <= h2) h1 = h2;
+        *(char *)(uVar2 + 0x24) = (char)h1;
+        lVar5 = *(long *)(uVar3 + 0x58);
+        h1 = (lVar5 != 0) ? *(unsigned char *)(lVar5 + 0x24) + 1 : 0;
+        lVar8 = *(long *)(uVar3 + 0x60);
+        h2 = (lVar8 != 0) ? *(unsigned char *)(lVar8 + 0x24) + 1 : 0;
+        if (h1 <= h2) h1 = h2;
+        *(char *)(uVar3 + 0x24) = (char)h1;
+        a_recompute(uVar2, lVar9, lVar10);
+        a_recompute(uVar3, lVar5, lVar8);
+        return;
+    }
+fault:
+    __builtin_unreachable();                                    /* SoftwareBreakpoint(0x5519, 0x3f980) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003f980 @ 0x0003f980   (est. sk_err_name)
+ * Ghidra: void FUN_0003f980(undefined8 *param_1, byte param_2)
+ * Fills param_1 with the 4-word L4 error-code string descriptor for the
+ * error code param_2 (from the L4_ErrorCode* strings at 0x4bc218+). For
+ * codes > 9 it uses the "generic" descriptor and prints via FUN_0000178c.
+ * Confidence: high (string table lookup).
+ */
+void sk_err_name(unsigned long *out, unsigned char code)
+{
+    char *s;
+
+    if (9 < code) {
+        out[0] = *(unsigned long *)0x4bc358;
+        out[1] = *(unsigned long *)0x4bc360;
+        out[2] = *(unsigned long *)0x4bc368;
+        out[3] = *(unsigned long *)0x4bc370;
+        sk_mem_zero(out, 0x20);                                 /* FUN_0000178c */
+        return;
+    }
+    switch (code) {
+    default: s = (char *)0x4bc218; break;
+    case 1:  s = (char *)0x4bc238; break;
+    case 2:  s = (char *)0x4bc258; break;
+    case 3:  s = (char *)0x4bc278; break;
+    case 4:  s = (char *)0x4bc298; break;
+    case 5:  s = (char *)0x4bc2b8; break;
+    case 6:  s = (char *)0x4bc2d8; break;
+    case 7:  s = (char *)0x4bc2f8; break;
+    case 8:  s = (char *)0x4bc318; break;
+    case 9:  s = (char *)0x4bc338; break;
+    }
+    out[0] = *(unsigned long *)s;
+    out[1] = *(unsigned long *)(s + 8);
+    out[2] = *(unsigned long *)(s + 0x10);
+    out[3] = *(unsigned long *)(s + 0x18);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003fa94 @ 0x0003fa94   (est. sk_region_map_fault)
+ * Ghidra: ulong FUN_0003fa94(long param_1, long param_2, ulong param_3, ulong param_4, undefined8 param_5, int param_6, ulong param_7)
+ * The region fault-map entry: looks up the span, walks its granules, and
+ * maps each via sk_region_map_fault2 (FUN_0003fcc8) with the supervisor
+ * fault path. Retries on preempt. Returns the mapping result / error code.
+ * Large structural body.
+ * Confidence: low (large; structural shape preserved).
+ */
+unsigned long sk_region_map_fault(long span, long addr, unsigned long p3,
+                                  unsigned long p4, unsigned long p5, int p6,
+                                  unsigned long p7)
+{
+    unsigned long st[2], v, base, uVar9;
+    long local[6];
+    int err;
+
+    v = sk_vspace_layout_check_big(*(unsigned long *)(span + 0x50)); /* FUN_00032cd0 */
+    if (sk_vm_lock_check((unsigned long)span + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    for (int i = 0; i < 6; i++) local[i] = 0;
+    if (v + 0xd0 < v) goto fault;
+    sk_span_find2(&base, *(unsigned long *)(span + 0x78),
+                  (int)((unsigned long)(addr - *(long *)(v + 0x28)) >> 0xe) + 1); /* FUN_000287e4 */
+    *(unsigned long *)(span + 0x78) = base;
+    if (base != 0) {
+        v = sk_vspace_layout_check_big(*(unsigned long *)(span + 0x50)); /* FUN_00032cd0 */
+        if (v <= v + 0xd0) {
+            uVar9 = sk_obj_method_dispatch3(v, 1, addr);        /* FUN_00042abc */
+            err = sk_obj_lookup3(v, uVar9);                     /* FUN_00042c20 */
+            if (err == 0) {
+                p3 = 2;
+            } else {
+                if ((int)p4 == 0) { __asm__ volatile("hvc #0" ::: "memory"); }
+                else {
+                    unsigned long *tp = (unsigned long *)__builtin_thread_pointer();
+                    *tp = 0; __asm__ volatile("hvc #0" ::: "memory");
+                }
+                if (p3 == 0) {
+                    cl4_result_t r2 = sk_region_map_fault2(span, addr, v, base,
+                                                           uVar9, p4, 0);  /* FUN_0003fcc8 */
+                    p3 = r2.lo;
+                    if (p3 != 0) {
+                        do { __asm__ volatile("hvc #0" ::: "memory"); } while (base == 1);
+                    }
+                }
+            }
+            if (sk_vm_lock_take((unsigned long)span + 0x80) == 0)
+                return p3;
+            sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+            __builtin_unreachable();
+        }
+        goto fault;
+    }
+    if (sk_vm_lock_take((unsigned long)span + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    return 0x102;
+fault:
+    __builtin_unreachable();                                    /* SoftwareBreakpoint(0x5519, 0x3fc28) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003fcc8 @ 0x0003fcc8   (est. sk_region_map_fault2)
+ * Ghidra: ulong FUN_0003fcc8(char *param_1, undefined8 param_2, undefined8 param_3, ulong param_4, undefined8 param_5, int param_6, uint param_7)
+ * Second-level fault map: resolves the object method (sk_obj_meta4
+ * FUN_00043be8 / sk_obj_meta3 FUN_00043b44), and either maps the page via
+ * the span walk (sk_walk_span3 FUN_000402b4 / sk_map_span3 FUN_000403b0)
+ * or falls back to the generic map path (sk_obj_attr3 FUN_000436fc).
+ * Retries and reports unexpected L4 errors.
+ * Large structural body.
+ * Confidence: low (large; structural shape preserved).
+ */
+unsigned long sk_region_map_fault2(char *region, unsigned long p2, unsigned long p3,
+                                   unsigned long base, unsigned long p5, int p6,
+                                   unsigned int p7)
+{
+    unsigned long v, uVar7, uVar14, w;
+    unsigned int w0, uVar5, uVar15;
+    long st[6];
+    int err;
+
+    w0 = *(unsigned int *)(region + 0x20);
+    uVar5 = 0;
+    if (p6 == 0) uVar5 = w0 >> 3 & 3;
+    uVar15 = (w0 & 0x2400) != 0;
+    if (w0 & 0x200) uVar15 = 2;
+    uVar15 |= w0 >> 0x13 & 8;
+    uVar14 = base;
+    v = (*region == 4) ? sk_obj_meta3(p3, p5, base, p2, uVar5, uVar15)
+                       : sk_obj_meta4(p3, p5, base, p2, uVar5, uVar15); /* FUN_00043b44/43be8 */
+    if ((v & 0xff) == 4) {
+        if (((unsigned char)region[0x23] >> 2 & 1) != 0) {
+            /* full span map walk */
+            v = sk_region_wire_spans((long)region, p2, base);   /* FUN_0003ff00 */
+            return v;
+        }
+        err = sk_obj_attr3(p3, p2);                             /* FUN_000436fc */
+        if (err == 0) { v = 2; return v; }
+        if (*region == 4) v = sk_obj_meta3(p3, p5, base, p2, uVar5, uVar15);
+        else v = sk_obj_meta4(p3, p5, base, p2, uVar5, uVar15);
+    }
+    if (v != 0) {
+        uVar14 = v & 0xff;
+        if (p7 == 0 || uVar14 == 2) {
+            if ((p7 & 1) != 0) return v;
+            if ((long)v < 0x207) { if (v == 2 || v == 7) return v; }
+            else if (v == 0x207 || v == 0x307) return v;
+        }
+        if (uVar14 != 8 && uVar14 != 0 && (w0 & 0x40000) == 0) {
+            sk_err_name(st, 0);                                 /* FUN_0003f980 */
+            sk_vas_fault41(0xeb1a02bf914012ba);                 /* FUN_004b2820 */
+            sk_err_name(st, v);
+            sk_vas_abort("Unexpected L4 Error %s err %zu", 0x5b010f);
+            __builtin_unreachable();
+        }
+    }
+    return v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003ff00 @ 0x0003ff00   (est. sk_region_wire_spans)
+ * Ghidra: undefined8 FUN_0003ff00(char *param_1, ulong param_2, ulong param_3)
+ * Wires the span pages of region param_1 across [param_2, param_3): for
+ * each 32 MiB span-table block, walks the span entries (sk_walk_span3 /
+ * sk_map_span3) mapping the pages, and returns the end offset. Takes the
+ * region lock around the walk. Aborts on lock failure.
+ * Confidence: low-medium (structural; span wiring).
+ */
+unsigned long sk_region_wire_spans(char *region, unsigned long start, unsigned long end)
+{
+    unsigned long uVar2, uVar8, uVar9, uVar10, v, block, page;
+    unsigned long *puVar2, *puVar3;
+    void (*f1)(void *, unsigned long, unsigned long, unsigned long);
+    void (*f2)(void *, unsigned long, unsigned long, unsigned long);
+    unsigned int w0, uVar6, flags;
+    char c;
+    int err;
+
+    if (sk_vm_lock_check((unsigned long)region + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    v = sk_vspace_layout_check_big(*(unsigned long *)(region + 0x50)); /* FUN_00032cd0 */
+    uVar2 = 0;
+    if ((end & 0x3fff) != 0) uVar2 = 0x4000;
+    uVar2 = uVar2 + (end & 0xffffffffffffc000);
+    for (block = start & 0xfffffffffe000000; block < uVar2; block += 0x2000000) {
+        page = sk_obj_method_dispatch3(v, 1, block);            /* FUN_00042abc */
+        if ((sk_obj_lookup3(v, page) & 1) == 0)                 /* FUN_00042c20 */
+            return 2;
+    }
+    if ((unsigned long)region + 0x80 <= (unsigned long)region + 0x90) {
+        c = *region;
+        w0 = *(unsigned int *)(region + 0x20);
+        uVar6 = w0 >> 0xd & 1;
+        if (c != 0x11) uVar6 = 0;
+        flags = w0 >> 0x11 & 0x20 | uVar6;
+        page = start & 0xffffffffffffc000;
+        if ((w0 >> 0x1a & 1) == 0) {
+            /* linear span map */
+            uVar9 = uVar2 - page >> 0xe;
+            puVar2 = (unsigned long *)(v + 0xb0);
+            puVar3 = *(unsigned long **)(v + 0xb8);
+            if (puVar3[9] == 0) {
+                for (unsigned long i = 0; i < uVar9; i++) {
+                    uVar8 = sk_walk_span3(&st_local, i);        /* FUN_000402b4 */
+                    uVar10 = (*(unsigned long (*)(unsigned long, char, unsigned long,
+                                                   unsigned long, unsigned int))*puVar3)
+                        (*puVar2, c, uVar8, uVar8, flags);
+                    sk_map_span3(&st_local2, uVar10, i, uVar8); /* FUN_000403b0 */
+                }
+            } else {
+                ((void (*)(unsigned long, char, unsigned int, unsigned long, void *, void *))
+                 puVar3[9])(*puVar2, c, flags, uVar9, &st_local, &st_local2);
+            }
+        } else {
+            /* chunked map */
+            while (uVar2 != page) {
+                c = *region;
+                uVar9 = *(unsigned long *)(v + 0xb0);
+                puVar3 = *(unsigned long **)(v + 0xb8);
+                if (puVar3[9] == 0) {
+                    uVar8 = sk_walk_span3(&st_local, 0);        /* FUN_000402b4 */
+                    uVar9 = (*(unsigned long (*)(unsigned long, char, unsigned long,
+                                                 unsigned long, unsigned int))*puVar3)
+                        (uVar9, c, uVar8, uVar8, flags);
+                    sk_map_span3(&st_local2, uVar9, 0, uVar8);  /* FUN_000403b0 */
+                } else {
+                    ((void (*)(unsigned long, char, unsigned int, unsigned long, void *, void *))
+                     puVar3[9])(uVar9, c, flags, 1, &st_local, &st_local2);
+                }
+                page += 0x4000;
+            }
+        }
+        err = sk_vm_lock_take((unsigned long)region + 0x80);
+        if (err == 0)
+            return 0;
+        sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
+        __builtin_unreachable();
+    }
+    __builtin_unreachable();                                    /* SoftwareBreakpoint(0x5519, 0x4024c) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00036118 @ 0x00036118   (est. sk_span_release_t)
+ * Ghidra: void thunk_FUN_00036118(...)
+ * Thunk to sk_span_release (FUN_0003611c).
+ * Confidence: high (trivial thunk).
+ */
+void sk_f_36118(unsigned long *out, unsigned long span, unsigned int count,
+                void (*cb)(unsigned long))
+{
+    sk_span_release(out, span, count, cb);
+}

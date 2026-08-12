@@ -1287,7 +1287,7 @@ void sk_001d30f8(void);
 void sk_001d31b0(void);
 void sk_001d332c(void);
 void sk_001d36d8(void);
-void sk_001d36e8(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, undefined8 param_5);
+void sk_001d36e8();
 void sk_001d39cc(uint param_1,uint param_2);
 void sk_001d3a30(long param_1,long param_2);
 void sk_001d3a94(void);
@@ -1307,7 +1307,7 @@ void sk_001d5c90(void);
 void sk_001d5f58(void);
 void sk_001d6094(void);
 void sk_001d614c(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)(),undefined8 param_4, undefined8 param_5,undefined8 param_6);
-uint sk_001d69d8(undefined8 param_1,undefined8 param_2,uint param_3,undefined8 param_4, undefined8 param_5,undefined8 param_6,undefined8 param_7);
+uint sk_001d69d8();
 void sk_001d6ef0(void);
 void sk_001d7368(undefined8 param_1,undefined8 param_2,undefined8 param_3);
 void sk_001d7814(undefined8 param_1,undefined8 param_2,undefined8 param_3);
@@ -1315,7 +1315,7 @@ void sk_001d80e0();
 void sk_001d83cc(void);
 void sk_001d852c();
 void sk_001d8808(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, undefined8 param_5);
-void sk_001d88fc(undefined8 param_1,unsigned long (*param_2)(),undefined8 param_3,long param_4,long param_5, undefined8 param_6,undefined8 param_7,undefined8 param_8);
+void sk_001d88fc();
 void sk_001d8b38(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4);
 uint sk_001d8cdc(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, undefined8 param_5);
 void sk_001d8d78();
@@ -1358,9 +1358,9 @@ void sk_001dc3e8(void);
 void sk_001dc430();
 void sk_001dc4c0(undefined8 param_1,undefined8 param_2,undefined8 param_3,unsigned long (*param_4)(), unsigned long (*param_5)());
 void sk_001dc554(void);
-void sk_001dc56c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, unsigned long (*param_5)());
+void sk_001dc56c();
 void sk_001dc5c4(void);
-void sk_001dc620(undefined8 param_1,undefined8 param_2,long param_3,ulong param_4, undefined8 param_5,undefined8 param_6,undefined8 param_7,unsigned long (*param_8)());
+void sk_001dc620();
 void sk_001dc754(void);
 void sk_001dc870(void);
 void sk_001dc8f4(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)());
@@ -1379,9 +1379,9 @@ void sk_001dd104(undefined8 param_1,undefined8 param_2,undefined8 param_3,long p
 void sk_001dd108(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4);
 void sk_001dd128();
 void sk_001dd154(void);
-void sk_001dd1ec();
+undefined8 sk_001dd1ec();
 void sk_001dd220(undefined8 *param_1,undefined8 param_2,long param_3);
-void sk_001dd24c();
+undefined8 sk_001dd24c();
 void sk_001dd264(void);
 void sk_001dd374(long param_1);
 void sk_001dd408(undefined8 param_1,undefined8 param_2);
@@ -1426,7 +1426,7 @@ void sk_001df16c(void);
 void sk_001df2a0(void);
 void sk_001df2f4(void);
 void sk_001df2f8(void);
-void sk_001df334(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, unsigned long (*param_5)(),unsigned long (*param_6)());
+void sk_001df334();
 void sk_001df428();
 void sk_001df4e4();
 void sk_001df510(long param_1,long param_2,unsigned long (*param_3)(),undefined8 param_4,long param_5);
@@ -4169,10 +4169,14 @@ void sk_001d36d8(void)
 
 /* FUN_001d36e8 @ 0x001d36e8   (est. sk_r5_fatal_assert_001d36e8) */
 /* Confidence: low (mechanical translation; names heuristic) */
-void sk_001d36e8(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,
-                 undefined8 param_5)
+void sk_001d36e8()
 
 {
+  undefined8 param_1;
+  undefined8 param_2;
+  undefined8 param_3;
+  undefined8 param_4;
+  undefined8 param_5;
   undefined8 t1;
   ulong t2;
   undefined8 t3;
@@ -5122,7 +5126,7 @@ L_001d66b4:
   sk_00351184();
   sk_003509e0();
   (*eo9_00)();
-  sk_001d69d8();
+sk_001d69d8();
   sk_0034b3e8();
   (**(unsigned long (**)() )(eo16_01 + 8))();
   pc9 = *(unsigned long (**)() )(eo16_00 + 8);
@@ -5138,10 +5142,16 @@ L_001d64a0:
 
 /* FUN_001d69d8 @ 0x001d69d8   (est. sk_r5_fatal_assert_001d69d8) */
 /* Confidence: low (mechanical translation; names heuristic) */
-uint sk_001d69d8(undefined8 param_1,undefined8 param_2,uint param_3,undefined8 param_4,
-                 undefined8 param_5,undefined8 param_6,undefined8 param_7)
+uint sk_001d69d8()
 
 {
+  undefined8 param_1;
+  undefined8 param_2;
+  uint param_3;
+  undefined8 param_4;
+  undefined8 param_5;
+  undefined8 param_6;
+  undefined8 param_7;
   int iv1;
   long n2;
   long n3;
@@ -6099,7 +6109,7 @@ void sk_001d83cc(void)
     sk_00377824();
     sk_003536ac();
     sk_00350810(eo8,sk_0031b0ec);
-    sk_001d88fc();
+sk_001d88fc();
     sk_000e72b0(*(undefined8 *)(eo16 + 8));
     (*eo8_00)();
   }
@@ -6244,10 +6254,17 @@ void sk_001d8808(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 
 /* FUN_001d88fc @ 0x001d88fc   (est. sk_r5_swift_001d88fc) */
 /* Confidence: low (mechanical translation; names heuristic) */
-void sk_001d88fc(undefined8 param_1,unsigned long (*param_2)(),undefined8 param_3,long param_4,long param_5,
-                 undefined8 param_6,undefined8 param_7,undefined8 param_8)
+void sk_001d88fc()
 
 {
+  undefined8 param_1;
+  unsigned long (*param_2)();
+  undefined8 param_3;
+  long param_4;
+  long param_5;
+  undefined8 param_6;
+  undefined8 param_7;
+  undefined8 param_8;
   int iv1;
   long eo8;
   long n2;
@@ -8068,7 +8085,7 @@ void sk_001dba34(void)
         v18 = 0;
         st10 = t5;
         sk_003516fc(v8,&v18,t2);
-        sk_001d36e8();
+sk_001d36e8();
         sk_003589d8();
         sk_0031b1c4();
         sk_00351184();
@@ -8500,16 +8517,20 @@ void sk_001dc4c0(undefined8 param_1,undefined8 param_2,undefined8 param_3,unsign
 void sk_001dc554(void)
 
 {
-  sk_001dc56c();
+sk_001dc56c();
   return;
 }
 
 /* FUN_001dc56c @ 0x001dc56c   (est. sk_r5_swift_001dc56c) */
 /* Confidence: low (mechanical translation; names heuristic) */
-void sk_001dc56c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,
-                 unsigned long (*param_5)())
+void sk_001dc56c()
 
 {
+  undefined8 param_1;
+  undefined8 param_2;
+  undefined8 param_3;
+  undefined8 param_4;
+  unsigned long (*param_5)();
   undefined8 t1;
   unsigned long (*rx19)();
   
@@ -8527,16 +8548,23 @@ void sk_001dc56c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 void sk_001dc5c4(void)
 
 {
-  sk_001dc620();
+sk_001dc620();
   return;
 }
 
 /* FUN_001dc620 @ 0x001dc620   (est. sk_r5_fatal_assert_001dc620) */
 /* Confidence: low (mechanical translation; names heuristic) */
-void sk_001dc620(undefined8 param_1,undefined8 param_2,long param_3,ulong param_4,
-                 undefined8 param_5,undefined8 param_6,undefined8 param_7,unsigned long (*param_8)())
+void sk_001dc620()
 
 {
+  undefined8 param_1;
+  undefined8 param_2;
+  long param_3;
+  ulong param_4;
+  undefined8 param_5;
+  undefined8 param_6;
+  undefined8 param_7;
+  unsigned long (*param_8)();
   undefined8 stk00000040;
   undefined8 t1;
   undefined8 t2;
@@ -9390,7 +9418,7 @@ void sk_001ddb2c(void)
     (*pc3)();
   }
   t5 = sk_0035475c(eo8 + t9);
-  at17._0_8_ = (undefined8)(sk_001dd58c(t5,1));
+  at17._0_8_ = (undefined8)(sk_001dd58c(t5,1,(unsigned long (*)())0));
   at17._8_8_ = 0;
   n13 = *rx20;
   t2 = (*(ulong *)(n13 + 0x18) >> 1) - *(long *)(n13 + 0x10);
@@ -10402,16 +10430,20 @@ void sk_001df2f4(void)
 void sk_001df2f8(void)
 
 {
-  sk_001df334();
   return;
 }
 
 /* FUN_001df334 @ 0x001df334   (est. sk_r5_swift_001df334) */
 /* Confidence: low (mechanical translation; names heuristic) */
-void sk_001df334(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,
-                 unsigned long (*param_5)(),unsigned long (*param_6)())
+void sk_001df334()
 
 {
+  undefined8 param_1;
+  undefined8 param_2;
+  undefined8 param_3;
+  undefined8 param_4;
+  unsigned long (*param_5)();
+  unsigned long (*param_6)();
   undefined8 eo8;
   long eo16;
   long n1;

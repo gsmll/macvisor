@@ -668,11 +668,11 @@ long sk_dt_lookup(long *tbl, sk_word_t key, long *out);
 void sk_dt_table_set2(sk_word_t t);
 void sk_dt_lookup_global2(sk_word_t a, void *b);
 sk_word_t sk_dt_property_get(sk_word_t *out);
-void sk_dt_parse(sk_word_t base, sk_word_t size, sk_word_t *out);
+sk_word_t sk_dt_parse(sk_word_t base, sk_word_t size, sk_word_t *out);
 sk_word_t sk_dt_lookup_region(sk_word_t base, sk_word_t size, sk_word_t *out);
 void sk_dt_integrity_parse(sk_word_t a, sk_word_t b, sk_word_t (*cb)(sk_word_t*, sk_word_t), sk_word_t cbarg);
 sk_word_t sk_dt_parse_cb(sk_word_t *ctx, sk_word_t p2);
-sk_word_t sk_dt_validate_range(long base, sk_word_t size, long *out);
+sk_word_t sk_dt_validate_range(long base, sk_word_t size, sk_word_t *out);
 bool sk_dt_next(void *ctx);
 sk_word_t sk_dt_walk(void *ctx);
 void sk_dt_node_init(long base, sk_word_t size, long *out);
@@ -682,11 +682,11 @@ bool sk_dt_prop(sk_word_t *dt, sk_word_t *ptr, sk_word_t *len);
 sk_word_t sk_dt_prop_lookup(long base, sk_word_t size, const char *name, sk_word_t *ptr, sk_word_t *len);
 bool sk_dt_eof(sk_word_t *dt);
 sk_word_t sk_dt_advance(sk_word_t *dt);
-sk_word_t sk_dt_node_children(long *ctx, sk_word_t *out);
+sk_word_t sk_dt_node_children(sk_word_t *ctx, sk_word_t *out);
 sk_word_t sk_dt_cursor(sk_word_t *dt);
 sk_word_t sk_dt_parse_driver(sk_word_t ctx0, sk_word_t *root, sk_word_t (*cb)(sk_word_t*, sk_word_t), sk_word_t cbarg);
-bool sk_dt_list_get(long *list, sk_word_t idx, sk_word_t *out);
-sk_word_t sk_dt_list_count(long *list);
+bool sk_dt_list_get(sk_word_t *list, sk_word_t idx, sk_word_t *out);
+sk_word_t sk_dt_list_count(sk_word_t *list);
 void sk_dt_overflow_panic(void) __attribute__((noreturn));
 void sk_dt_noop(void);
 void sk_dt_prop_get_fwd(void);
@@ -694,7 +694,7 @@ void sk_dt_parse_fwd(void);
 void sk_dt_lookup_region_fwd(void);
 void sk_dt_integrity_fwd(void);
 void sk_dt_list_get_fwd(void);
-sk_word_t sk_dt_list_count_fwd(long *list);
+sk_word_t sk_dt_list_count_fwd(sk_word_t *list);
 void sk_dt_prop_lookup_fwd(void);
 void sk_dt_node_init_fwd(void);
 void sk_dt_advance_fwd(void);
@@ -2658,7 +2658,7 @@ sk_word_t sk_ep_notif_tail(void)
     sk_word_t *es = sk_ep_state(0);          /* FUN_0005fad8 */
     sk_word_t *p = (sk_word_t*)(es[0] + 0xc0);
     sk_word_t *e = p + es[1];
-    if ((p <= e && e + 1 <= (sk_word_t*)(w[0] + 0xe0)) && e <= e + 1)
+    if ((p <= e && e + 1 <= (sk_word_t*)(es[0] + 0xe0)) && e <= e + 1)
         return *e;
     sk_breakpoint(0x5519, 0x636d0);
 }
@@ -3927,7 +3927,7 @@ sk_word_t sk_dt_parse_cb(sk_word_t *ctx, sk_word_t p2)
  * Confidence: medium
  * Notes: DT globals DAT_004be8e0/uRam00000000004be8e8; FUN_00065e90/00065ec0.
  */
-sk_word_t sk_dt_validate_range(long base, sk_word_t size, long *out)
+sk_word_t sk_dt_validate_range(long base, sk_word_t size, sk_word_t *out)
 {
     if ((base != 0 && size != 0) && size > 7) {
         sk_word_t dt[2] = { (sk_word_t)base, size };
@@ -3964,7 +3964,7 @@ bool sk_dt_next(void *ctx){ return sk_dt_walk_end() == 0; }
 sk_word_t sk_dt_walk(void *ctx)
 {
     sk_word_t base = 0, size = 0;
-    if (sk_dt_node(ctx, &base) == 0) return 1;    /* FUN_00065f48 */
+    if (sk_dt_node((sk_word_t)(uintptr_t)ctx, &base) == 0) return 1;    /* FUN_00065f48 */
     sk_word_t c[4] = {0,0,0,0};
     sk_word_t r = sk_dt_validate_range(base, size, &c);
     if ((int)r != 0) {
@@ -4008,8 +4008,9 @@ bool sk_dt_child(sk_word_t *dt, sk_word_t *addr, sk_word_t *len)
 {
     sk_word_t node = (sk_word_t)sk_dt_node_hdr(dt);          /* FUN_00065c30 */
     if (node != 0) {
-        if ((node + 0x24 < node) || (len = thunk_len(node, 0x20), 0x20 < *len))
+        if ((node + 0x24 < node) || (0x20 < thunk_len(node, 0x20)))
             sk_breakpoint(0x5519, 0x65c30);
+        *len = thunk_len(node, 0x20);
         *addr = node;
     }
     return node != 0;
@@ -4164,7 +4165,7 @@ sk_word_t sk_dt_advance(sk_word_t *dt)
  * Confidence: low
  * Notes: Strings s_iterator_>node_size_>__iterator__005be667, s__AppleInternal_Library_BuildRoot_005be68f, s_device_tree_node_children_iterat_005be75f; FUN_00066030/00065a3c/00065ad0/00065af0; SoftwareBreakpoint(0x5519,0x66030).
  */
-sk_word_t sk_dt_node_children(long *ctx, sk_word_t *out)
+sk_word_t sk_dt_node_children(sk_word_t *ctx, sk_word_t *out)
 {
     sk_word_t node = sk_dt_cursor(ctx);          /* FUN_00066030 */
     sk_word_t r = 0;
@@ -4263,7 +4264,7 @@ sk_word_t sk_dt_parse_driver(sk_word_t ctx0, sk_word_t *root, sk_word_t (*cb)(sk
  * Confidence: medium
  * Notes: FUN_00066204.
  */
-bool sk_dt_list_get(long *list, sk_word_t idx, sk_word_t *out)
+bool sk_dt_list_get(sk_word_t *list, sk_word_t idx, sk_word_t *out)
 {
     sk_word_t i = 0;
     for (;;) {
@@ -4287,7 +4288,7 @@ bool sk_dt_list_get(long *list, sk_word_t idx, sk_word_t *out)
  * Confidence: medium
  * Notes: FUN_00066204.
  */
-sk_word_t sk_dt_list_count(long *list)
+sk_word_t sk_dt_list_count(sk_word_t *list)
 {
     sk_word_t n = 0;
     for (;;) {
@@ -4373,7 +4374,7 @@ void sk_dt_list_get_fwd(void){ sk_dt_list_get(0,0,0); }
  * Confidence: medium
  * Notes: thunk_FUN_000661cc; FUN_00066204.
  */
-sk_word_t sk_dt_list_count_fwd(long *list)
+sk_word_t sk_dt_list_count_fwd(sk_word_t *list)
 {
     sk_word_t n = 0;
     for (;;) {

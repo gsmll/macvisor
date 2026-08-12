@@ -60,15 +60,18 @@ extern uint64_t sk_tbplace_res_dsp;     /* 0x65bf88/0x65bf90 */
  * Shared helpers reconstructed by other slice workers.
  * FUN_ address is ground truth; names are estimates.
  * ------------------------------------------------------------------ */
-extern unsigned long sk_x_00001378();   /* FUN_00001378 */
-extern unsigned long sk_x_0000178c();   /* FUN_0000178C */
-extern unsigned long sk_x_00011d7c();   /* FUN_00011D7C */
 typedef union {
     struct { uint64_t lo, hi; };
     struct { void *object, *vtable; };
     struct { uint64_t base, end; };
 } sk_ep_pair_t;
-extern sk_ep_pair_t sk_ep_obj_get();   /* FUN_00034a2c: {object, vtable} pair */
+typedef unsigned int  uint;
+typedef unsigned long ulong;
+typedef unsigned char byte;
+extern unsigned long sk_x_00001378();   /* FUN_00001378 */
+extern unsigned long sk_x_0000178c();   /* FUN_0000178C */
+extern unsigned long sk_x_00011d7c();   /* FUN_00011D7C */
+extern sk_ep_pair_t sk_ep_obj_get();   /* FUN_00034a2c */
 extern unsigned long sk_x_00034f70();   /* FUN_00034F70 */
 extern unsigned long sk_x_00035a78();   /* FUN_00035A78 */
 extern unsigned long sk_x_0004ba18();   /* FUN_0004BA18 */
@@ -215,7 +218,7 @@ extern const char sk_str_err_perm_invalid[];     /* s_L4_ErrorCodePermissionInva
  * Forward declarations of all functions defined in this slice (dense
  * cross-links). Signatures mirror the definitions below.
  * ------------------------------------------------------------------ */
-static cl4_result_t sk_tb_ph_range2(void);
+static sk_ep_pair_t sk_tb_ph_range2(void);
 static void sk_tb_ph_name(uint64_t name, uint64_t len, uint64_t cb, uint64_t arg);
 static uint32_t sk_tb_cmp3(uint64_t a, uint64_t b);
 static uint32_t sk_tb_cmp4(uint64_t a, uint64_t b);
@@ -695,7 +698,7 @@ extern uint32_t sk_g_0064cee8;
  * Confidence: medium
  * Notes: Ghidra types the return as void but callers consume a 16-byte pair
  *   (base at .lo, size at .hi); sk_x_00054610 is the per-cpu config getter. */
-static cl4_result_t sk_tb_ph_range2(void)
+static sk_ep_pair_t sk_tb_ph_range2(void)
 {
     cl4_result_t r;
     uint64_t cfg;
@@ -1176,7 +1179,7 @@ static uint64_t sk_tb_ph_dt(uint64_t p, uint64_t ph, uint64_t region, uint64_t d
     uint64_t count, iters, out, cnt, off, val, u20, err, ent;
     uint8_t l80[16];
     uint64_t l90, l88;
-    cl4_result_t ep;
+    sk_ep_pair_t ep;
 
     (void)p;
     if (len < 0x18) return 0;
@@ -1759,25 +1762,24 @@ static uint64_t sk_strnlen(uint64_t arg1, long arg2)
     long probe;
     char c;
     char *p;
-    char *s = (char *)arg1;
 
     probe = sk_x_00114fe0();
     if (probe == arg2) {
-        s = 0;
+        arg1 = 0;
     } else {
         if (arg2 == 0) {
             SoftwareBreakpoint(0x5519, 0x50ce8);
         }
-        p = s;
+        p = arg1;
         do {
-            if ((uint64_t)s + arg2 < (uint64_t)(p + 1)) {
+            if (arg1 + arg2 < p + 1) {
                 SoftwareBreakpoint(0x5519, 0x50ce8);
             }
             c = *p;
             p = p + 1;
         } while (c != '\0');
     }
-    return (uint64_t)s;
+    return arg1;
 }
 
 /* FUN_00050ce8 @ 0x00050ce8   (sk_ipc_msg_write)
@@ -1796,7 +1798,6 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
 {
     long *msg_base = (long *)arg1;
     uint16_t *dst = (uint16_t *)arg3;
-
     typedef sk_ep_pair_t sk_obj_t;
     uint16_t *desc;
     uint16_t *slot;
@@ -2068,8 +2069,6 @@ static void sk_tb_ph_encode_elem(uint64_t region, uint64_t ph, uint64_t dst)
     long p1, p2;
     uint16_t u9, u10, u11, u12;
     uint8_t u1, u2, u3, u4, u5, u6, u7, u8;
-    long *reg = (long *)region;
-    uint8_t *out = (uint8_t *)dst;
 
     if (*(uint8_t *)(ph + 0x107) >> 2 != 0) {
         sk_fatal_printf(sk_str_integer_overflow);
@@ -2079,8 +2078,8 @@ static void sk_tb_ph_encode_elem(uint64_t region, uint64_t ph, uint64_t dst)
            (uint64_t)*(uint16_t *)(ph + 0x100) |
            (uint64_t)((uint)*(uint8_t *)(ph + 0x106) << 0x10 |
                       (uint)*(uint8_t *)(ph + 0x107) << 0x18 | (uint)*(uint16_t *)(ph + 0x104)) << 0x20) * 0x40;
-    if (off < (uint64_t)reg[1]) {
-        p1 = off + reg[0];
+    if (off < (uint64_t)region[1]) {
+        p1 = off + *region;
     } else {
         p1 = 0;
     }
@@ -2094,29 +2093,29 @@ static void sk_tb_ph_encode_elem(uint64_t region, uint64_t ph, uint64_t dst)
             sk_fatal_printf(sk_str_integer_overflow);
         }
         cnt = cnt * 0x40;
-        if (cnt < (uint64_t)reg[1]) {
-            p2 = cnt + reg[0];
+        if (cnt < (uint64_t)region[1]) {
+            p2 = cnt + *region;
             goto have_p2;
         }
     }
     p2 = 0;
 have_p2:
-    out[0] = (uint8_t)p1;
-    out[5] = (uint8_t)((uint64_t)p1 >> 0x28);
-    out[3] = (uint8_t)((uint64_t)p1 >> 0x18);
-    out[2] = (uint8_t)((uint64_t)p1 >> 0x10);
-    out[1] = (uint8_t)((uint64_t)p1 >> 8);
-    out[4] = (uint8_t)((uint64_t)p1 >> 0x20);
-    out[7] = (uint8_t)((uint64_t)p1 >> 0x38);
-    out[6] = (uint8_t)((uint64_t)p1 >> 0x30);
-    out[0xed] = (uint8_t)((uint64_t)p2 >> 0x28);
-    out[0xe8] = (uint8_t)p2;
-    out[0xeb] = (uint8_t)((uint64_t)p2 >> 0x18);
-    out[0xea] = (uint8_t)((uint64_t)p2 >> 0x10);
-    out[0xe9] = (uint8_t)((uint64_t)p2 >> 8);
-    out[0xec] = (uint8_t)((uint64_t)p2 >> 0x20);
-    out[0xef] = (uint8_t)((uint64_t)p2 >> 0x38);
-    out[0xee] = (uint8_t)((uint64_t)p2 >> 0x30);
+    dst[0] = (uint8_t)p1;
+    dst[5] = (uint8_t)((uint64_t)p1 >> 0x28);
+    dst[3] = (uint8_t)((uint64_t)p1 >> 0x18);
+    dst[2] = (uint8_t)((uint64_t)p1 >> 0x10);
+    dst[1] = (uint8_t)((uint64_t)p1 >> 8);
+    dst[4] = (uint8_t)((uint64_t)p1 >> 0x20);
+    dst[7] = (uint8_t)((uint64_t)p1 >> 0x38);
+    dst[6] = (uint8_t)((uint64_t)p1 >> 0x30);
+    dst[0xed] = (uint8_t)((uint64_t)p2 >> 0x28);
+    dst[0xe8] = (uint8_t)p2;
+    dst[0xeb] = (uint8_t)((uint64_t)p2 >> 0x18);
+    dst[0xea] = (uint8_t)((uint64_t)p2 >> 0x10);
+    dst[0xe9] = (uint8_t)((uint64_t)p2 >> 8);
+    dst[0xec] = (uint8_t)((uint64_t)p2 >> 0x20);
+    dst[0xef] = (uint8_t)((uint64_t)p2 >> 0x38);
+    dst[0xee] = (uint8_t)((uint64_t)p2 >> 0x30);
     u9 = *(uint16_t *)(ph + 0x110);
     u1 = *(uint8_t *)(ph + 0x113);
     u2 = *(uint8_t *)(ph + 0x112);
@@ -2129,22 +2128,22 @@ have_p2:
     u12 = *(uint16_t *)(ph + 0x11c);
     u7 = *(uint8_t *)(ph + 0x11f);
     u8 = *(uint8_t *)(ph + 0x11e);
-    out[0xf0] = (uint8_t)u9;
-    out[0xfd] = (uint8_t)(u12 >> 8);
-    out[0xf9] = (uint8_t)(u11 >> 8);
-    out[0xf5] = (uint8_t)(u10 >> 8);
-    out[0xf3] = u1;
-    out[0xf2] = u2;
-    out[0xf1] = (uint8_t)(u9 >> 8);
-    out[0xf8] = (uint8_t)u11;
-    out[0xfb] = u5;
-    out[0xf4] = (uint8_t)u10;
-    out[0xfa] = u6;
-    out[0xf7] = u3;
-    out[0xf6] = u4;
-    out[0xfc] = (uint8_t)u12;
-    out[0xff] = u7;
-    out[0xfe] = u8;
+    dst[0xf0] = (uint8_t)u9;
+    dst[0xfd] = (uint8_t)(u12 >> 8);
+    dst[0xf9] = (uint8_t)(u11 >> 8);
+    dst[0xf5] = (uint8_t)(u10 >> 8);
+    dst[0xf3] = u1;
+    dst[0xf2] = u2;
+    dst[0xf1] = (uint8_t)(u9 >> 8);
+    dst[0xf8] = (uint8_t)u11;
+    dst[0xfb] = u5;
+    dst[0xf4] = (uint8_t)u10;
+    dst[0xfa] = u6;
+    dst[0xf7] = u3;
+    dst[0xf6] = u4;
+    dst[0xfc] = (uint8_t)u12;
+    dst[0xff] = u7;
+    dst[0xfe] = u8;
 }
 
 /* FUN_00051740 @ 0x00051740   (sk_reloc_bind)

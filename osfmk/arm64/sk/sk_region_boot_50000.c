@@ -286,6 +286,7 @@ extern uint64_t sk_global_104;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_105;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_106;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_107;  /* Ghidra DAT_/global */
+extern long __shared_cache;  /* Ghidra shared-cache region table */
 extern uint64_t sk_global_108;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_109;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_110;  /* Ghidra DAT_/global */
@@ -730,7 +731,7 @@ void sk_unlock(unsigned long *arg1);
 void sk_lock_set_mode(uint64_t *arg1,uint16_t arg2);
 void sk_lock_init(void);
 void sk_lock_record(long arg1,uint64_t arg2,uint64_t arg3);
-void sk_notify_domain(uintptr_t arg1, ...);
+void sk_notify_domain(long arg1,uint64_t arg2);
 void sk_notify_domain_slot(long *arg1,unsigned long arg2);
 uint64_t sk_cap_lookup_slot(long arg1);
 uint64_t sk_cap_resolve_name(long arg1,long *arg2);
@@ -2649,7 +2650,7 @@ void sk_domain_notify(int arg1,uint64_t arg2)
 {
   int t0;
   
-  sk_notify_domain(0x706c6174);
+  sk_notify_domain(0x706c6174,0);
   t0 = sk_domain_state();
   if (t0 != 0) {
     sk_sec_mem_scan2(arg2);
@@ -11437,7 +11438,7 @@ void sk_unlock(unsigned long *arg1){
     sk_panic_msg(0,(uint64_t)(void *)sk_str_110);
   }
   t2 = sk_current_thread();
-  sk_error_release(t2,arg1,NULL);
+  sk_error_release(t2,(uint64_t)arg1);
   if (*(short *)((long)arg1 + 0xc) == 0) {
     t2 = *arg1;
     *arg1 = in_xzr;
@@ -11447,7 +11448,7 @@ void sk_unlock(unsigned long *arg1){
       if (*(uint8_t *)(arg1 + 1) != 0) {
         t0 = *(uint8_t *)(arg1 + 1) - 1;
       }
-      sk_lock_dispatch_18(t0 & 0xff,arg1,3,0);
+      sk_lock_dispatch_18();
       return;
     }
   }
@@ -11510,7 +11511,7 @@ void sk_lock_record(long arg1,uint64_t arg2,uint64_t arg3)
   
   *(uint64_t *)(arg1 + -0x10) = unaff_x29;
   *(uint64_t *)(arg1 + -8) = unaff_x30;
-  *(BADSPACEBASE **)(arg1 + -0x20) = register0x00000008;
+  *(uint64_t *)(arg1 + -0x20) = 0;  /* saved register (unmodeled x8) */
   sk_thread_switch(arg2,arg3);
   return;
 }
@@ -11526,7 +11527,7 @@ void sk_lock_record(long arg1,uint64_t arg2,uint64_t arg3)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_notify_domain(uintptr_t arg1, ...){
+void sk_notify_domain(long arg1,uint64_t arg2){
   long *t1;
   long t0;
   
@@ -11535,7 +11536,7 @@ void sk_notify_domain(uintptr_t arg1, ...){
     t1 = &__shared_cache;
     do {
       if (*t1 == arg1) {
-        sk_notify_domain_slot(t1,arg2);
+        sk_notify_domain_slot(t1,(unsigned long)arg2);
       }
       t1 = t1 + 7;
       t0 = t0 + -1;
@@ -11573,7 +11574,7 @@ void sk_notify_domain_slot(long *arg1,unsigned long arg2)
           t0 = (sk_code_t )sk_break(0x5519,0x5d130);
           (*t0)();
         }
-        sk_notify_domain_slot(t1,arg2);
+        sk_notify_domain_slot((long *)t1,arg2);
         t2 = arg1[3];
       }
       t3 = t3 + 1;
@@ -11708,7 +11709,7 @@ unsigned short sk_lock_acquire(unsigned long *arg1,uint64_t arg2)
       goto LAB_0005d2f0;
     }
   }
-  t1 = sk_lock_dispatch_10(t9 & 0xff,arg1,t11,0,1);
+  t1 = sk_lock_dispatch_10();
   if (t1 == 3) {
     t12 = 0;
     t6 = t5;
@@ -11721,7 +11722,7 @@ unsigned short sk_lock_acquire(unsigned long *arg1,uint64_t arg2)
       t12 = (unsigned short)t0;
       t6 = t7;
       if (t0) break;
-      t1 = sk_lock_dispatch_10(t9 & 0xff,arg1,t11,0,1);
+      t1 = sk_lock_dispatch_10();
       t6 = t5;
     } while (t1 != 3);
     t8 = (unsigned int)(t7 >> 0x20);
@@ -11827,7 +11828,7 @@ void sk_lock_release(unsigned long *arg1, ...){
     if (arg2 == 0) {
       t9 = 4;
     }
-    sk_lock_dispatch_18(t5 & 0xff,arg1,t9,0);
+    sk_lock_dispatch_18();
     return;
   }
   return;
@@ -11872,7 +11873,7 @@ void sk_register_cb2(unsigned int *arg1,sk_code_t arg2,uint64_t arg3)
       *arg1 = 0xffffffff;
       sk_lo_release();
       if (t5 == (t2 | 3)) {
-        sk_lock_dispatch_18(t3,arg1,6,0);
+        sk_lock_dispatch_18();
         return;
       }
     }
@@ -11895,7 +11896,7 @@ LAB_0005d584:
           t1 = (sk_code_t )sk_break(0x5519,0x5d5dc);
           (*t1)();
         }
-        sk_lock_dispatch_10(t3,arg1,t7,t6,0);
+        sk_lock_dispatch_10();
         t2 = *arg1;
       }
     }
@@ -14025,11 +14026,11 @@ void sk_restore_ctx(long arg1)
     t7 = sk_cpu_array(t6);
     t0 = *(int *)(t8 + 0x84);
     while (t0 == 0) {
-      sk_lock_dispatch_10(t6,t3,t7,0,0);
+      sk_lock_dispatch_10();
       t7 = sk_cpu_array(t6);
       t0 = *t3;
     }
-    sk_lock_dispatch_18((unsigned int)(t8 + 0x80) >> 4 & 0xf,t8 + 0x80,5,0);
+    sk_lock_dispatch_18();
     if (t0 == 2) {
       sk_waitq_dequeue(t8);
       t1 = sk_kernel_get();
@@ -14086,7 +14087,7 @@ void sk_restore_ctx1(uint64_t arg1)
       t8 = sk_cpu_array(t6);
       t0 = *t3;
     }
-    sk_lock_dispatch_18((unsigned int)(t7 + 0x80) >> 4 & 0xf,t7 + 0x80,5,0);
+    sk_lock_dispatch_18();
     if (t0 == 2) {
       sk_waitq_dequeue(t7);
       t1 = sk_kernel_get();
@@ -14119,7 +14120,7 @@ void sk_restore_ctx1(uint64_t arg1)
 void sk_restore_ctx2(long arg1)
 {
   *(uint32_t *)(arg1 + 0x84) = 2;
-  sk_lock_dispatch_18((unsigned int)(arg1 + 0x84) >> 4 & 0xf,arg1 + 0x84,5,0);
+  sk_lock_dispatch_18();
   return;
 }
 
