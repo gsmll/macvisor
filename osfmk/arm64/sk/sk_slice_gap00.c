@@ -22,6 +22,12 @@
 #include <stdbool.h>
 #include "sk_internal.h"
 
+/* Unspecified-argument function pointer (K&R empty-paren): allows calling
+ * the generic dispatch handlers with the register-aliased argument set,
+ * matching the Ghidra decompiles where the handler's 8 params come from
+ * the outgoing register state. */
+typedef uint64_t (*sk_fn_t)();
+
 /* Out-of-range cL4 helper declarations (extern; bodies reconstructed by
  * the sibling range worker that owns them). Names are estimates. */
 extern uint64_t sk_tls();  /* FUN_00021480 */
@@ -713,12 +719,12 @@ static void sk_sys_ipc_5cap_alt(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,
  * Ghidra: uint FUN_00323254(void) — wrappers: lookup + ipc_send preamble then
  * delegate to the generic cap-op handler FUN_00323304, return its low bit.
  * Confidence: medium */
-static void sk_wrap_cap_op_a(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
+static void sk_wrap_cap_op_a(void) { sk_lookup_cur(); sk_ipc_send(); ((sk_fn_t)sk_sys_cap_op_common)(); }
 /* FUN_00323254/ac, 0x323664/bc (est. sk_wrap_cap_op_N)
  * Ghidra: uint FUN_00323254(void) — wrappers: lookup + ipc_send preamble then
  * delegate to the generic cap-op handler FUN_00323304, return its low bit.
  * Confidence: medium */
-static void sk_wrap_cap_op_b(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
+static void sk_wrap_cap_op_b(void) { sk_lookup_cur(); sk_ipc_send(); ((sk_fn_t)sk_sys_cap_op_common)(); }
 /* FUN_00323304 @ 0x323304   (est. sk_sys_cap_op_common)
  * Ghidra: void FUN_00323304(8 args)
  * Generic capability-operation syscall handler (5-cap message): resolves
@@ -791,12 +797,12 @@ static void sk_sys_cap_op_common(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4
  * Ghidra: uint FUN_00323254(void) — wrappers: lookup + ipc_send preamble then
  * delegate to the generic cap-op handler FUN_00323304, return its low bit.
  * Confidence: medium */
-static void sk_wrap_cap_op_c(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
+static void sk_wrap_cap_op_c(void) { sk_lookup_cur(); sk_ipc_send(); ((sk_fn_t)sk_sys_cap_op_common)(); }
 /* FUN_00323254/ac, 0x323664/bc (est. sk_wrap_cap_op_N)
  * Ghidra: uint FUN_00323254(void) — wrappers: lookup + ipc_send preamble then
  * delegate to the generic cap-op handler FUN_00323304, return its low bit.
  * Confidence: medium */
-static void sk_wrap_cap_op_d(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
+static void sk_wrap_cap_op_d(void) { sk_lookup_cur(); sk_ipc_send(); ((sk_fn_t)sk_sys_cap_op_common)(); }
 /* FUN_00323714 @ 0x323714   (est. sk_sys_ipc_6cap)
  * Ghidra: void FUN_00323714(8 args)
  * 6-capability IPC handler: full template with dispatch-table entry. On a
@@ -952,19 +958,19 @@ static void sk_sys_ipc_6cap_alt(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,
 /* FUN_00323dd4/e38/e9c/f00 (est. sk_wrap_sys_op_N)
  * Ghidra: uint FUN_00323dd4(void) — wrappers delegating to FUN_00323f64.
  * Confidence: medium */
-static void sk_wrap_sys_op_a(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
+static void sk_wrap_sys_op_a(void) { sk_hlp_0034f90c(); sk_ipc_send(); ((sk_fn_t)sk_sys_op_common)(); }
 /* FUN_00323dd4/e38/e9c/f00 (est. sk_wrap_sys_op_N)
  * Ghidra: uint FUN_00323dd4(void) — wrappers delegating to FUN_00323f64.
  * Confidence: medium */
-static void sk_wrap_sys_op_b(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
+static void sk_wrap_sys_op_b(void) { sk_hlp_0034f90c(); sk_ipc_send(); ((sk_fn_t)sk_sys_op_common)(); }
 /* FUN_00323dd4/e38/e9c/f00 (est. sk_wrap_sys_op_N)
  * Ghidra: uint FUN_00323dd4(void) — wrappers delegating to FUN_00323f64.
  * Confidence: medium */
-static void sk_wrap_sys_op_c(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
+static void sk_wrap_sys_op_c(void) { sk_hlp_0034f90c(); sk_ipc_send(); ((sk_fn_t)sk_sys_op_common)(); }
 /* FUN_00323dd4/e38/e9c/f00 (est. sk_wrap_sys_op_N)
  * Ghidra: uint FUN_00323dd4(void) — wrappers delegating to FUN_00323f64.
  * Confidence: medium */
-static void sk_wrap_sys_op_d(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
+static void sk_wrap_sys_op_d(void) { sk_hlp_0034f90c(); sk_ipc_send(); ((sk_fn_t)sk_sys_op_common)(); }
 /* FUN_00323f64 @ 0x323f64   (est. sk_sys_op_common)
  * Ghidra: void FUN_00323f64(8 args)
  * Generic syscall/op handler (6-cap message): resolves the cap and runs the

@@ -527,3 +527,14 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 00358410 -> 00377824 (0xff)
 - 00357cc8 -> data s_Swift_ExistentialCollection_swif_005cf680 (Swift existential pair ctor)
 - 00357f34 / 003580a4: pte->canonical fixup + capability-word masking leaves
+
+## SkGap11 (0x00351d24-0x00353118, leaf/thunk/helper run)
+- 00351d4c -> FUN_001a842c, FUN_00229ebc (hash/PRF round callers)
+- 00351ee0 -> 00310b08 (swift_type_metadata_field_14 forwarding thunk)
+- 00351ef8 -> 00027754 (boot-region helper forwarding thunk)
+- 00351fe0 -> 00310a74 (swift_type_metadata_field_30) then 0001df60
+- 003522e4 -> 00310a74 then 0001df60
+- 003523bc -> 00310a74 then 0001df60 (after frame store)
+- 00351fd0 <- 0022ceac, 0022cf60, 0022cff0, 0022d080, 0022d118, 002a4ab4 (tagged-ptr build)
+- 0035239c <- 002b45a8, 002b7808, 002b7830 (pair builder)
+- 003521a4 -> &DAT_00657778 (global address init)

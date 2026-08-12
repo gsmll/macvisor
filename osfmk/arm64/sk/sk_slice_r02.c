@@ -178,3 +178,100 @@ extern unsigned char cL4_report_flag;  /* _DAT_006c0b10 */
 extern unsigned long cL4_meta_none;   /* DAT_004f2740 */
 extern unsigned long cL4_meta_empty;  /* DAT_004f2748 */
 extern unsigned long cL4_meta_builtin_table[]; /* DAT_004f2960 */
+
+/* ------------------------------------------------------------------ *
+ * Shared demangler data structures
+ * ------------------------------------------------------------------ */
+
+/* A demangle-tree Node: a 16-bit kind code plus a payload. The tag byte at
+ * +0x12 selects the layout: 0=empty; 1=one child (word0); 2=two children
+ * (word0,word1); 3={payload,count}; 4=payload only; 5=array of children. */
+typedef struct dem_node {
+    unsigned long  w0;      /* +0x00 */
+    unsigned long  w1;      /* +0x08 */
+    unsigned short kind;    /* +0x10 */
+    unsigned char  tag;     /* +0x12 */
+    unsigned char  rsvd;    /* +0x13 */
+    unsigned int   count;   /* +0x14 */
+    unsigned int   cap;     /* +0x18 */
+} dem_node_t;
+
+/* Demangler parse state (param_1 of the parse routines). */
+typedef struct dem_state {
+    unsigned long  pad0[7];         /* +0x00..+0x37 */
+    const char    *src;             /* +0x38 */
+    unsigned long  src_end;         /* +0x40 */
+    unsigned long  pos;             /* +0x48 */
+    unsigned char  flag50;          /* +0x50 */
+    unsigned char  flag51;          /* +0x51 */
+    unsigned long  pad52;           /* +0x52 */
+    dem_node_t   **stack;           /* +0x58 */
+    unsigned int   stack_count;     /* +0x60 */
+    unsigned int   pad64;
+    dem_node_t   **stack2;          /* +0x68 */
+    unsigned int   stack2_count;    /* +0x70 */
+    unsigned int   pad74;
+    unsigned long  locals[26][2];   /* +0x78 sub-identifier table */
+    unsigned int   local_count;     /* +0x218 */
+    unsigned int   pad21c;
+    unsigned long  collect[2];      /* +0x220 */
+    unsigned long  cb;              /* +0x238 */
+} dem_state_t;
+
+/* ------------------------------------------------------------------ *
+ * In-slice forward declarations (mutual recursion).
+ * ------------------------------------------------------------------ */
+static unsigned long cL4_dem_field1(long p);   /* 3a13c4 */
+static unsigned long cL4_dem_field2(long p);   /* 3a1480 */
+static unsigned long cL4_dem_field5(long p);   /* 3a2044 */
+static long   cL4_dem_sizeof(long *p);         /* 3a2290 */
+static void   cL4_dem_copy(long *p, long n);   /* 3a232c */
+static void   cL4_dem_copy2(long *p, long n, long a, long b); /* 3a23b4 */
+static int    cL4_dem_has_extra(long p);       /* 3a2468 */
+static void   cL4_dem_build_extra(unsigned long *out, long p); /* 3a24d0 */
+static unsigned long cL4_dem_load(unsigned long *p);   /* 3a25a0 */
+static unsigned long cL4_dem_load2(unsigned long *p);  /* 3a25b8 */
+static unsigned long cL4_dem_capacity(unsigned long c, long n); /* 3a28e8 */
+static void   cL4_dem_reserve1(long *vec, long buf, unsigned long n, long sz); /* 3a294c */
+static void   cL4_dem_reserve2(long *vec, long buf, unsigned long n, long sz); /* 3a2a38 */
+static void   cL4_dem_node_reserve(dem_state_t *st, unsigned long n);  /* 3a3898 */
+static void   cL4_dem_emit_bare(dem_state_t *st, unsigned short k, unsigned long p); /* 3a3944 */
+static void   cL4_dem_emit_pair(dem_state_t *st, unsigned short k, unsigned long a, unsigned long b); /* 3a3980 */
+static void   cL4_dem_emit_pairw(dem_state_t *st, unsigned short k, unsigned long *p); /* 3a39c8 */
+static dem_node_t *cL4_dem_emit_str(dem_state_t *st, unsigned short k, unsigned long s); /* 3a3a10 */
+static void   cL4_dem_node_push_child(dem_state_t *st, dem_node_t *n, unsigned long child); /* 3a3460 */
+static void   cL4_dem_array_push(dem_state_t *st, long *vec, unsigned int *cnt, unsigned long n); /* 3a3578 */
+static void   cL4_dem_string_push(dem_state_t *st, long *s, unsigned long data, long n); /* 3a3a70 */
+static void   cL4_dem_string_reserve(dem_state_t *st, long *s, unsigned int *cnt, unsigned long n); /* 3a3aec */
+static long   cL4_dem_save_state(dem_state_t *st, long obj, unsigned long a, unsigned long b, unsigned long c); /* 3a3d18 */
+static long   cL4_dem_restore_state(dem_state_t *st);  /* 3a3de4 */
+static long   cL4_dem_parse(dem_state_t *st, short *sub, unsigned long len, unsigned long c); /* 3a3e54 */
+static unsigned long cL4_dem_parse_until(dem_state_t *st);  /* 3a4094 */
+static unsigned long cL4_dem_pop_kind_node(dem_state_t *st, void *fn); /* 3a4110 */
+static void   cL4_dem_dispatch(dem_state_t *st);   /* 3a4180 */
+static dem_node_t *cL4_dem_node1(dem_state_t *st, unsigned short k, long child); /* 3a4b38 */
+static dem_node_t *cL4_dem_node2(dem_state_t *st, unsigned short k, long a, long b); /* 3a4b98 */
+static dem_node_t *cL4_dem_node3(dem_state_t *st, unsigned short k, long a, long b, long c); /* 3a4c14 */
+static dem_node_t *cL4_dem_node4(dem_state_t *st, unsigned short k, long a, long b, long c, long d); /* 3a4ca8 */
+static dem_node_t *cL4_dem_node_copy_children(dem_state_t *st, dem_node_t *src, unsigned short k); /* 3a4d5c */
+static dem_node_t *cL4_dem_node_f4(dem_state_t *st);  /* 3a4ea4 */
+static long   cL4_dem_node_pattern(dem_state_t *st, long *sub);  /* 3a4f5c */
+static long   cL4_dem_operand(dem_state_t *st, int k);  /* 3a5518 */
+static long   cL4_dem_parse_simple(dem_state_t *st);  /* 3a56a0 */
+static unsigned long cL4_dem_pop_f4(dem_state_t *st); /* 3a58b0 */
+static unsigned long *cL4_dem_parse_intchar(dem_state_t *st); /* 3a5908 */
+static unsigned long cL4_dem_parse_ident(dem_state_t *st); /* 3a599c */
+static unsigned long cL4_dem_parse_builtin(dem_state_t *st); /* 3a5aa0 */
+static long   cL4_dem_parse_fixed(dem_state_t *st, unsigned long k); /* 3a6090 */
+static long   cL4_dem_parse_attrib(dem_state_t *st);  /* 3a613c */
+static void   cL4_dem_parse_special(dem_state_t *st); /* 3a61d8 */
+static long   cL4_dem_parse_attr2(dem_state_t *st);   /* 3a62f8 */
+static void   cL4_dem_emit_0x32(dem_state_t *st);     /* 3a63d8 */
+static void   cL4_dem_emit_0x1b(dem_state_t *st);     /* 3a644c */
+static void   cL4_dem_emit_0x30(dem_state_t *st);     /* 3a64f0 */
+static void   cL4_dem_emit_0x31(dem_state_t *st);     /* 3a6560 */
+static void   cL4_dem_emit_0x33(dem_state_t *st);     /* 3a65d4 */
+static dem_node_t *cL4_dem_emit_0xbf(dem_state_t *st); /* 3a663c */
+static long   cL4_dem_emit_0xc1(dem_state_t *st);     /* 3a672c */
+static void   cL4_dem_emit_kind(dem_state_t *st, unsigned long k); /* 3a6874 */
+static unsigned long *cL4_dem_parse_word(dem_state_t *st); /* 3a68a4 */
