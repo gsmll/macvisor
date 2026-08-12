@@ -3008,64 +3008,77 @@ chk_e0:
             kind = ek;
             if (ek == 1) {
                 i = 0;
-                do {
-                    ek = cL4_mr_kind((unsigned long *)arr);
-                    span_cnt = (unsigned long)ek;
-                    is_arr = 1 < ek - 1;
+                cnt = 1;
+            } else if (ek == 5) {
+                i = 0;
+                cnt = *(unsigned int *)(arr + 1);
+                if (cnt == 0) goto after_loop;
+            } else if (ek == 2) {
+                i = 0;
+                cnt = 2;
+            } else {
+                goto after_loop;
+            }
+            /* All three kinds share one element-walk loop (decompile LAB_003cbd00). */
+            do {
+                ek = cL4_mr_kind((unsigned long *)arr);
+                span_cnt = (unsigned long)ek;
+                is_arr = 1 < ek - 1;
+                inner = arr;
+                if (is_arr) inner = (unsigned long *)*arr;
+                if (*(short *)(inner[i] + 0x10) != 0xe2) {
                     inner = arr;
                     if (is_arr) inner = (unsigned long *)*arr;
-                    if (*(short *)(inner[i] + 0x10) != 0xe2) {
+                    if (*(short *)(inner[i] + 0x10) != 0xe1) {
+                        if (ek == 1) {
+                            if (span_cnt <= i) { desc = 0; }
+                            else {
+                                if (is_arr) arr = (unsigned long *)*arr;
+                                desc = (long *)arr[i];
+                            }
+                        } else {
+                            if (ek == 5) span_cnt = (unsigned long)*(unsigned int *)(arr + 1);
+                            else if (ek == 2) span_cnt = 2;
+                            else { desc = 0; }
+                            if (span_cnt <= i) desc = 0;
+                            else {
+                                if (is_arr) arr = (unsigned long *)*arr;
+                                desc = (long *)arr[i];
+                            }
+                        }
+                        ecode = 0xec8;
+                        err = 1; desc = 0;
+                        goto res;
+                    }
+                }
+                if (ek == 1) {
+                    if (span_cnt <= i) { e = 0; }
+                    else {
                         inner = arr;
                         if (is_arr) inner = (unsigned long *)*arr;
-                        if (*(short *)(inner[i] + 0x10) != 0xe1) {
-                            if (ek == 1) {
-                                if (span_cnt <= i) { desc = 0; }
-                                else {
-                                    if (is_arr) arr = (unsigned long *)*arr;
-                                    desc = (long *)arr[i];
-                                }
-                            } else {
-                                if (ek == 5) span_cnt = (unsigned long)*(unsigned int *)(arr + 1);
-                                else if (ek == 2) span_cnt = 2;
-                                else { desc = 0; }
-                                if (span_cnt <= i) desc = 0;
-                                else {
-                                    if (is_arr) arr = (unsigned long *)*arr;
-                                    desc = (long *)arr[i];
-                                }
-                            }
-                            ecode = 0xec8;
-                            err = 1; desc = 0;
-                            goto res;
-                        }
+                        e = (long *)inner[i];
                     }
-                    if (ek == 1) {
-                        if (span_cnt <= i) { e = 0; }
-                        else {
-                            inner = arr;
-                            if (is_arr) inner = (unsigned long *)*arr;
-                            e = (long *)inner[i];
-                        }
-                    } else {
-                        if (ek == 5) span_cnt = (unsigned long)*(unsigned int *)(arr + 1);
-                        else if (ek == 2) span_cnt = 2;
-                        else { e = 0; }
-                        if (span_cnt <= i) e = 0;
-                        else {
-                            if (is_arr) arr = (unsigned long *)*arr;
-                            e = (long *)arr[i];
-                        }
+                } else {
+                    if (ek == 5) span_cnt = (unsigned long)*(unsigned int *)(arr + 1);
+                    else if (ek == 2) span_cnt = 2;
+                    else { e = 0; }
+                    if (span_cnt <= i) e = 0;
+                    else {
+                        if (is_arr) arr = (unsigned long *)*arr;
+                        e = (long *)arr[i];
                     }
-                    cnt = (unsigned int)cL4_mr_kind((unsigned long *)e);
+                }
+                {
+                    unsigned int ekind = (unsigned int)cL4_mr_kind((unsigned long *)e);
                     e2p = e;
-                    if (cnt != 1) {
-                        if ((cnt == 5) && ((int)e[1] == 1)) { e2p = (long *)*e; goto f4chk; }
+                    if (ekind != 1) {
+                        if ((ekind == 5) && ((int)e[1] == 1)) { e2p = (long *)*e; goto f4chk; }
                         ecode = 0xecc; err = 1; desc = 0; goto res;
                     }
 f4chk:
                     if (*(short *)(*e2p + 0x10) != 0xf4) { ecode = 0xecc; err = 1; desc = 0; goto res; }
                     e2p = e;
-                    if (cnt - 1 < 2) {
+                    if (ekind - 1 < 2) {
                         inner = (unsigned long *)*e2p;
                     } else {
                         if ((cL4_mr_kind((unsigned long *)e) == 5) && ((int)e[1] != 0)) { e2p = (long *)*e; inner = (unsigned long *)*e2p; }
@@ -3084,43 +3097,9 @@ f4chk:
                         cL4_obj_set((unsigned long)inner, obj80, *ctx);
                     }
                     cL4_obj_set(obj, (unsigned long)inner, *ctx);
-                    i = i + 1;
-                } while (kind != i);
-            }
-            else if (ek == 5) {
-                kind = *(unsigned int *)(arr + 1);
-                if (kind != 0) goto loop5;
-            }
-            else if (ek == 2) goto loop5;
-            goto after_loop;
-loop5:
-            i = 0;
-            cnt = kind;
-            do {
-                inner = (unsigned long *)*arr;
-                e = (long *)inner[i];
-                if (cL4_mr_kind((unsigned long *)e) == 1 && *(short *)(*e + 0x10) == 0xf4) {
-                    if (i >= cnt) e = 0;
-                    else e = (long *)((unsigned long *)*arr)[i];
-                    if (cL4_mr_kind((unsigned long *)e) == 1 && *(short *)(*e + 0x10) == 0xf4) {
-                        e2p = e;
-                        inner = (unsigned long *)*e2p;
-                        if ((short)e[2] == 0xe1) {
-                            obj80 = cL4_obj_get(*ctx, 0x80);
-                            if (cL4_mr_kind((unsigned long *)inner) - 1 < 2) v = *inner;
-                            else {
-                                if ((cL4_mr_kind((unsigned long *)inner) == 5) && (*(int *)(inner + 1) != 0)) { inner = (unsigned long *)*inner; v = *inner; }
-                                else v = 0;
-                            }
-                            cL4_obj_set(obj80, v, *ctx);
-                            inner = (unsigned long *)cL4_obj_get(*ctx, 0xf4);
-                            cL4_obj_set((unsigned long)inner, obj80, *ctx);
-                        }
-                        cL4_obj_set(obj, (unsigned long)inner, *ctx);
-                    }
                 }
                 i = i + 1;
-            } while (i < cnt);
+            } while (cnt != i);
 after_loop:
             cL4_mr_cc324(out, (long)ctx, (long)obj, (unsigned long)(depth + 1));
             if (*out != 0) return;

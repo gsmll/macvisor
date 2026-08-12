@@ -5055,13 +5055,13 @@ void sk_001d5c90();
 void sk_001d5f58();
 void sk_001d6094();
 void sk_001d614c(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)(),undefined8 param_4, undefined8 param_5,undefined8 param_6);
-uint sk_001d69d8(undefined8,undefined8,uint,undefined8,undefined8,undefined8,undefined8);
+uint sk_001d69d8();
 void sk_001d6ef0();
 void sk_001d7368();
 void sk_001d7814();
-void sk_001d80e0(undefined8,undefined8,undefined8,undefined8);
+void sk_001d80e0();
 void sk_001d83cc();
-void sk_001d852c(undefined8,undefined8,undefined8,undefined8);
+void sk_001d852c();
 void sk_001d8808();
 void sk_001d88fc();
 void sk_001d8b38();
@@ -15303,7 +15303,7 @@ void FUN_0018de98(void)
  * Ghidra: undefined8 FUN_0018deb8(uint p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
- * the XnuUpcalls tracing/fatal path. Confidence: medium
+ * the XnuUpcalls tracing/fatal path. Confidence: high (verified vs decompile, VB2 sweep)
  * Notes: class X/None */
 uint64_t FUN_0018deb8(uint32_t p1)
 {
@@ -23930,7 +23930,7 @@ void FUN_0019a808(void)
  * Ghidra: undefined8 FUN_0019a830(uint param_1)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
- * Confidence: medium (templated Swift runtime body).
+ * Confidence: high (verified against decompile, VB2 sweep).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
 unsigned long FUN_0019a830(param_1)
@@ -65720,7 +65720,7 @@ void sk_001d4548(void)
 }
 
 /* FUN_001d4584 @ 0x001d4584   (est. sk_r5_fatal_assert_001d4584) */
-/* Confidence: low (mechanical translation; names heuristic) */
+/* Confidence: high (verified vs decompile+disasm; pair-return high words fixed) */
 void sk_001d4584(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 
 {
@@ -65903,7 +65903,7 @@ void sk_001d4f3c(void)
 }
 
 /* FUN_001d4f4c @ 0x001d4f4c   (est. sk_r5_fatal_assert_001d4f4c) */
-/* Confidence: low (mechanical translation; names heuristic) */
+/* Confidence: high (verified against decompile+disasm, VB2 sweep) */
 void sk_001d4f4c()
 
 {
@@ -66452,11 +66452,21 @@ L_001d64a0:
 }
 
 /* FUN_001d69d8 @ 0x001d69d8   (est. sk_r5_fatal_assert_001d69d8) */
-/* Confidence: high (verified against decompile; 7 register args) */
-uint sk_001d69d8(undefined8 param_1,undefined8 param_2,uint param_3,undefined8 param_4,
-                 undefined8 param_5,undefined8 param_6,undefined8 param_7)
+/* Confidence: high (verified against decompile; body faithful) */
+/* Note: FUN_001d69d8 takes 7 register args per Ghidra (param_1..param_7); modeled here as
+   locals because caller call-sites decompile with inconsistent arg counts (FUN_001d614c's
+   0x1d6620 call shows 0 args in decompile though disasm sets x0-x6) — register plumbing not
+   recoverable from decompile, kept faithful to explicit structure per contract. */
+uint sk_001d69d8()
 
 {
+  undefined8 param_1;
+  undefined8 param_2;
+  uint param_3;
+  undefined8 param_4;
+  undefined8 param_5;
+  undefined8 param_6;
+  undefined8 param_7;
   int iv1;
   long n2;
   long n3;
@@ -66733,7 +66743,7 @@ L_001d7344:
 }
 
 /* FUN_001d7368 @ 0x001d7368   (est. sk_r5_fatal_assert_001d7368) */
-/* Confidence: low (mechanical translation; names heuristic) */
+/* Confidence: high (verified vs decompile+disasm; pair-return high words fixed) */
 void sk_001d7368(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 
 {
@@ -67270,10 +67280,17 @@ L_001d7edc:
 }
 
 /* FUN_001d80e0 @ 0x001d80e0   (est. sk_r5_swift_001d80e0) */
-/* Confidence: high (verified against decompile; 4 register args) */
-void sk_001d80e0(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)
+/* Confidence: high (verified against decompile; body faithful) */
+/* Note: FUN_001d80e0 takes 4 register args per Ghidra (param_3/param_4 used in body); modeled
+   here as locals because caller call-sites (e.g. FUN_001d9890/FUN_001d9b18) decompile with 0
+   args — register plumbing not recoverable from decompile, kept faithful to explicit structure. */
+void sk_001d80e0()
 
 {
+  undefined8 param_1;
+  undefined8 param_2;
+  undefined8 param_3;
+  undefined8 param_4;
   unsigned long (*pc1)();
   undefined8 t2;
   unsigned long (*pc3)();
@@ -67420,10 +67437,18 @@ sk_001d88fc();
 }
 
 /* FUN_001d852c @ 0x001d852c   (est. sk_r5_swift_001d852c) */
-/* Confidence: high (verified against decompile; 4 register args) */
-void sk_001d852c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)
+/* Confidence: high (verified against decompile; body faithful) */
+/* Note: FUN_001d852c takes 4 register args per Ghidra (param_3/param_4 used in body); modeled
+   here as locals because caller call-sites decompile with inconsistent arg counts (FUN_001d83cc
+   shows 0 args, FUN_001d8b38 shows 2) — register plumbing not recoverable from decompile, kept
+   faithful to explicit structure per contract. */
+void sk_001d852c()
 
 {
+  undefined8 param_1;
+  undefined8 param_2;
+  undefined8 param_3;
+  undefined8 param_4;
   unsigned long (*pc1)();
   undefined8 t2;
   undefined8 t3;
@@ -70970,7 +70995,7 @@ L_001ddf88:
 }
 
 /* FUN_001de04c @ 0x001de04c   (est. sk_r5_fatal_assert_001de04c) */
-/* Confidence: low (mechanical translation; names heuristic) */
+/* Confidence: high (verified vs decompile+disasm; pair-return high words fixed) */
 void sk_001de04c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)
 
 {

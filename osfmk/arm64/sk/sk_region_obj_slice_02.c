@@ -849,7 +849,7 @@ word_t sk_swift_str_nonempty(void);                      /* 002a0cb0 */
 word_t sk_swift_str_cmp_ci(word_t a,word_t b,word_t c,word_t d,char e); /* 002a0cf8 */
 word_t sk_swift_str_compare(word_t a,word_t b,word_t c,word_t d); /* 002a0d50 */
 word_t sk_swift_str_compare_sub(void *a,long b,void *c,long d,char e,uint f); /* 002a0ed0 */
-void sk_swift_str_compare_eq(void);                      /* 002a0f24 */
+void sk_swift_str_compare_eq();                      /* 002a0f24 */
 void sk_swift_str_transform(void *a,void *b,void *c,word_t d,word_t e,word_t f,void *g); /* 002a1120 */
 long sk_swift_memcmp_limited(void *a,long b,void *c,long d); /* 002a1278 */
 void sk_swift_str_compare_bytes(void);                   /* 002a12b4 */
@@ -3327,7 +3327,8 @@ void sk_swift_str_next_break_slot(void **a)
  * Substring equality dispatch: compares two Swift string values (by pointer and
  * scalar count) through the 002a0f24 string-compare helper, returning 1 if equal.
  * Handles the various stored-representation tags (utf8/utf16/object).
- * Confidence: low */
+ * Confidence: low (opaque register-forwarding: in_ZR carry flag, extraout_x9/x13/x16
+ *   from prior calls have no C expression; preserved as documented placeholders). */
 word_t sk_swift_str_eq_sub(void *a, void *b, sk_fnptr c, sk_fnptr d, sk_fnptr e, sk_fnptr f)
 {
     sk_u128_t t, u;
@@ -3345,6 +3346,11 @@ word_t sk_swift_str_eq_sub(void *a, void *b, sk_fnptr c, sk_fnptr d, sk_fnptr e,
     (*DAT_00658c00)();
     rt_00358308();
     rt_00358a80();
+    /* in_ZR (carry flag from the rt_00358a80() compare) and the extraout_x10 /
+     * extraout_x9_01 tag-comparison targets have no C expression (register
+     * forwarding); the fast paths are collapsed to unreachable per the file's
+     * convention (same as sk_swift_str_eq_sub2). The general object path below
+     * is faithfully transcribed. */
     if (0) {
         if (d == 0) {
             u = rt_0008e500(0,0);

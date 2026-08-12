@@ -1486,7 +1486,7 @@ void sk_vspace_002092a8(void)
 
 /* skp1_FUN_002093d4 @ 0x002093d4   (est. sk_vspace_002093d4)
  * Ghidra: undefined * skp1_FUN_002093d4(ulong param_1,ulong param_2)
- * Confidence: medium
+ * Confidence: high (verified vs decompile, VB2 sweep)
  * Notes: Swift-object-model vspace/page-table method. See part-file header.
  */
 undefined * sk_vspace_002093d4(ulong p1,ulong p2)
@@ -2739,7 +2739,7 @@ void sk_vspace_0020b28c(void)
 
 /* skp1_FUN_0020b358 @ 0x0020b358   (est. sk_vspace_0020b358)
  * Ghidra: void skp1_FUN_0020b358(undefined8 param_1,undefined8 param_2,undefined8 param_3)
- * Confidence: medium
+ * Confidence: high (verified vs decompile, VB2 sweep)
  * Notes: Swift-object-model vspace/page-table method. See part-file header.
  */
 void sk_vspace_0020b358(undefined8 p1,undefined8 p2,undefined8 p3)

@@ -1623,7 +1623,7 @@ extern void cl4_vtable_0456c(void);
  * dispatch. On success store the result in ctx+0x90; on failure tear down the
  * whole object block.
  * Confidence: high (verified 2026-08-12: binding handlers realigned to disassembly,
- *   success branch condition restored, tail intermediate calls + b9 restored)
+ *   success branch condition restored, tail intermediate calls + b9 restored) */
 void cl4_ep_launcher_init(unsigned long p1, unsigned long p2, unsigned short p3,
                           unsigned long p4)
 {

@@ -402,6 +402,7 @@ extern word_t sw_41ca38(word_t, ...);  /* FUN_0041ca38 */
 extern word_t sw_41d070(word_t, ...);  /* FUN_0041d070 */
 extern word_t sw_41d8f4(word_t, ...);  /* FUN_0041d8f4 */
 extern sw128_t sw_41e0a0(word_t, ...);  /* FUN_0041e0a0 */
+extern word_t sw_42bc90(word_t, ...);  /* FUN_0042bc90 */
 extern word_t sw_41e188(word_t, ...);  /* FUN_0041e188 */
 extern sw128_t sw_41e21c(word_t, ...);  /* FUN_0041e21c */
 extern word_t sw_429398(word_t, ...);  /* FUN_00429398 */
@@ -1273,7 +1274,7 @@ void sk_re_parse_delim_body(word_t *out, char *start, char *end, long rec, char 
                                         sk_re_emit_scalar_len(hash, 0x7c23, 0xe200000000000000);
                                         sw_462aac(0);
                                         sw_462af0(hash, 0x23);
-                                        word_t m = sk_re_emit_len();
+                                        word_t m = sw_42bc90(0);
                                         sw_3a25d4(rec);
                                         if ((m & 1) != 0) {
                                                 sw128_t f = sw_41e0a0(hash, 0x7c23);
@@ -1296,7 +1297,7 @@ void sk_re_parse_delim_body(word_t *out, char *start, char *end, long rec, char 
                                                                 }
                                                                 if (p1 <= q) SW_FATAL(0x42d018);
                                                                 if (((word_t)q ^ f.hi) < 0x4000) break;
-                                                                char c1 = (char)sw_2b5ba0(f.lo,f.hi,0,0,0);
+                                                                char c1 = (char)(sw_2b5ba0(f.lo,f.hi,0,0,0).lo);
                                                                 char c2 = *q;
                                                                 q = q + 1;
                                                                 if (c1 != c2) break;

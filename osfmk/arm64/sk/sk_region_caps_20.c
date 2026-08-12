@@ -2561,7 +2561,9 @@ out:
  * region's type/presence flags. Returns the descriptor (or the mapped region).
  * Confidence: low
  * Notes: removes unreachable blocks 0xf0bec/0xf0c08/0xf0f40; FUN_000eea4c
- * performs the actual map; FUN_000f0b4c recurses through FUN_000a0650. */
+ * performs the actual map; FUN_000f0b4c recurses through FUN_000a0650.
+ * Error-reporting branches (trace 0x40/0x3c + FUN_00205844/000f4a9c format
+ * chains) are summarized, not fully emitted. */
 void *iel_map_region2(long key, long *seg)
 {
     (**(void (**)(void))(*(void **)seg + 0x60))();
@@ -2570,7 +2572,17 @@ void *iel_map_region2(long key, long *seg)
     long orig = *gc;
     long chk = cl4_mmu_op(cl4_mmu_op(orig) & mmu);
     bool same = (chk == orig);
-    unsigned char *flag = same ? cl4_flag_0() : cl4_flag_2();
+    unsigned char *flag;
+    if (same) {
+        flag = cl4_flag_0();
+    } else {
+        /* decompile: FUN_000f4bdc(); r = vt+0x68(); same = (r == 1);
+           flag = (r < 1) ? FUN_00167c30 : FUN_00167c48 */
+        cl4_iel_done();
+        long r = (**(long (**)(void))((void *)0 + 0x68))();
+        same = (r == 1);
+        flag = (r < 1) ? cl4_flag_4() : cl4_flag_2();
+    }
     unsigned char b = *flag;
     long cap = seg[2];
     cl4_iel_done();

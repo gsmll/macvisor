@@ -17,8 +17,8 @@
  * a self/context pointer carried in a callee-saved register); those are
  * transcribed as named parameters with a note.
  *
- * All out-of-range callees are declared as uniform 8-word-arg externs
- * (AAPCS64: args in x0..x7, result in x0). The 16-byte-return helpers use the
+ * All out-of-range callees are declared as unprototyped externs (AAPCS64:
+ * args in x0..x7, result in x0). The 16-byte-return helpers use the
  * sk_r29_pair_t struct. Signatures are estimates; the FUN_ address is in each
  * comment.
  */
@@ -39,653 +39,798 @@ typedef struct sk_r29_pair { word_t lo, hi; } sk_r29_pair_t;
  * (Ghidra DAT_ symbols). */
 extern word_t sk_h_00657778;   /* DAT_00657778: empty vector singleton */
 extern word_t sk_h_006577e0;   /* DAT_006577e0: empty sentinel */
-extern word_t sk_h_006577d8;   /* DAT_006577d8 */
-extern word_t sk_h_00657788;   /* DAT_00657788 */
-
 
 /* ------------------------------------------------------------------ *
  * Out-of-range cL4/Swift-runtime helpers referenced by this slice.
- * Uniform AAPCS64 externs (args x0..x7, result x0). sk_r29_pair_t for the
- * 16-byte returns. FUN_ addresses in comments. Names are estimates.
+ * Unprototyped AAPCS64 externs. sk_r29_pair_t for the 16-byte returns.
+ * FUN_ addresses in comments. Names are estimates.
  * ------------------------------------------------------------------ */
 
-extern word_t sk_h_00002534(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00002534 */
-extern word_t sk_h_000026e8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000026e8 */
-extern word_t sk_h_00002818(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00002818 */
-extern word_t sk_h_00002834(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00002834 */
-extern word_t sk_h_00002874(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00002874 */
-extern word_t sk_h_00019858(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00019858 */
-extern word_t sk_h_0001da84(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0001da84 */
-extern word_t sk_h_0001e790(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0001e790 */
-extern word_t sk_h_00027724(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00027724 */
-extern word_t sk_h_00041138(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00041138 */
-extern word_t sk_h_00068e14(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00068e14 */
-extern word_t sk_h_0006a374(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0006a374 */
-extern sk_r29_pair_t sk_h_0006ae9c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0006ae9c */
-extern word_t sk_h_0006b3f4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0006b3f4 */
-extern word_t sk_h_0006b42c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0006b42c */
-extern word_t sk_h_0006b6f4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0006b6f4 */
-extern word_t sk_h_0006f768(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0006f768 */
-extern word_t sk_h_00070594(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00070594 */
-extern word_t sk_h_00072c0c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00072c0c */
-extern word_t sk_h_00073524(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00073524 */
-extern word_t sk_h_0007767c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0007767c */
-extern sk_r29_pair_t sk_h_00077698(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00077698 */
-extern word_t sk_h_000776cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000776cc */
-extern word_t sk_h_00077888(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00077888 */
-extern word_t sk_h_00077894(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00077894 */
-extern word_t sk_h_0007c1c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0007c1c4 */
-extern word_t sk_h_0008409c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0008409c */
-extern word_t sk_h_00084174(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00084174 */
-extern word_t sk_h_00084180(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00084180 */
-extern sk_r29_pair_t sk_h_00084220(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00084220 */
-extern word_t sk_h_00084234(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00084234 */
-extern word_t sk_h_00084cc4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00084cc4 */
-extern word_t sk_h_00085754(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00085754 */
-extern word_t sk_h_000863bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000863bc */
-extern word_t sk_h_000867ec(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000867ec */
-extern word_t sk_h_00086840(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00086840 */
-extern word_t sk_h_0008cc7c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0008cc7c */
-extern word_t sk_h_0008e160(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0008e160 */
-extern word_t sk_h_0008e388(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0008e388 */
-extern word_t sk_h_0008e488(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0008e488 */
-extern word_t sk_h_0008e500(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0008e500 */
-extern sk_r29_pair_t sk_h_0008e518(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0008e518 */
-extern word_t sk_h_00092d40(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00092d40 */
-extern word_t sk_h_0009461c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0009461c */
-extern word_t sk_h_000a6e14(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000a6e14 */
-extern sk_r29_pair_t sk_h_000a6f68(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000a6f68 */
-extern word_t sk_h_000a6fe0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000a6fe0 */
-extern word_t sk_h_000ac00c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000ac00c */
-extern word_t sk_h_000af4d8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000af4d8 */
-extern word_t sk_h_000b430c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000b430c */
-extern word_t sk_h_000b4390(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000b4390 */
-extern word_t sk_h_000b43d0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000b43d0 */
-extern word_t sk_h_000b43e8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000b43e8 */
-extern word_t sk_h_000b4594(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000b4594 */
-extern word_t sk_h_000b45b0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000b45b0 */
-extern word_t sk_h_000bd3a4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000bd3a4 */
-extern word_t sk_h_000dbbe0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000dbbe0 */
-extern word_t sk_h_000dbc98(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000dbc98 */
-extern word_t sk_h_000e0654(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000e0654 */
-extern word_t sk_h_000e15d8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000e15d8 */
-extern word_t sk_h_000ec004(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000ec004 */
-extern word_t sk_h_000f4a9c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000f4a9c */
-extern word_t sk_h_000f4ae8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000f4ae8 */
-extern word_t sk_h_000f5d30(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000f5d30 */
-extern word_t sk_h_000f5e5c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_000f5e5c */
-extern word_t sk_h_00100e34(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00100e34 */
-extern word_t sk_h_00100efc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00100efc */
-extern word_t sk_h_00106e3c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00106e3c */
-extern word_t sk_h_00117cc4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00117cc4 */
-extern word_t sk_h_0011aa70(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0011aa70 */
-extern word_t sk_h_0011e71c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0011e71c */
-extern word_t sk_h_00136bf8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00136bf8 */
-extern word_t sk_h_00167404(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00167404 */
-extern word_t sk_h_0016749c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0016749c */
-extern word_t sk_h_001676cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001676cc */
-extern word_t sk_h_001a6a8c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001a6a8c */
-extern word_t sk_h_001a84f4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001a84f4 */
-extern word_t sk_h_001a8564(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001a8564 */
-extern word_t sk_h_001ae8a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001ae8a8 */
-extern word_t sk_h_001afa84(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001afa84 */
-extern word_t sk_h_001b798c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001b798c */
-extern word_t sk_h_001b9084(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001b9084 */
-extern word_t sk_h_001ba7d4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001ba7d4 */
-extern word_t sk_h_001bc440(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001bc440 */
-extern word_t sk_h_001ebfb0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001ebfb0 */
-extern word_t sk_h_001ed960(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001ed960 */
-extern word_t sk_h_001ee018(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001ee018 */
-extern word_t sk_h_001ee9f4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_001ee9f4 */
-extern word_t sk_h_00205844(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00205844 */
-extern word_t sk_h_002298d4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002298d4 */
-extern word_t sk_h_0024917c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0024917c */
-extern word_t sk_h_0024d9ac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0024d9ac */
-extern word_t sk_h_00255d4c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00255d4c */
-extern word_t sk_h_0025a094(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0025a094 */
-extern word_t sk_h_00267510(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00267510 */
-extern word_t sk_h_00267914(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00267914 */
-extern word_t sk_h_00294cb4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00294cb4 */
-extern word_t sk_h_0029c058(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0029c058 */
-extern sk_r29_pair_t sk_h_0029d3d8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0029d3d8 */
-extern sk_r29_pair_t sk_h_0029d560(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0029d560 */
-extern word_t sk_h_0029f368(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0029f368 */
-extern sk_r29_pair_t sk_h_0029fa0c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0029fa0c */
-extern sk_r29_pair_t sk_h_0029fb80(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0029fb80 */
-extern word_t sk_h_002a0cf8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002a0cf8 */
-extern word_t sk_h_002a49a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002a49a8 */
-extern word_t sk_h_002a4ab4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002a4ab4 */
-extern word_t sk_h_002a8870(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002a8870 */
-extern word_t sk_h_002a9ba8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002a9ba8 */
-extern word_t sk_h_002ab130(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002ab130 */
-extern word_t sk_h_002acbb8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002acbb8 */
-extern word_t sk_h_002ace24(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002ace24 */
-extern word_t sk_h_002ae098(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002ae098 */
-extern word_t sk_h_002ae2c0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002ae2c0 */
-extern word_t sk_h_002b141c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002b141c */
-extern word_t sk_h_002b14c8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002b14c8 */
-extern word_t sk_h_002b3670(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002b3670 */
-extern word_t sk_h_002b3b50(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002b3b50 */
-extern sk_r29_pair_t sk_h_002b439c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002b439c */
-extern word_t sk_h_002b7088(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002b7088 */
-extern word_t sk_h_002b723c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002b723c */
-extern word_t sk_h_002bbf08(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002bbf08 */
-extern word_t sk_h_002bc234(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002bc234 */
-extern word_t sk_h_002bc5bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002bc5bc */
-extern word_t sk_h_002bd724(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002bd724 */
-extern word_t sk_h_002bd8f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002bd8f0 */
-extern word_t sk_h_002bd9ac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002bd9ac */
-extern word_t sk_h_002bd9cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_002bd9cc */
-extern word_t sk_h_00310d98(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00310d98 */
-extern word_t sk_h_00319808(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00319808 */
-extern word_t sk_h_0032b65c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0032b65c */
-extern word_t sk_h_0034a018(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034a018 */
-extern word_t sk_h_0034a3b0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034a3b0 */
-extern word_t sk_h_0034b3f8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034b3f8 */
-extern word_t sk_h_0034b848(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034b848 */
-extern word_t sk_h_0034c6d4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034c6d4 */
-extern word_t sk_h_0034cb88(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034cb88 */
-extern word_t sk_h_0034cc24(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034cc24 */
-extern word_t sk_h_0034cec4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034cec4 */
-extern word_t sk_h_0034d3d4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034d3d4 */
-extern word_t sk_h_0034db28(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034db28 */
-extern word_t sk_h_0034eb74(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034eb74 */
-extern word_t sk_h_0034ecc8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034ecc8 */
-extern word_t sk_h_0034fbb0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0034fbb0 */
-extern word_t sk_h_00350470(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350470 */
-extern word_t sk_h_00350494(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350494 */
-extern word_t sk_h_003504a0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003504a0 */
-extern word_t sk_h_003504ac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003504ac */
-extern word_t sk_h_003504c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003504c4 */
-extern word_t sk_h_003504d0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003504d0 */
-extern word_t sk_h_00350518(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350518 */
-extern word_t sk_h_0035053c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035053c */
-extern word_t sk_h_00350548(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350548 */
-extern word_t sk_h_003505c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003505c4 */
-extern word_t sk_h_00350600(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350600 */
-extern word_t sk_h_0035060c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035060c */
-extern word_t sk_h_00350618(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350618 */
-extern word_t sk_h_00350624(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350624 */
-extern word_t sk_h_00350774(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350774 */
-extern word_t sk_h_003507e0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003507e0 */
-extern word_t sk_h_0035084c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035084c */
-extern word_t sk_h_0035089c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035089c */
-extern word_t sk_h_003508cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003508cc */
-extern word_t sk_h_003508fc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003508fc */
-extern word_t sk_h_00350914(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350914 */
-extern word_t sk_h_00350968(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350968 */
-extern word_t sk_h_003509b0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003509b0 */
-extern word_t sk_h_003509bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003509bc */
-extern word_t sk_h_003509c8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003509c8 */
-extern word_t sk_h_003509ec(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003509ec */
-extern word_t sk_h_00350af4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350af4 */
-extern word_t sk_h_00350b18(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350b18 */
-extern word_t sk_h_00350b48(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350b48 */
-extern word_t sk_h_00350bfc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350bfc */
-extern word_t sk_h_00350c20(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350c20 */
-extern word_t sk_h_00350d94(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00350d94 */
-extern word_t sk_h_003510c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003510c4 */
-extern word_t sk_h_00351124(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351124 */
-extern word_t sk_h_00351130(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351130 */
-extern word_t sk_h_00351178(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351178 */
-extern word_t sk_h_003511a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003511a8 */
-extern word_t sk_h_003511cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003511cc */
-extern word_t sk_h_003511f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003511f0 */
-extern word_t sk_h_00351214(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351214 */
-extern word_t sk_h_00351244(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351244 */
-extern word_t sk_h_00351274(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351274 */
-extern word_t sk_h_00351354(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351354 */
-extern word_t sk_h_0035136c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035136c */
-extern sk_r29_pair_t sk_h_00351384(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351384 */
-extern word_t sk_h_003513a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003513a8 */
-extern word_t sk_h_003513b4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003513b4 */
-extern word_t sk_h_00351414(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351414 */
-extern word_t sk_h_00351450(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351450 */
-extern word_t sk_h_00351488(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351488 */
-extern word_t sk_h_00351584(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351584 */
-extern word_t sk_h_003515fc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003515fc */
-extern word_t sk_h_00351774(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351774 */
-extern word_t sk_h_003517c0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003517c0 */
-extern sk_r29_pair_t sk_h_0035193c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035193c */
-extern word_t sk_h_00351a50(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351a50 */
-extern word_t sk_h_00351aec(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351aec */
-extern word_t sk_h_00351b78(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351b78 */
-extern word_t sk_h_00351bd4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351bd4 */
-extern word_t sk_h_00351c7c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351c7c */
-extern word_t sk_h_00351cd0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351cd0 */
-extern word_t sk_h_00351d18(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351d18 */
-extern word_t sk_h_00351d30(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351d30 */
-extern word_t sk_h_00351db4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351db4 */
-extern word_t sk_h_00351dfc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351dfc */
-extern word_t sk_h_00351e08(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351e08 */
-extern sk_r29_pair_t sk_h_00351e20(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351e20 */
-extern word_t sk_h_00351e3c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351e3c */
-extern word_t sk_h_00351f34(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00351f34 */
-extern word_t sk_h_003522c8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003522c8 */
-extern word_t sk_h_00352800(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00352800 */
-extern word_t sk_h_00352840(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00352840 */
-extern word_t sk_h_00352af0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00352af0 */
-extern word_t sk_h_00352c40(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00352c40 */
-extern word_t sk_h_00352c4c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00352c4c */
-extern word_t sk_h_00352c68(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00352c68 */
-extern word_t sk_h_00352c80(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00352c80 */
-extern word_t sk_h_00352e9c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00352e9c */
-extern word_t sk_h_0035310c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035310c */
-extern word_t sk_h_003532b8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003532b8 */
-extern word_t sk_h_003535a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003535a8 */
-extern sk_r29_pair_t sk_h_00353cfc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00353cfc */
-extern word_t sk_h_00353d14(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00353d14 */
-extern word_t sk_h_00353ff4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00353ff4 */
-extern word_t sk_h_00354410(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00354410 */
-extern word_t sk_h_003544c8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003544c8 */
-extern sk_r29_pair_t sk_h_00354744(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00354744 */
-extern word_t sk_h_003548dc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003548dc */
-extern word_t sk_h_00354998(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00354998 */
-extern word_t sk_h_00354a34(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00354a34 */
-extern word_t sk_h_00354d5c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00354d5c */
-extern word_t sk_h_00354e0c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00354e0c */
-extern word_t sk_h_00354ef8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00354ef8 */
-extern word_t sk_h_00355754(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00355754 */
-extern word_t sk_h_00355da8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00355da8 */
-extern word_t sk_h_00356364(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00356364 */
-extern word_t sk_h_00356370(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00356370 */
-extern sk_r29_pair_t sk_h_0035638c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035638c */
-extern word_t sk_h_00356930(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00356930 */
-extern word_t sk_h_003577a0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003577a0 */
-extern word_t sk_h_00357c74(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00357c74 */
-extern sk_r29_pair_t sk_h_00357cb4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00357cb4 */
-extern word_t sk_h_0035847c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035847c */
-extern word_t sk_h_003593c0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003593c0 */
-extern word_t sk_h_0035a8d0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035a8d0 */
-extern sk_r29_pair_t sk_h_0035a9b0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035a9b0 */
-extern word_t sk_h_0035b67c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0035b67c */
-extern word_t sk_h_00365b6c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00365b6c */
-extern word_t sk_h_0036986c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0036986c */
-extern word_t sk_h_0036a940(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0036a940 */
-extern word_t sk_h_0036a9a0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0036a9a0 */
-extern word_t sk_h_0036b118(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0036b118 */
-extern word_t sk_h_0036b270(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0036b270 */
-extern word_t sk_h_0039a128(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0039a128 */
-extern word_t sk_h_003a25d4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003a25d4 */
-extern word_t sk_h_003a2610(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003a2610 */
-extern word_t sk_h_003a261c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_003a261c */
-extern word_t sk_h_004080b0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004080b0 */
-extern word_t sk_h_0040fbc0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0040fbc0 */
-extern word_t sk_h_00410e78(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00410e78 */
-extern word_t sk_h_0041449c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0041449c */
-extern word_t sk_h_00414644(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00414644 */
-extern word_t sk_h_004176bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004176bc */
-extern word_t sk_h_00417b60(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00417b60 */
-extern word_t sk_h_0041ae04(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0041ae04 */
-extern word_t sk_h_0041d778(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0041d778 */
-extern word_t sk_h_0041d788(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0041d788 */
-extern word_t sk_h_0041d7dc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0041d7dc */
-extern word_t sk_h_0042ec5c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0042ec5c */
-extern word_t sk_h_00436fc8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00436fc8 */
-extern word_t sk_h_0043f454(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0043f454 */
-extern word_t sk_h_00447144(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00447144 */
-extern word_t sk_h_0044c9c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044c9c4 */
-extern word_t sk_h_0044ca08(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044ca08 */
-extern word_t sk_h_0044ca2c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044ca2c */
-extern word_t sk_h_0044ca60(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044ca60 */
-extern word_t sk_h_0044cb38(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044cb38 */
-extern word_t sk_h_0044cb90(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044cb90 */
-extern word_t sk_h_0044cc6c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044cc6c */
-extern word_t sk_h_0044cda0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044cda0 */
-extern word_t sk_h_0044f098(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044f098 */
-extern word_t sk_h_0044f818(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0044f818 */
-extern word_t sk_h_00450878(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00450878 */
-extern word_t sk_h_00450adc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00450adc */
-extern word_t sk_h_00451894(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00451894 */
-extern word_t sk_h_00451a64(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00451a64 */
-extern word_t sk_h_004588cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004588cc */
-extern word_t sk_h_004589bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004589bc */
-extern word_t sk_h_004589e8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004589e8 */
-extern word_t sk_h_004589f8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004589f8 */
-extern sk_r29_pair_t sk_h_00458af8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00458af8 */
-extern sk_r29_pair_t sk_h_00458b14(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00458b14 */
-extern word_t sk_h_00458c98(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00458c98 */
-extern word_t sk_h_004590e0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004590e0 */
-extern word_t sk_h_004629b4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004629b4 */
-extern word_t sk_h_00462aac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00462aac */
-extern word_t sk_h_00462abc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00462abc */
-extern word_t sk_h_00462b6c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00462b6c */
-extern word_t sk_h_00462e9c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00462e9c */
-extern word_t sk_h_00463878(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00463878 */
-extern word_t sk_h_00463e04(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00463e04 */
-extern sk_r29_pair_t sk_h_00463f94(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00463f94 */
-extern word_t sk_h_00464a44(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00464a44 */
-extern word_t sk_h_00464e34(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00464e34 */
-extern word_t sk_h_0046511c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0046511c */
-extern word_t sk_h_00465258(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00465258 */
-extern word_t sk_h_00465294(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00465294 */
-extern word_t sk_h_004657ac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004657ac */
-extern word_t sk_h_00466104(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00466104 */
-extern word_t sk_h_00466214(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00466214 */
-extern word_t sk_h_00468ee4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00468ee4 */
-extern word_t sk_h_00469c50(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00469c50 */
-extern word_t sk_h_00469dc4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00469dc4 */
-extern word_t sk_h_0046a368(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0046a368 */
-extern word_t sk_h_0046c4e0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0046c4e0 */
-extern word_t sk_h_004730f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004730f0 */
-extern word_t sk_h_004731b8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004731b8 */
-extern word_t sk_h_004766ec(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004766ec */
-extern word_t sk_h_004769a4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004769a4 */
-extern word_t sk_h_004775d0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004775d0 */
-extern word_t sk_h_004776c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004776c4 */
-extern word_t sk_h_004811e8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004811e8 */
-extern word_t sk_h_00481510(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00481510 */
-extern word_t sk_h_004815ac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004815ac */
-extern word_t sk_h_004815cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004815cc */
-extern word_t sk_h_00490174(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00490174 */
-extern word_t sk_h_00490600(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00490600 */
-extern word_t sk_h_00492704(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00492704 */
-extern word_t sk_h_00494ea8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00494ea8 */
-extern word_t sk_h_00494f3c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00494f3c */
-extern word_t sk_h_0049513c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049513c */
-extern word_t sk_h_00496ef0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00496ef0 */
-extern word_t sk_h_00497224(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00497224 */
-extern word_t sk_h_004981d8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004981d8 */
-extern word_t sk_h_00498228(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498228 */
-extern word_t sk_h_00498500(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498500 */
-extern word_t sk_h_00498ad4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498ad4 */
-extern word_t sk_h_00498b28(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498b28 */
-extern word_t sk_h_00498b7c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498b7c */
-extern word_t sk_h_00498bdc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498bdc */
-extern word_t sk_h_00498c1c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498c1c */
-extern word_t sk_h_00498c84(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498c84 */
-extern word_t sk_h_00498cc8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498cc8 */
-extern word_t sk_h_00498e50(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00498e50 */
-extern word_t sk_h_00499094(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00499094 */
-extern word_t sk_h_0049952c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049952c */
-extern word_t sk_h_00499918(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00499918 */
-extern word_t sk_h_00499dbc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00499dbc */
-extern word_t sk_h_00499e1c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00499e1c */
-extern word_t sk_h_00499e94(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00499e94 */
-extern sk_r29_pair_t sk_h_00499f6c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_00499f6c */
-extern word_t sk_h_0049a058(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a058 */
-extern word_t sk_h_0049a184(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a184 */
-extern word_t sk_h_0049a440(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a440 */
-extern word_t sk_h_0049a454(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a454 */
-extern word_t sk_h_0049a468(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a468 */
-extern word_t sk_h_0049a47c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a47c */
-extern word_t sk_h_0049a490(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a490 */
-extern word_t sk_h_0049a530(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a530 */
-extern word_t sk_h_0049a550(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a550 */
-extern word_t sk_h_0049a5ac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a5ac */
-extern word_t sk_h_0049a82c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a82c */
-extern word_t sk_h_0049a91c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049a91c */
-extern word_t sk_h_0049ab00(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049ab00 */
-extern word_t sk_h_0049c200(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049c200 */
-extern word_t sk_h_0049c4b4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049c4b4 */
-extern word_t sk_h_0049c52c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049c52c */
-extern word_t sk_h_0049c5a0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049c5a0 */
-extern word_t sk_h_0049c5f8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049c5f8 */
-extern word_t sk_h_0049c838(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049c838 */
-extern word_t sk_h_0049c9fc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049c9fc */
-extern word_t sk_h_0049ca14(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049ca14 */
-extern word_t sk_h_0049ca2c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049ca2c */
-extern word_t sk_h_0049ca44(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049ca44 */
-extern word_t sk_h_0049df0c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049df0c */
-extern word_t sk_h_0049df18(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049df18 */
-extern word_t sk_h_0049e2d4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049e2d4 */
-extern word_t sk_h_0049e2f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_0049e2f0 */
-extern word_t sk_h_004a31ec(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a31ec */
-extern word_t sk_h_004a31fc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a31fc */
-extern word_t sk_h_004a3214(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a3214 */
-extern word_t sk_h_004a322c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a322c */
-extern word_t sk_h_004a34f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a34f0 */
-extern word_t sk_h_004a3500(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a3500 */
-extern word_t sk_h_004a3528(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a3528 */
-extern word_t sk_h_004a3550(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a3550 */
-extern word_t sk_h_004a3560(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a3560 */
-extern word_t sk_h_004a36c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a36c4 */
-extern word_t sk_h_004a36d4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a36d4 */
-extern word_t sk_h_004a3918(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a3918 */
-extern word_t sk_h_004a3940(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a3940 */
-extern word_t sk_h_004a42a0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a42a0 */
-extern word_t sk_h_004a4310(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a4310 */
-extern word_t sk_h_004a463c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a463c */
-extern word_t sk_h_004a46f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a46f0 */
-extern word_t sk_h_004a4724(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a4724 */
-extern word_t sk_h_004a487c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a487c */
-extern word_t sk_h_004a49a0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a49a0 */
-extern word_t sk_h_004a49c0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a49c0 */
-extern word_t sk_h_004a4a34(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a4a34 */
-extern word_t sk_h_004a4aa4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a4aa4 */
-extern word_t sk_h_004a4ac4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a4ac4 */
-extern word_t sk_h_004a4b14(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004a4b14 */
-extern word_t sk_h_004aa370(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa370 */
-extern word_t sk_h_004aa38c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa38c */
-extern word_t sk_h_004aa3bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa3bc */
-extern word_t sk_h_004aa3fc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa3fc */
-extern word_t sk_h_004aa42c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa42c */
-extern word_t sk_h_004aa494(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa494 */
-extern word_t sk_h_004aa4c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa4c4 */
-extern word_t sk_h_004aa514(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa514 */
-extern word_t sk_h_004aa52c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa52c */
-extern word_t sk_h_004aa580(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa580 */
-extern word_t sk_h_004aa5f8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa5f8 */
-extern word_t sk_h_004aa694(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa694 */
-extern word_t sk_h_004aa6a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa6a8 */
-extern word_t sk_h_004aa794(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa794 */
-extern word_t sk_h_004aa7a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa7a8 */
-extern word_t sk_h_004aa7bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa7bc */
-extern word_t sk_h_004aa7d0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa7d0 */
-extern word_t sk_h_004aa7fc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa7fc */
-extern word_t sk_h_004aa824(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa824 */
-extern word_t sk_h_004aa83c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa83c */
-extern word_t sk_h_004aa850(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa850 */
-extern word_t sk_h_004aa864(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa864 */
-extern word_t sk_h_004aa890(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa890 */
-extern word_t sk_h_004aa8f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa8f0 */
-extern word_t sk_h_004aa904(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa904 */
-extern word_t sk_h_004aa938(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa938 */
-extern word_t sk_h_004aa990(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa990 */
-extern word_t sk_h_004aa9a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa9a8 */
-extern word_t sk_h_004aa9f8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aa9f8 */
-extern word_t sk_h_004aaa20(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aaa20 */
-extern word_t sk_h_004aaa78(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aaa78 */
-extern word_t sk_h_004aaab0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aaab0 */
-extern word_t sk_h_004aaacc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aaacc */
-extern word_t sk_h_004aab08(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aab08 */
-extern word_t sk_h_004aab1c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aab1c */
-extern word_t sk_h_004aab4c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aab4c */
-extern word_t sk_h_004aab60(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aab60 */
-extern word_t sk_h_004aab74(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aab74 */
-extern word_t sk_h_004aac40(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aac40 */
-extern word_t sk_h_004aacf8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aacf8 */
-extern word_t sk_h_004aad30(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aad30 */
-extern word_t sk_h_004aad54(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aad54 */
-extern word_t sk_h_004aad94(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aad94 */
-extern word_t sk_h_004aada4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aada4 */
-extern word_t sk_h_004aadcc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aadcc */
-extern word_t sk_h_004aade4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aade4 */
-extern word_t sk_h_004aadfc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aadfc */
-extern word_t sk_h_004aae2c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aae2c */
-extern word_t sk_h_004aae64(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aae64 */
-extern word_t sk_h_004aae98(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aae98 */
-extern word_t sk_h_004aaf28(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aaf28 */
-extern word_t sk_h_004aaf58(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aaf58 */
-extern word_t sk_h_004aaf9c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aaf9c */
-extern word_t sk_h_004aafac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aafac */
-extern word_t sk_h_004aafd8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aafd8 */
-extern word_t sk_h_004ab034(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab034 */
-extern word_t sk_h_004ab044(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab044 */
-extern word_t sk_h_004ab054(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab054 */
-extern word_t sk_h_004ab064(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab064 */
-extern word_t sk_h_004ab080(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab080 */
-extern word_t sk_h_004ab0ac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab0ac */
-extern word_t sk_h_004ab0bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab0bc */
-extern word_t sk_h_004ab0e0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab0e0 */
-extern word_t sk_h_004ab0f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab0f0 */
-extern word_t sk_h_004ab178(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab178 */
-extern word_t sk_h_004ab1a0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab1a0 */
-extern word_t sk_h_004ab208(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab208 */
-extern word_t sk_h_004ab224(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab224 */
-extern word_t sk_h_004ab260(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab260 */
-extern word_t sk_h_004ab26c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab26c */
-extern word_t sk_h_004ab2a0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab2a0 */
-extern word_t sk_h_004ab2d0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab2d0 */
-extern word_t sk_h_004ab304(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab304 */
-extern word_t sk_h_004ab35c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab35c */
-extern word_t sk_h_004ab3c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab3c4 */
-extern word_t sk_h_004ab3dc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab3dc */
-extern word_t sk_h_004ab408(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab408 */
-extern word_t sk_h_004ab448(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab448 */
-extern word_t sk_h_004ab458(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab458 */
-extern word_t sk_h_004ab468(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab468 */
-extern word_t sk_h_004ab4a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab4a8 */
-extern word_t sk_h_004ab4e8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab4e8 */
-extern word_t sk_h_004ab4f4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab4f4 */
-extern word_t sk_h_004ab520(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab520 */
-extern word_t sk_h_004ab530(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab530 */
-extern word_t sk_h_004ab55c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab55c */
-extern word_t sk_h_004ab568(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab568 */
-extern word_t sk_h_004ab58c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab58c */
-extern word_t sk_h_004ab5a4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab5a4 */
-extern word_t sk_h_004ab5c8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab5c8 */
-extern sk_r29_pair_t sk_h_004ab60c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab60c */
-extern word_t sk_h_004ab618(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab618 */
-extern word_t sk_h_004ab650(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab650 */
-extern word_t sk_h_004ab68c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab68c */
-extern word_t sk_h_004ab6c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab6c4 */
-extern word_t sk_h_004ab6d8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab6d8 */
-extern word_t sk_h_004ab6e8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab6e8 */
-extern word_t sk_h_004ab700(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab700 */
-extern word_t sk_h_004ab724(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab724 */
-extern word_t sk_h_004ab760(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab760 */
-extern word_t sk_h_004ab784(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab784 */
-extern word_t sk_h_004ab798(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab798 */
-extern word_t sk_h_004ab7b8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab7b8 */
-extern word_t sk_h_004ab7cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab7cc */
-extern word_t sk_h_004ab810(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab810 */
-extern word_t sk_h_004ab820(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab820 */
-extern word_t sk_h_004ab834(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab834 */
-extern word_t sk_h_004ab844(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab844 */
-extern word_t sk_h_004ab858(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab858 */
-extern word_t sk_h_004ab89c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab89c */
-extern word_t sk_h_004ab8c8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab8c8 */
-extern word_t sk_h_004ab8dc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab8dc */
-extern word_t sk_h_004ab8e8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab8e8 */
-extern word_t sk_h_004ab930(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab930 */
-extern word_t sk_h_004ab944(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab944 */
-extern word_t sk_h_004ab968(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab968 */
-extern sk_r29_pair_t sk_h_004ab974(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab974 */
-extern word_t sk_h_004ab98c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab98c */
-extern word_t sk_h_004ab9bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab9bc */
-extern word_t sk_h_004ab9e0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab9e0 */
-extern word_t sk_h_004ab9f8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ab9f8 */
-extern sk_r29_pair_t sk_h_004aba34(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aba34 */
-extern word_t sk_h_004aba88(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aba88 */
-extern word_t sk_h_004abad8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abad8 */
-extern word_t sk_h_004abaf0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abaf0 */
-extern word_t sk_h_004abb1c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abb1c */
-extern word_t sk_h_004abb28(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abb28 */
-extern word_t sk_h_004abb58(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abb58 */
-extern word_t sk_h_004abbac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abbac */
-extern word_t sk_h_004abbd4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abbd4 */
-extern word_t sk_h_004abc28(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abc28 */
-extern word_t sk_h_004abc38(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abc38 */
-extern word_t sk_h_004abc78(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abc78 */
-extern sk_r29_pair_t sk_h_004abcb4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abcb4 */
-extern word_t sk_h_004abcdc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abcdc */
-extern sk_r29_pair_t sk_h_004abcf8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abcf8 */
-extern word_t sk_h_004abd20(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abd20 */
-extern word_t sk_h_004abd2c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abd2c */
-extern word_t sk_h_004abd38(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abd38 */
-extern word_t sk_h_004abd9c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abd9c */
-extern word_t sk_h_004abdc4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abdc4 */
-extern word_t sk_h_004abe24(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abe24 */
-extern word_t sk_h_004abe5c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abe5c */
-extern word_t sk_h_004abe68(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abe68 */
-extern word_t sk_h_004abe74(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abe74 */
-extern word_t sk_h_004abeb0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abeb0 */
-extern word_t sk_h_004abed0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abed0 */
-extern word_t sk_h_004abf00(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abf00 */
-extern word_t sk_h_004abf10(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abf10 */
-extern word_t sk_h_004abf20(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abf20 */
-extern word_t sk_h_004abf30(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abf30 */
-extern word_t sk_h_004abf40(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abf40 */
-extern word_t sk_h_004abf5c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abf5c */
-extern word_t sk_h_004abfa8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abfa8 */
-extern word_t sk_h_004abfd8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abfd8 */
-extern word_t sk_h_004abfe8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abfe8 */
-extern word_t sk_h_004abff8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004abff8 */
-extern word_t sk_h_004ac008(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac008 */
-extern word_t sk_h_004ac034(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac034 */
-extern word_t sk_h_004ac0cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac0cc */
-extern word_t sk_h_004ac108(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac108 */
-extern word_t sk_h_004ac114(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac114 */
-extern word_t sk_h_004ac120(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac120 */
-extern word_t sk_h_004ac12c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac12c */
-extern sk_r29_pair_t sk_h_004ac144(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac144 */
-extern word_t sk_h_004ac15c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac15c */
-extern word_t sk_h_004ac198(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac198 */
-extern word_t sk_h_004ac1a4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac1a4 */
-extern word_t sk_h_004ac210(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac210 */
-extern word_t sk_h_004ac258(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac258 */
-extern word_t sk_h_004ac27c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac27c */
-extern word_t sk_h_004ac294(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac294 */
-extern word_t sk_h_004ac2a0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac2a0 */
-extern word_t sk_h_004ac2c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac2c4 */
-extern word_t sk_h_004ac2f4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac2f4 */
-extern sk_r29_pair_t sk_h_004ac30c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac30c */
-extern word_t sk_h_004ac360(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac360 */
-extern word_t sk_h_004ac3e4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac3e4 */
-extern word_t sk_h_004ac3f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac3f0 */
-extern word_t sk_h_004ac4f0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac4f0 */
-extern word_t sk_h_004ac518(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac518 */
-extern word_t sk_h_004ac52c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac52c */
-extern word_t sk_h_004ac55c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac55c */
-extern word_t sk_h_004ac574(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac574 */
-extern word_t sk_h_004ac5a4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac5a4 */
-extern word_t sk_h_004ac5b4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac5b4 */
-extern word_t sk_h_004ac5c4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac5c4 */
-extern word_t sk_h_004ac5ec(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac5ec */
-extern word_t sk_h_004ac5fc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac5fc */
-extern word_t sk_h_004ac634(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac634 */
-extern word_t sk_h_004ac654(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac654 */
-extern word_t sk_h_004ac66c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac66c */
-extern word_t sk_h_004ac680(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac680 */
-extern word_t sk_h_004ac698(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac698 */
-extern word_t sk_h_004ac6f8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac6f8 */
-extern word_t sk_h_004ac70c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac70c */
-extern word_t sk_h_004ac738(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac738 */
-extern word_t sk_h_004ac758(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac758 */
-extern word_t sk_h_004ac76c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac76c */
-extern word_t sk_h_004ac778(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac778 */
-extern word_t sk_h_004ac7b0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac7b0 */
-extern sk_r29_pair_t sk_h_004ac7bc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac7bc */
-extern word_t sk_h_004ac844(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac844 */
-extern word_t sk_h_004ac850(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac850 */
-extern word_t sk_h_004ac8a8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac8a8 */
-extern word_t sk_h_004ac8d4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac8d4 */
-extern word_t sk_h_004ac8fc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac8fc */
-extern word_t sk_h_004ac91c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac91c */
-extern word_t sk_h_004ac960(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac960 */
-extern word_t sk_h_004ac96c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac96c */
-extern word_t sk_h_004ac98c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac98c */
-extern word_t sk_h_004ac9ac(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac9ac */
-extern word_t sk_h_004ac9cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac9cc */
-extern word_t sk_h_004ac9f8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004ac9f8 */
-extern word_t sk_h_004aca2c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aca2c */
-extern word_t sk_h_004aca4c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aca4c */
-extern word_t sk_h_004aca94(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004aca94 */
-extern word_t sk_h_004acb04(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004acb04 */
-extern word_t sk_h_004acb58(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004acb58 */
-extern word_t sk_h_004acba8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004acba8 */
-extern word_t sk_h_004acbbc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004acbbc */
-extern word_t sk_h_004acc34(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004acc34 */
-extern word_t sk_h_004acc5c(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004acc5c */
-extern word_t sk_h_004acc84(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004acc84 */
-extern word_t sk_h_004acc90(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004acc90 */
-extern word_t sk_h_004accb4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004accb4 */
-extern word_t sk_h_004accc0(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004accc0 */
-extern word_t sk_h_004accd8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004accd8 */
-extern word_t sk_h_004accfc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004accfc */
-extern word_t sk_h_004acd14(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004acd14 */
+extern word_t sk_h_00002534(); /* FUN_00002534 */
+extern word_t sk_h_000026e8(); /* FUN_000026e8 */
+extern word_t sk_h_00002818(); /* FUN_00002818 */
+extern word_t sk_h_00002834(); /* FUN_00002834 */
+extern word_t sk_h_00002874(); /* FUN_00002874 */
+extern word_t sk_h_00019858(); /* FUN_00019858 */
+extern word_t sk_h_0001da84(); /* FUN_0001da84 */
+extern word_t sk_h_0001e790(); /* FUN_0001e790 */
+extern word_t sk_h_00027724(); /* FUN_00027724 */
+extern word_t sk_h_00041138(); /* FUN_00041138 */
+extern word_t sk_h_00068e14(); /* FUN_00068e14 */
+extern word_t sk_h_0006a374(); /* FUN_0006a374 */
+extern sk_r29_pair_t sk_h_0006ae9c(); /* FUN_0006ae9c */
+extern word_t sk_h_0006b3f4(); /* FUN_0006b3f4 */
+extern word_t sk_h_0006b42c(); /* FUN_0006b42c */
+extern word_t sk_h_0006b6f4(); /* FUN_0006b6f4 */
+extern word_t sk_h_0006f768(); /* FUN_0006f768 */
+extern word_t sk_h_00070594(); /* FUN_00070594 */
+extern word_t sk_h_00072c0c(); /* FUN_00072c0c */
+extern word_t sk_h_00073524(); /* FUN_00073524 */
+extern word_t sk_h_0007767c(); /* FUN_0007767c */
+extern sk_r29_pair_t sk_h_00077698(); /* FUN_00077698 */
+extern word_t sk_h_000776cc(); /* FUN_000776cc */
+extern word_t sk_h_00077888(); /* FUN_00077888 */
+extern word_t sk_h_00077894(); /* FUN_00077894 */
+extern word_t sk_h_0007c1c4(); /* FUN_0007c1c4 */
+extern sk_r29_pair_t sk_h_0008409c(); /* FUN_0008409c */
+extern word_t sk_h_00084174(); /* FUN_00084174 */
+extern word_t sk_h_00084180(); /* FUN_00084180 */
+extern sk_r29_pair_t sk_h_00084220(); /* FUN_00084220 */
+extern word_t sk_h_00084234(); /* FUN_00084234 */
+extern word_t sk_h_00084cc4(); /* FUN_00084cc4 */
+extern word_t sk_h_00085754(); /* FUN_00085754 */
+extern word_t sk_h_000863bc(); /* FUN_000863bc */
+extern word_t sk_h_000867ec(); /* FUN_000867ec */
+extern word_t sk_h_00086840(); /* FUN_00086840 */
+extern word_t sk_h_0008cc7c(); /* FUN_0008cc7c */
+extern word_t sk_h_0008e160(); /* FUN_0008e160 */
+extern word_t sk_h_0008e388(); /* FUN_0008e388 */
+extern word_t sk_h_0008e488(); /* FUN_0008e488 */
+extern word_t sk_h_0008e500(); /* FUN_0008e500 */
+extern sk_r29_pair_t sk_h_0008e518(); /* FUN_0008e518 */
+extern word_t sk_h_00092d40(); /* FUN_00092d40 */
+extern word_t sk_h_0009461c(); /* FUN_0009461c */
+extern word_t sk_h_000a6e14(); /* FUN_000a6e14 */
+extern sk_r29_pair_t sk_h_000a6f68(); /* FUN_000a6f68 */
+extern word_t sk_h_000a6fe0(); /* FUN_000a6fe0 */
+extern word_t sk_h_000ac00c(); /* FUN_000ac00c */
+extern word_t sk_h_000af4d8(); /* FUN_000af4d8 */
+extern word_t sk_h_000b430c(); /* FUN_000b430c */
+extern word_t sk_h_000b4390(); /* FUN_000b4390 */
+extern word_t sk_h_000b43d0(); /* FUN_000b43d0 */
+extern word_t sk_h_000b43e8(); /* FUN_000b43e8 */
+extern word_t sk_h_000b4594(); /* FUN_000b4594 */
+extern word_t sk_h_000b45b0(); /* FUN_000b45b0 */
+extern word_t sk_h_000bd3a4(); /* FUN_000bd3a4 */
+extern word_t sk_h_000dbbe0(); /* FUN_000dbbe0 */
+extern word_t sk_h_000dbc98(); /* FUN_000dbc98 */
+extern word_t sk_h_000e0654(); /* FUN_000e0654 */
+extern word_t sk_h_000e15d8(); /* FUN_000e15d8 */
+extern word_t sk_h_000ec004(); /* FUN_000ec004 */
+extern word_t sk_h_000f4a9c(); /* FUN_000f4a9c */
+extern word_t sk_h_000f4ae8(); /* FUN_000f4ae8 */
+extern word_t sk_h_000f5d30(); /* FUN_000f5d30 */
+extern word_t sk_h_000f5e5c(); /* FUN_000f5e5c */
+extern word_t sk_h_00100e34(); /* FUN_00100e34 */
+extern word_t sk_h_00100efc(); /* FUN_00100efc */
+extern word_t sk_h_00106e3c(); /* FUN_00106e3c */
+extern word_t sk_h_00117cc4(); /* FUN_00117cc4 */
+extern word_t sk_h_0011aa70(); /* FUN_0011aa70 */
+extern word_t sk_h_0011e71c(); /* FUN_0011e71c */
+extern word_t sk_h_00136bf8(); /* FUN_00136bf8 */
+extern word_t sk_h_00167404(); /* FUN_00167404 */
+extern word_t sk_h_0016749c(); /* FUN_0016749c */
+extern word_t sk_h_001676cc(); /* FUN_001676cc */
+extern word_t sk_h_001a6a8c(); /* FUN_001a6a8c */
+extern word_t sk_h_001a84f4(); /* FUN_001a84f4 */
+extern word_t sk_h_001a8564(); /* FUN_001a8564 */
+extern word_t sk_h_001ae8a8(); /* FUN_001ae8a8 */
+extern word_t sk_h_001afa84(); /* FUN_001afa84 */
+extern word_t sk_h_001b798c(); /* FUN_001b798c */
+extern word_t sk_h_001b9084(); /* FUN_001b9084 */
+extern word_t sk_h_001ba7d4(); /* FUN_001ba7d4 */
+extern sk_r29_pair_t sk_h_001bc440(); /* FUN_001bc440 */
+extern word_t sk_h_001ebfb0(); /* FUN_001ebfb0 */
+extern word_t sk_h_001ed960(); /* FUN_001ed960 */
+extern word_t sk_h_001ee018(); /* FUN_001ee018 */
+extern word_t sk_h_001ee9f4(); /* FUN_001ee9f4 */
+extern word_t sk_h_00205844(); /* FUN_00205844 */
+extern word_t sk_h_002298d4(); /* FUN_002298d4 */
+extern word_t sk_h_0024917c(); /* FUN_0024917c */
+extern word_t sk_h_0024d9ac(); /* FUN_0024d9ac */
+extern word_t sk_h_00255d4c(); /* FUN_00255d4c */
+extern word_t sk_h_0025a094(); /* FUN_0025a094 */
+extern word_t sk_h_00267510(); /* FUN_00267510 */
+extern word_t sk_h_00267914(); /* FUN_00267914 */
+extern word_t sk_h_00294cb4(); /* FUN_00294cb4 */
+extern word_t sk_h_0029c058(); /* FUN_0029c058 */
+extern sk_r29_pair_t sk_h_0029d3d8(); /* FUN_0029d3d8 */
+extern sk_r29_pair_t sk_h_0029d560(); /* FUN_0029d560 */
+extern word_t sk_h_0029f368(); /* FUN_0029f368 */
+extern sk_r29_pair_t sk_h_0029fa0c(); /* FUN_0029fa0c */
+extern sk_r29_pair_t sk_h_0029fb80(); /* FUN_0029fb80 */
+extern word_t sk_h_002a0cf8(); /* FUN_002a0cf8 */
+extern word_t sk_h_002a49a8(); /* FUN_002a49a8 */
+extern word_t sk_h_002a4ab4(); /* FUN_002a4ab4 */
+extern word_t sk_h_002a8870(); /* FUN_002a8870 */
+extern word_t sk_h_002a9ba8(); /* FUN_002a9ba8 */
+extern word_t sk_h_002ab130(); /* FUN_002ab130 */
+extern word_t sk_h_002acbb8(); /* FUN_002acbb8 */
+extern word_t sk_h_002ace24(); /* FUN_002ace24 */
+extern word_t sk_h_002ae098(); /* FUN_002ae098 */
+extern word_t sk_h_002ae2c0(); /* FUN_002ae2c0 */
+extern word_t sk_h_002b141c(); /* FUN_002b141c */
+extern word_t sk_h_002b14c8(); /* FUN_002b14c8 */
+extern word_t sk_h_002b3670(); /* FUN_002b3670 */
+extern word_t sk_h_002b3b50(); /* FUN_002b3b50 */
+extern sk_r29_pair_t sk_h_002b439c(); /* FUN_002b439c */
+extern word_t sk_h_002b7088(); /* FUN_002b7088 */
+extern word_t sk_h_002b723c(); /* FUN_002b723c */
+extern word_t sk_h_002bbf08(); /* FUN_002bbf08 */
+extern word_t sk_h_002bc234(); /* FUN_002bc234 */
+extern word_t sk_h_002bc5bc(); /* FUN_002bc5bc */
+extern word_t sk_h_002bd724(); /* FUN_002bd724 */
+extern word_t sk_h_002bd8f0(); /* FUN_002bd8f0 */
+extern word_t sk_h_002bd9ac(); /* FUN_002bd9ac */
+extern word_t sk_h_002bd9cc(); /* FUN_002bd9cc */
+extern word_t sk_h_00310d98(); /* FUN_00310d98 */
+extern word_t sk_h_00319808(); /* FUN_00319808 */
+extern word_t sk_h_0032b65c(); /* FUN_0032b65c */
+extern word_t sk_h_0034a018(); /* FUN_0034a018 */
+extern word_t sk_h_0034a3b0(); /* FUN_0034a3b0 */
+extern word_t sk_h_0034b3f8(); /* FUN_0034b3f8 */
+extern word_t sk_h_0034b848(); /* FUN_0034b848 */
+extern word_t sk_h_0034c6d4(); /* FUN_0034c6d4 */
+extern word_t sk_h_0034cb88(); /* FUN_0034cb88 */
+extern word_t sk_h_0034cc24(); /* FUN_0034cc24 */
+extern word_t sk_h_0034cec4(); /* FUN_0034cec4 */
+extern word_t sk_h_0034d3d4(); /* FUN_0034d3d4 */
+extern word_t sk_h_0034db28(); /* FUN_0034db28 */
+extern word_t sk_h_0034eb74(); /* FUN_0034eb74 */
+extern word_t sk_h_0034ecc8(); /* FUN_0034ecc8 */
+extern word_t sk_h_0034fbb0(); /* FUN_0034fbb0 */
+extern word_t sk_h_00350470(); /* FUN_00350470 */
+extern word_t sk_h_00350494(); /* FUN_00350494 */
+extern word_t sk_h_003504a0(); /* FUN_003504a0 */
+extern word_t sk_h_003504ac(); /* FUN_003504ac */
+extern word_t sk_h_003504c4(); /* FUN_003504c4 */
+extern word_t sk_h_003504d0(); /* FUN_003504d0 */
+extern sk_r29_pair_t sk_h_00350518(); /* FUN_00350518 */
+extern word_t sk_h_0035053c(); /* FUN_0035053c */
+extern word_t sk_h_00350548(); /* FUN_00350548 */
+extern word_t sk_h_003505c4(); /* FUN_003505c4 */
+extern word_t sk_h_00350600(); /* FUN_00350600 */
+extern sk_r29_pair_t sk_h_0035060c(); /* FUN_0035060c */
+extern word_t sk_h_00350618(); /* FUN_00350618 */
+extern word_t sk_h_00350624(); /* FUN_00350624 */
+extern word_t sk_h_00350774(); /* FUN_00350774 */
+extern sk_r29_pair_t sk_h_003507e0(); /* FUN_003507e0 */
+extern word_t sk_h_0035084c(); /* FUN_0035084c */
+extern word_t sk_h_0035089c(); /* FUN_0035089c */
+extern word_t sk_h_003508cc(); /* FUN_003508cc */
+extern word_t sk_h_003508fc(); /* FUN_003508fc */
+extern word_t sk_h_00350914(); /* FUN_00350914 */
+extern word_t sk_h_00350968(); /* FUN_00350968 */
+extern word_t sk_h_003509b0(); /* FUN_003509b0 */
+extern word_t sk_h_003509bc(); /* FUN_003509bc */
+extern word_t sk_h_003509c8(); /* FUN_003509c8 */
+extern word_t sk_h_003509ec(); /* FUN_003509ec */
+extern word_t sk_h_00350af4(); /* FUN_00350af4 */
+extern word_t sk_h_00350b18(); /* FUN_00350b18 */
+extern word_t sk_h_00350b48(); /* FUN_00350b48 */
+extern word_t sk_h_00350bfc(); /* FUN_00350bfc */
+extern word_t sk_h_00350c20(); /* FUN_00350c20 */
+extern word_t sk_h_00350d94(); /* FUN_00350d94 */
+extern word_t sk_h_003510c4(); /* FUN_003510c4 */
+extern word_t sk_h_00351124(); /* FUN_00351124 */
+extern word_t sk_h_00351130(); /* FUN_00351130 */
+extern word_t sk_h_00351178(); /* FUN_00351178 */
+extern word_t sk_h_003511a8(); /* FUN_003511a8 */
+extern word_t sk_h_003511cc(); /* FUN_003511cc */
+extern word_t sk_h_003511f0(); /* FUN_003511f0 */
+extern word_t sk_h_00351214(); /* FUN_00351214 */
+extern word_t sk_h_00351244(); /* FUN_00351244 */
+extern word_t sk_h_00351274(); /* FUN_00351274 */
+extern word_t sk_h_00351354(); /* FUN_00351354 */
+extern word_t sk_h_0035136c(); /* FUN_0035136c */
+extern sk_r29_pair_t sk_h_00351384(); /* FUN_00351384 */
+extern word_t sk_h_003513a8(); /* FUN_003513a8 */
+extern word_t sk_h_003513b4(); /* FUN_003513b4 */
+extern word_t sk_h_00351414(); /* FUN_00351414 */
+extern word_t sk_h_00351450(); /* FUN_00351450 */
+extern word_t sk_h_00351488(); /* FUN_00351488 */
+extern word_t sk_h_00351584(); /* FUN_00351584 */
+extern word_t sk_h_003515fc(); /* FUN_003515fc */
+extern word_t sk_h_00351774(); /* FUN_00351774 */
+extern word_t sk_h_003517c0(); /* FUN_003517c0 */
+extern sk_r29_pair_t sk_h_0035193c(); /* FUN_0035193c */
+extern word_t sk_h_00351a50(); /* FUN_00351a50 */
+extern word_t sk_h_00351aec(); /* FUN_00351aec */
+extern word_t sk_h_00351b78(); /* FUN_00351b78 */
+extern word_t sk_h_00351bd4(); /* FUN_00351bd4 */
+extern word_t sk_h_00351c7c(); /* FUN_00351c7c */
+extern word_t sk_h_00351cd0(); /* FUN_00351cd0 */
+extern word_t sk_h_00351d18(); /* FUN_00351d18 */
+extern word_t sk_h_00351d30(); /* FUN_00351d30 */
+extern word_t sk_h_00351db4(); /* FUN_00351db4 */
+extern word_t sk_h_00351dfc(); /* FUN_00351dfc */
+extern word_t sk_h_00351e08(); /* FUN_00351e08 */
+extern sk_r29_pair_t sk_h_00351e20(); /* FUN_00351e20 */
+extern word_t sk_h_00351e3c(); /* FUN_00351e3c */
+extern word_t sk_h_00351f34(); /* FUN_00351f34 */
+extern word_t sk_h_003522c8(); /* FUN_003522c8 */
+extern word_t sk_h_00352800(); /* FUN_00352800 */
+extern word_t sk_h_00352840(); /* FUN_00352840 */
+extern word_t sk_h_00352af0(); /* FUN_00352af0 */
+extern word_t sk_h_00352c40(); /* FUN_00352c40 */
+extern word_t sk_h_00352c4c(); /* FUN_00352c4c */
+extern word_t sk_h_00352c68(); /* FUN_00352c68 */
+extern word_t sk_h_00352c80(); /* FUN_00352c80 */
+extern word_t sk_h_00352e9c(); /* FUN_00352e9c */
+extern word_t sk_h_0035310c(); /* FUN_0035310c */
+extern word_t sk_h_003532b8(); /* FUN_003532b8 */
+extern word_t sk_h_003535a8(); /* FUN_003535a8 */
+extern sk_r29_pair_t sk_h_00353cfc(); /* FUN_00353cfc */
+extern word_t sk_h_00353d14(); /* FUN_00353d14 */
+extern word_t sk_h_00353ff4(); /* FUN_00353ff4 */
+extern word_t sk_h_00354410(); /* FUN_00354410 */
+extern word_t sk_h_003544c8(); /* FUN_003544c8 */
+extern sk_r29_pair_t sk_h_00354744(); /* FUN_00354744 */
+extern word_t sk_h_003548dc(); /* FUN_003548dc */
+extern word_t sk_h_00354998(); /* FUN_00354998 */
+extern sk_r29_pair_t sk_h_00354a34(); /* FUN_00354a34 */
+extern word_t sk_h_00354d5c(); /* FUN_00354d5c */
+extern word_t sk_h_00354e0c(); /* FUN_00354e0c */
+extern word_t sk_h_00354ef8(); /* FUN_00354ef8 */
+extern word_t sk_h_00355754(); /* FUN_00355754 */
+extern word_t sk_h_00355da8(); /* FUN_00355da8 */
+extern word_t sk_h_00356364(); /* FUN_00356364 */
+extern word_t sk_h_00356370(); /* FUN_00356370 */
+extern sk_r29_pair_t sk_h_0035638c(); /* FUN_0035638c */
+extern word_t sk_h_00356930(); /* FUN_00356930 */
+extern word_t sk_h_003577a0(); /* FUN_003577a0 */
+extern word_t sk_h_00357c74(); /* FUN_00357c74 */
+extern sk_r29_pair_t sk_h_00357cb4(); /* FUN_00357cb4 */
+extern word_t sk_h_0035847c(); /* FUN_0035847c */
+extern word_t sk_h_003593c0(); /* FUN_003593c0 */
+extern word_t sk_h_0035a8d0(); /* FUN_0035a8d0 */
+extern sk_r29_pair_t sk_h_0035a9b0(); /* FUN_0035a9b0 */
+extern word_t sk_h_0035b67c(); /* FUN_0035b67c */
+extern word_t sk_h_00365b6c(); /* FUN_00365b6c */
+extern word_t sk_h_0036986c(); /* FUN_0036986c */
+extern word_t sk_h_0036a940(); /* FUN_0036a940 */
+extern word_t sk_h_0036a9a0(); /* FUN_0036a9a0 */
+extern word_t sk_h_0036b118(); /* FUN_0036b118 */
+extern word_t sk_h_0036b270(); /* FUN_0036b270 */
+extern sk_r29_pair_t sk_h_0039a128(); /* FUN_0039a128 */
+extern word_t sk_h_003a25d4(); /* FUN_003a25d4 */
+extern word_t sk_h_003a2610(); /* FUN_003a2610 */
+extern word_t sk_h_003a261c(); /* FUN_003a261c */
+extern word_t sk_h_004080b0(); /* FUN_004080b0 */
+extern word_t sk_h_0040fbc0(); /* FUN_0040fbc0 */
+extern word_t sk_h_00410e78(); /* FUN_00410e78 */
+extern word_t sk_h_0041449c(); /* FUN_0041449c */
+extern word_t sk_h_00414644(); /* FUN_00414644 */
+extern word_t sk_h_004176bc(); /* FUN_004176bc */
+extern word_t sk_h_00417b60(); /* FUN_00417b60 */
+extern word_t sk_h_0041ae04(); /* FUN_0041ae04 */
+extern word_t sk_h_0041d778(); /* FUN_0041d778 */
+extern word_t sk_h_0041d788(); /* FUN_0041d788 */
+extern word_t sk_h_0041d7dc(); /* FUN_0041d7dc */
+extern word_t sk_h_0042ec5c(); /* FUN_0042ec5c */
+extern word_t sk_h_00436fc8(); /* FUN_00436fc8 */
+extern word_t sk_h_0043f454(); /* FUN_0043f454 */
+extern word_t sk_h_00447144(); /* FUN_00447144 */
+extern word_t sk_h_0044c9c4(); /* FUN_0044c9c4 */
+extern word_t sk_h_0044ca08(); /* FUN_0044ca08 */
+extern word_t sk_h_0044ca2c(); /* FUN_0044ca2c */
+extern word_t sk_h_0044ca60(); /* FUN_0044ca60 */
+extern word_t sk_h_0044cb38(); /* FUN_0044cb38 */
+extern word_t sk_h_0044cb90(); /* FUN_0044cb90 */
+extern word_t sk_h_0044cc6c(); /* FUN_0044cc6c */
+extern word_t sk_h_0044cda0(); /* FUN_0044cda0 */
+extern word_t sk_h_0044f098(); /* FUN_0044f098 */
+extern word_t sk_h_0044f818(); /* FUN_0044f818 */
+extern word_t sk_h_00450878(); /* FUN_00450878 */
+extern word_t sk_h_00450adc(); /* FUN_00450adc */
+extern word_t sk_h_00451894(); /* FUN_00451894 */
+extern word_t sk_h_00451a64(); /* FUN_00451a64 */
+extern word_t sk_h_004588cc(); /* FUN_004588cc */
+extern word_t sk_h_004589bc(); /* FUN_004589bc */
+extern word_t sk_h_004589e8(); /* FUN_004589e8 */
+extern word_t sk_h_004589f8(); /* FUN_004589f8 */
+extern sk_r29_pair_t sk_h_00458af8(); /* FUN_00458af8 */
+extern sk_r29_pair_t sk_h_00458b14(); /* FUN_00458b14 */
+extern word_t sk_h_00458c98(); /* FUN_00458c98 */
+extern word_t sk_h_004590e0(); /* FUN_004590e0 */
+extern word_t sk_h_004629b4(); /* FUN_004629b4 */
+extern word_t sk_h_00462aac(); /* FUN_00462aac */
+extern word_t sk_h_00462abc(); /* FUN_00462abc */
+extern word_t sk_h_00462b6c(); /* FUN_00462b6c */
+extern word_t sk_h_00462e9c(); /* FUN_00462e9c */
+extern word_t sk_h_00463878(); /* FUN_00463878 */
+extern word_t sk_h_00463e04(); /* FUN_00463e04 */
+extern sk_r29_pair_t sk_h_00463f94(); /* FUN_00463f94 */
+extern word_t sk_h_00464a44(); /* FUN_00464a44 */
+extern word_t sk_h_00464e34(); /* FUN_00464e34 */
+extern word_t sk_h_0046511c(); /* FUN_0046511c */
+extern word_t sk_h_00465258(); /* FUN_00465258 */
+extern word_t sk_h_00465294(); /* FUN_00465294 */
+extern word_t sk_h_004657ac(); /* FUN_004657ac */
+extern word_t sk_h_00466104(); /* FUN_00466104 */
+extern word_t sk_h_00466214(); /* FUN_00466214 */
+extern word_t sk_h_00468ee4(); /* FUN_00468ee4 */
+extern word_t sk_h_00469c50(); /* FUN_00469c50 */
+extern word_t sk_h_00469dc4(); /* FUN_00469dc4 */
+extern word_t sk_h_0046a368(); /* FUN_0046a368 */
+extern word_t sk_h_0046c4e0(); /* FUN_0046c4e0 */
+extern word_t sk_h_004730f0(); /* FUN_004730f0 */
+extern word_t sk_h_004731b8(); /* FUN_004731b8 */
+extern word_t sk_h_004766ec(); /* FUN_004766ec */
+extern word_t sk_h_004769a4(); /* FUN_004769a4 */
+extern word_t sk_h_004775d0(); /* FUN_004775d0 */
+extern word_t sk_h_004776c4(); /* FUN_004776c4 */
+extern word_t sk_h_004811e8(); /* FUN_004811e8 */
+extern word_t sk_h_00481510(); /* FUN_00481510 */
+extern word_t sk_h_004815ac(); /* FUN_004815ac */
+extern sk_r29_pair_t sk_h_004815cc(); /* FUN_004815cc */
+extern word_t sk_h_00490174(); /* FUN_00490174 */
+extern word_t sk_h_00490600(); /* FUN_00490600 */
+extern word_t sk_h_00492704(); /* FUN_00492704 */
+extern word_t sk_h_00494ea8(); /* FUN_00494ea8 */
+extern word_t sk_h_00494f3c(); /* FUN_00494f3c */
+extern word_t sk_h_0049513c(); /* FUN_0049513c */
+extern word_t sk_h_00496ef0(); /* FUN_00496ef0 */
+extern word_t sk_h_00497224(); /* FUN_00497224 */
+extern word_t sk_h_004981d8(); /* FUN_004981d8 */
+extern word_t sk_h_00498228(); /* FUN_00498228 */
+extern word_t sk_h_00498500(); /* FUN_00498500 */
+extern word_t sk_h_00498ad4(); /* FUN_00498ad4 */
+extern word_t sk_h_00498b28(); /* FUN_00498b28 */
+extern word_t sk_h_00498b7c(); /* FUN_00498b7c */
+extern word_t sk_h_00498bdc(); /* FUN_00498bdc */
+extern word_t sk_h_00498c1c(); /* FUN_00498c1c */
+extern word_t sk_h_00498c84(); /* FUN_00498c84 */
+extern word_t sk_h_00498cc8(); /* FUN_00498cc8 */
+extern word_t sk_h_00498e50(); /* FUN_00498e50 */
+extern word_t sk_h_00499094(); /* FUN_00499094 */
+extern word_t sk_h_0049952c(); /* FUN_0049952c */
+extern word_t sk_h_00499918(); /* FUN_00499918 */
+extern word_t sk_h_00499dbc(); /* FUN_00499dbc */
+extern word_t sk_h_00499e1c(); /* FUN_00499e1c */
+extern word_t sk_h_00499e94(); /* FUN_00499e94 */
+extern sk_r29_pair_t sk_h_00499f6c(); /* FUN_00499f6c */
+extern word_t sk_h_0049a058(); /* FUN_0049a058 */
+extern word_t sk_h_0049a184(); /* FUN_0049a184 */
+extern word_t sk_h_0049a440(); /* FUN_0049a440 */
+extern word_t sk_h_0049a454(); /* FUN_0049a454 */
+extern word_t sk_h_0049a468(); /* FUN_0049a468 */
+extern word_t sk_h_0049a47c(); /* FUN_0049a47c */
+extern word_t sk_h_0049a490(); /* FUN_0049a490 */
+extern word_t sk_h_0049a530(); /* FUN_0049a530 */
+extern word_t sk_h_0049a550(); /* FUN_0049a550 */
+extern word_t sk_h_0049a5ac(); /* FUN_0049a5ac */
+extern word_t sk_h_0049a82c(); /* FUN_0049a82c */
+extern word_t sk_h_0049a91c(); /* FUN_0049a91c */
+extern word_t sk_h_0049ab00(); /* FUN_0049ab00 */
+extern word_t sk_h_0049c200(); /* FUN_0049c200 */
+extern word_t sk_h_0049c4b4(); /* FUN_0049c4b4 */
+extern word_t sk_h_0049c52c(); /* FUN_0049c52c */
+extern word_t sk_h_0049c5a0(); /* FUN_0049c5a0 */
+extern word_t sk_h_0049c5f8(); /* FUN_0049c5f8 */
+extern word_t sk_h_0049c838(); /* FUN_0049c838 */
+extern word_t sk_h_0049c9fc(); /* FUN_0049c9fc */
+extern word_t sk_h_0049ca14(); /* FUN_0049ca14 */
+extern word_t sk_h_0049ca2c(); /* FUN_0049ca2c */
+extern word_t sk_h_0049ca44(); /* FUN_0049ca44 */
+extern word_t sk_h_0049df0c(); /* FUN_0049df0c */
+extern word_t sk_h_0049df18(); /* FUN_0049df18 */
+extern word_t sk_h_0049e2d4(); /* FUN_0049e2d4 */
+extern word_t sk_h_0049e2f0(); /* FUN_0049e2f0 */
+extern word_t sk_h_004a31ec(); /* FUN_004a31ec */
+extern word_t sk_h_004a31fc(); /* FUN_004a31fc */
+extern word_t sk_h_004a3214(); /* FUN_004a3214 */
+extern word_t sk_h_004a322c(); /* FUN_004a322c */
+extern word_t sk_h_004a34f0(); /* FUN_004a34f0 */
+extern word_t sk_h_004a3500(); /* FUN_004a3500 */
+extern word_t sk_h_004a3528(); /* FUN_004a3528 */
+extern word_t sk_h_004a3550(); /* FUN_004a3550 */
+extern word_t sk_h_004a3560(); /* FUN_004a3560 */
+extern word_t sk_h_004a36c4(); /* FUN_004a36c4 */
+extern word_t sk_h_004a36d4(); /* FUN_004a36d4 */
+extern word_t sk_h_004a3918(); /* FUN_004a3918 */
+extern word_t sk_h_004a3940(); /* FUN_004a3940 */
+extern word_t sk_h_004a42a0(); /* FUN_004a42a0 */
+extern word_t sk_h_004a4310(); /* FUN_004a4310 */
+extern word_t sk_h_004a463c(); /* FUN_004a463c */
+extern word_t sk_h_004a46f0(); /* FUN_004a46f0 */
+extern word_t sk_h_004a4724(); /* FUN_004a4724 */
+extern word_t sk_h_004a487c(); /* FUN_004a487c */
+extern word_t sk_h_004a49a0(); /* FUN_004a49a0 */
+extern word_t sk_h_004a49c0(); /* FUN_004a49c0 */
+extern word_t sk_h_004a4a34(); /* FUN_004a4a34 */
+extern word_t sk_h_004a4aa4(); /* FUN_004a4aa4 */
+extern word_t sk_h_004a4ac4(); /* FUN_004a4ac4 */
+extern word_t sk_h_004a4b14(); /* FUN_004a4b14 */
+extern word_t sk_h_004aa370(); /* FUN_004aa370 */
+extern word_t sk_h_004aa38c(); /* FUN_004aa38c */
+extern word_t sk_h_004aa3bc(); /* FUN_004aa3bc */
+extern word_t sk_h_004aa3fc(); /* FUN_004aa3fc */
+extern word_t sk_h_004aa42c(); /* FUN_004aa42c */
+extern word_t sk_h_004aa494(); /* FUN_004aa494 */
+extern word_t sk_h_004aa4c4(); /* FUN_004aa4c4 */
+extern word_t sk_h_004aa514(); /* FUN_004aa514 */
+extern word_t sk_h_004aa52c(); /* FUN_004aa52c */
+extern word_t sk_h_004aa580(); /* FUN_004aa580 */
+extern word_t sk_h_004aa5f8(); /* FUN_004aa5f8 */
+extern word_t sk_h_004aa694(); /* FUN_004aa694 */
+extern word_t sk_h_004aa6a8(); /* FUN_004aa6a8 */
+extern word_t sk_h_004aa794(); /* FUN_004aa794 */
+extern word_t sk_h_004aa7a8(); /* FUN_004aa7a8 */
+extern word_t sk_h_004aa7bc(); /* FUN_004aa7bc */
+extern word_t sk_h_004aa7d0(); /* FUN_004aa7d0 */
+extern word_t sk_h_004aa7fc(); /* FUN_004aa7fc */
+extern word_t sk_h_004aa824(); /* FUN_004aa824 */
+extern word_t sk_h_004aa83c(); /* FUN_004aa83c */
+extern word_t sk_h_004aa850(); /* FUN_004aa850 */
+extern word_t sk_h_004aa864(); /* FUN_004aa864 */
+extern word_t sk_h_004aa890(); /* FUN_004aa890 */
+extern word_t sk_h_004aa8f0(); /* FUN_004aa8f0 */
+extern word_t sk_h_004aa904(); /* FUN_004aa904 */
+extern word_t sk_h_004aa938(); /* FUN_004aa938 */
+extern word_t sk_h_004aa990(); /* FUN_004aa990 */
+extern word_t sk_h_004aa9a8(); /* FUN_004aa9a8 */
+extern word_t sk_h_004aa9f8(); /* FUN_004aa9f8 */
+extern word_t sk_h_004aaa20(); /* FUN_004aaa20 */
+extern word_t sk_h_004aaa78(); /* FUN_004aaa78 */
+extern word_t sk_h_004aaab0(); /* FUN_004aaab0 */
+extern word_t sk_h_004aaacc(); /* FUN_004aaacc */
+extern word_t sk_h_004aab08(); /* FUN_004aab08 */
+extern word_t sk_h_004aab1c(); /* FUN_004aab1c */
+extern word_t sk_h_004aab4c(); /* FUN_004aab4c */
+extern word_t sk_h_004aab60(); /* FUN_004aab60 */
+extern word_t sk_h_004aab74(); /* FUN_004aab74 */
+extern word_t sk_h_004aac40(); /* FUN_004aac40 */
+extern word_t sk_h_004aacf8(); /* FUN_004aacf8 */
+extern word_t sk_h_004aad30(); /* FUN_004aad30 */
+extern word_t sk_h_004aad54(); /* FUN_004aad54 */
+extern word_t sk_h_004aad94(); /* FUN_004aad94 */
+extern word_t sk_h_004aada4(); /* FUN_004aada4 */
+extern word_t sk_h_004aadcc(); /* FUN_004aadcc */
+extern word_t sk_h_004aade4(); /* FUN_004aade4 */
+extern word_t sk_h_004aadfc(); /* FUN_004aadfc */
+extern word_t sk_h_004aae2c(); /* FUN_004aae2c */
+extern word_t sk_h_004aae64(); /* FUN_004aae64 */
+extern word_t sk_h_004aae98(); /* FUN_004aae98 */
+extern word_t sk_h_004aaf28(); /* FUN_004aaf28 */
+extern word_t sk_h_004aaf58(); /* FUN_004aaf58 */
+extern word_t sk_h_004aaf9c(); /* FUN_004aaf9c */
+extern word_t sk_h_004aafac(); /* FUN_004aafac */
+extern word_t sk_h_004aafd8(); /* FUN_004aafd8 */
+extern word_t sk_h_004ab034(); /* FUN_004ab034 */
+extern word_t sk_h_004ab044(); /* FUN_004ab044 */
+extern word_t sk_h_004ab054(); /* FUN_004ab054 */
+extern word_t sk_h_004ab064(); /* FUN_004ab064 */
+extern word_t sk_h_004ab080(); /* FUN_004ab080 */
+extern word_t sk_h_004ab0ac(); /* FUN_004ab0ac */
+extern word_t sk_h_004ab0bc(); /* FUN_004ab0bc */
+extern word_t sk_h_004ab0e0(); /* FUN_004ab0e0 */
+extern word_t sk_h_004ab0f0(); /* FUN_004ab0f0 */
+extern word_t sk_h_004ab178(); /* FUN_004ab178 */
+extern word_t sk_h_004ab1a0(); /* FUN_004ab1a0 */
+extern word_t sk_h_004ab208(); /* FUN_004ab208 */
+extern word_t sk_h_004ab224(); /* FUN_004ab224 */
+extern word_t sk_h_004ab260(); /* FUN_004ab260 */
+extern word_t sk_h_004ab26c(); /* FUN_004ab26c */
+extern word_t sk_h_004ab2a0(); /* FUN_004ab2a0 */
+extern word_t sk_h_004ab2d0(); /* FUN_004ab2d0 */
+extern word_t sk_h_004ab304(); /* FUN_004ab304 */
+extern word_t sk_h_004ab35c(); /* FUN_004ab35c */
+extern word_t sk_h_004ab3c4(); /* FUN_004ab3c4 */
+extern word_t sk_h_004ab3dc(); /* FUN_004ab3dc */
+extern word_t sk_h_004ab408(); /* FUN_004ab408 */
+extern word_t sk_h_004ab448(); /* FUN_004ab448 */
+extern word_t sk_h_004ab458(); /* FUN_004ab458 */
+extern word_t sk_h_004ab468(); /* FUN_004ab468 */
+extern word_t sk_h_004ab4a8(); /* FUN_004ab4a8 */
+extern word_t sk_h_004ab4e8(); /* FUN_004ab4e8 */
+extern word_t sk_h_004ab4f4(); /* FUN_004ab4f4 */
+extern word_t sk_h_004ab520(); /* FUN_004ab520 */
+extern word_t sk_h_004ab530(); /* FUN_004ab530 */
+extern word_t sk_h_004ab55c(); /* FUN_004ab55c */
+extern word_t sk_h_004ab568(); /* FUN_004ab568 */
+extern word_t sk_h_004ab58c(); /* FUN_004ab58c */
+extern word_t sk_h_004ab5a4(); /* FUN_004ab5a4 */
+extern word_t sk_h_004ab5c8(); /* FUN_004ab5c8 */
+extern sk_r29_pair_t sk_h_004ab60c(); /* FUN_004ab60c */
+extern word_t sk_h_004ab618(); /* FUN_004ab618 */
+extern word_t sk_h_004ab650(); /* FUN_004ab650 */
+extern word_t sk_h_004ab68c(); /* FUN_004ab68c */
+extern word_t sk_h_004ab6c4(); /* FUN_004ab6c4 */
+extern word_t sk_h_004ab6d8(); /* FUN_004ab6d8 */
+extern word_t sk_h_004ab6e8(); /* FUN_004ab6e8 */
+extern word_t sk_h_004ab700(); /* FUN_004ab700 */
+extern word_t sk_h_004ab724(); /* FUN_004ab724 */
+extern word_t sk_h_004ab760(); /* FUN_004ab760 */
+extern word_t sk_h_004ab784(); /* FUN_004ab784 */
+extern word_t sk_h_004ab798(); /* FUN_004ab798 */
+extern word_t sk_h_004ab7b8(); /* FUN_004ab7b8 */
+extern word_t sk_h_004ab7cc(); /* FUN_004ab7cc */
+extern word_t sk_h_004ab810(); /* FUN_004ab810 */
+extern word_t sk_h_004ab820(); /* FUN_004ab820 */
+extern word_t sk_h_004ab834(); /* FUN_004ab834 */
+extern word_t sk_h_004ab844(); /* FUN_004ab844 */
+extern word_t sk_h_004ab858(); /* FUN_004ab858 */
+extern word_t sk_h_004ab89c(); /* FUN_004ab89c */
+extern word_t sk_h_004ab8c8(); /* FUN_004ab8c8 */
+extern word_t sk_h_004ab8dc(); /* FUN_004ab8dc */
+extern word_t sk_h_004ab8e8(); /* FUN_004ab8e8 */
+extern word_t sk_h_004ab930(); /* FUN_004ab930 */
+extern word_t sk_h_004ab944(); /* FUN_004ab944 */
+extern word_t sk_h_004ab968(); /* FUN_004ab968 */
+extern sk_r29_pair_t sk_h_004ab974(); /* FUN_004ab974 */
+extern word_t sk_h_004ab98c(); /* FUN_004ab98c */
+extern word_t sk_h_004ab9bc(); /* FUN_004ab9bc */
+extern word_t sk_h_004ab9e0(); /* FUN_004ab9e0 */
+extern word_t sk_h_004ab9f8(); /* FUN_004ab9f8 */
+extern sk_r29_pair_t sk_h_004aba34(); /* FUN_004aba34 */
+extern word_t sk_h_004aba88(); /* FUN_004aba88 */
+extern word_t sk_h_004abad8(); /* FUN_004abad8 */
+extern word_t sk_h_004abaf0(); /* FUN_004abaf0 */
+extern word_t sk_h_004abb1c(); /* FUN_004abb1c */
+extern word_t sk_h_004abb28(); /* FUN_004abb28 */
+extern word_t sk_h_004abb58(); /* FUN_004abb58 */
+extern word_t sk_h_004abbac(); /* FUN_004abbac */
+extern word_t sk_h_004abbd4(); /* FUN_004abbd4 */
+extern word_t sk_h_004abc28(); /* FUN_004abc28 */
+extern word_t sk_h_004abc38(); /* FUN_004abc38 */
+extern word_t sk_h_004abc78(); /* FUN_004abc78 */
+extern sk_r29_pair_t sk_h_004abcb4(); /* FUN_004abcb4 */
+extern word_t sk_h_004abcdc(); /* FUN_004abcdc */
+extern sk_r29_pair_t sk_h_004abcf8(); /* FUN_004abcf8 */
+extern word_t sk_h_004abd20(); /* FUN_004abd20 */
+extern word_t sk_h_004abd2c(); /* FUN_004abd2c */
+extern word_t sk_h_004abd38(); /* FUN_004abd38 */
+extern word_t sk_h_004abd9c(); /* FUN_004abd9c */
+extern word_t sk_h_004abdc4(); /* FUN_004abdc4 */
+extern word_t sk_h_004abe24(); /* FUN_004abe24 */
+extern word_t sk_h_004abe5c(); /* FUN_004abe5c */
+extern word_t sk_h_004abe68(); /* FUN_004abe68 */
+extern word_t sk_h_004abe74(); /* FUN_004abe74 */
+extern word_t sk_h_004abeb0(); /* FUN_004abeb0 */
+extern word_t sk_h_004abed0(); /* FUN_004abed0 */
+extern word_t sk_h_004abf00(); /* FUN_004abf00 */
+extern word_t sk_h_004abf10(); /* FUN_004abf10 */
+extern word_t sk_h_004abf20(); /* FUN_004abf20 */
+extern word_t sk_h_004abf30(); /* FUN_004abf30 */
+extern word_t sk_h_004abf40(); /* FUN_004abf40 */
+extern word_t sk_h_004abf5c(); /* FUN_004abf5c */
+extern word_t sk_h_004abfa8(); /* FUN_004abfa8 */
+extern word_t sk_h_004abfd8(); /* FUN_004abfd8 */
+extern word_t sk_h_004abfe8(); /* FUN_004abfe8 */
+extern word_t sk_h_004abff8(); /* FUN_004abff8 */
+extern word_t sk_h_004ac008(); /* FUN_004ac008 */
+extern word_t sk_h_004ac034(); /* FUN_004ac034 */
+extern word_t sk_h_004ac0cc(); /* FUN_004ac0cc */
+extern word_t sk_h_004ac108(); /* FUN_004ac108 */
+extern word_t sk_h_004ac114(); /* FUN_004ac114 */
+extern word_t sk_h_004ac120(); /* FUN_004ac120 */
+extern word_t sk_h_004ac12c(); /* FUN_004ac12c */
+extern sk_r29_pair_t sk_h_004ac144(); /* FUN_004ac144 */
+extern word_t sk_h_004ac15c(); /* FUN_004ac15c */
+extern word_t sk_h_004ac198(); /* FUN_004ac198 */
+extern word_t sk_h_004ac1a4(); /* FUN_004ac1a4 */
+extern word_t sk_h_004ac210(); /* FUN_004ac210 */
+extern word_t sk_h_004ac258(); /* FUN_004ac258 */
+extern word_t sk_h_004ac27c(); /* FUN_004ac27c */
+extern word_t sk_h_004ac294(); /* FUN_004ac294 */
+extern word_t sk_h_004ac2a0(); /* FUN_004ac2a0 */
+extern word_t sk_h_004ac2c4(); /* FUN_004ac2c4 */
+extern word_t sk_h_004ac2f4(); /* FUN_004ac2f4 */
+extern sk_r29_pair_t sk_h_004ac30c(); /* FUN_004ac30c */
+extern word_t sk_h_004ac360(); /* FUN_004ac360 */
+extern word_t sk_h_004ac3e4(); /* FUN_004ac3e4 */
+extern word_t sk_h_004ac3f0(); /* FUN_004ac3f0 */
+extern word_t sk_h_004ac4f0(); /* FUN_004ac4f0 */
+extern word_t sk_h_004ac518(); /* FUN_004ac518 */
+extern word_t sk_h_004ac52c(); /* FUN_004ac52c */
+extern word_t sk_h_004ac55c(); /* FUN_004ac55c */
+extern word_t sk_h_004ac574(); /* FUN_004ac574 */
+extern word_t sk_h_004ac5a4(); /* FUN_004ac5a4 */
+extern word_t sk_h_004ac5b4(); /* FUN_004ac5b4 */
+extern word_t sk_h_004ac5c4(); /* FUN_004ac5c4 */
+extern word_t sk_h_004ac5ec(); /* FUN_004ac5ec */
+extern word_t sk_h_004ac5fc(); /* FUN_004ac5fc */
+extern word_t sk_h_004ac634(); /* FUN_004ac634 */
+extern word_t sk_h_004ac654(); /* FUN_004ac654 */
+extern word_t sk_h_004ac66c(); /* FUN_004ac66c */
+extern word_t sk_h_004ac680(); /* FUN_004ac680 */
+extern word_t sk_h_004ac698(); /* FUN_004ac698 */
+extern word_t sk_h_004ac6f8(); /* FUN_004ac6f8 */
+extern word_t sk_h_004ac70c(); /* FUN_004ac70c */
+extern word_t sk_h_004ac738(); /* FUN_004ac738 */
+extern word_t sk_h_004ac758(); /* FUN_004ac758 */
+extern word_t sk_h_004ac76c(); /* FUN_004ac76c */
+extern word_t sk_h_004ac778(); /* FUN_004ac778 */
+extern word_t sk_h_004ac7b0(); /* FUN_004ac7b0 */
+extern sk_r29_pair_t sk_h_004ac7bc(); /* FUN_004ac7bc */
+extern word_t sk_h_004ac844(); /* FUN_004ac844 */
+extern word_t sk_h_004ac850(); /* FUN_004ac850 */
+extern word_t sk_h_004ac8a8(); /* FUN_004ac8a8 */
+extern word_t sk_h_004ac8d4(); /* FUN_004ac8d4 */
+extern word_t sk_h_004ac8fc(); /* FUN_004ac8fc */
+extern word_t sk_h_004ac91c(); /* FUN_004ac91c */
+extern word_t sk_h_004ac960(); /* FUN_004ac960 */
+extern word_t sk_h_004ac96c(); /* FUN_004ac96c */
+extern word_t sk_h_004ac98c(); /* FUN_004ac98c */
+extern word_t sk_h_004ac9ac(); /* FUN_004ac9ac */
+extern word_t sk_h_004ac9cc(); /* FUN_004ac9cc */
+extern word_t sk_h_004ac9f8(); /* FUN_004ac9f8 */
+extern word_t sk_h_004aca2c(); /* FUN_004aca2c */
+extern word_t sk_h_004aca4c(); /* FUN_004aca4c */
+extern word_t sk_h_004aca94(); /* FUN_004aca94 */
+extern word_t sk_h_004acb04(); /* FUN_004acb04 */
+extern word_t sk_h_004acb58(); /* FUN_004acb58 */
+extern word_t sk_h_004acba8(); /* FUN_004acba8 */
+extern word_t sk_h_004acbbc(); /* FUN_004acbbc */
+extern word_t sk_h_004acc34(); /* FUN_004acc34 */
+extern word_t sk_h_004acc5c(); /* FUN_004acc5c */
+extern word_t sk_h_004acc84(); /* FUN_004acc84 */
+extern word_t sk_h_004acc90(); /* FUN_004acc90 */
+extern word_t sk_h_004accb4(); /* FUN_004accb4 */
+extern word_t sk_h_004accc0(); /* FUN_004accc0 */
+extern word_t sk_h_004accd8(); /* FUN_004accd8 */
+extern word_t sk_h_004accfc(); /* FUN_004accfc */
+extern word_t sk_h_004acd14(); /* FUN_004acd14 */
 
+/* Data symbols and function-pointer callees. */
+extern word_t sk_h_00010004; /* DAT_00010004 data symbol */
+extern word_t sk_h_00657728; /* DAT_00657728 data symbol */
+extern word_t sk_h_00657d68; /* DAT_00657d68 data symbol */
+extern word_t sk_h_00657e58; /* DAT_00657e58 data symbol */
+extern word_t sk_h_00657e60; /* DAT_00657e60 data symbol */
+extern word_t sk_h_00657e68; /* DAT_00657e68 data symbol */
+extern word_t sk_h_00657e70; /* DAT_00657e70 data symbol */
+extern word_t sk_h_006888f0; /* DAT_006888f0 data symbol */
+extern word_t sk_h_00688af0; /* DAT_00688af0 data symbol */
+extern word_t sk_h_00657d20; /* DAT_00657d20 data symbol */
+extern word_t sk_h_00657d48; /* DAT_00657d48 data symbol */
+extern word_t sk_h_00657d58; /* DAT_00657d58 data symbol */
+extern word_t sk_h_00657d78; /* DAT_00657d78 data symbol */
+extern word_t sk_h_00657e48; /* DAT_00657e48 data symbol */
+extern word_t sk_h_00657e50; /* DAT_00657e50 data symbol */
+extern word_t sk_h_006c10b0; /* DAT_006c10b0 data symbol */
+extern word_t sk_h_006c10b8; /* DAT_006c10b8 data symbol */
+extern word_t sk_h_004a4914(); /* FUN_004a4914 (function pointer callee) */
+extern word_t sk_h_000722e8(); /* FUN_000722e8 (function pointer callee) */
+extern word_t sk_h_00452c00(); /* FUN_00452c00 (function pointer callee) */
+extern word_t sk_h_004a4310(); /* FUN_004a4310 (function pointer callee) */
+extern word_t sk_h_004a4724(); /* FUN_004a4724 (function pointer callee) */
+extern word_t sk_h_004a4874(); /* FUN_004a4874 (function pointer callee) */
+extern word_t sk_h_004a48f0(); /* FUN_004a48f0 (function pointer callee) */
+extern word_t sk_h_004a487c(); /* FUN_004a487c (function pointer callee) */
+extern word_t sk_h_004a4328(); /* FUN_004a4328 (function pointer callee) */
+
+/* Forward declarations for in-slice helpers (return types match the definitions). */
+word_t sk_h_481600();
+void sk_h_48169c();
+word_t sk_h_4816a8();
+word_t sk_h_4816b4();
+void sk_h_4816c0();
+void sk_h_481700();
+void sk_h_481704();
+void sk_h_481738();
+void sk_h_48173c();
+void sk_h_481754();
+word_t sk_h_481780();
+word_t sk_h_48185c();
+void sk_h_4818d8();
+void sk_h_481918();
+void sk_h_4819ac();
+void sk_h_481a38();
+word_t sk_h_481ac4();
+word_t sk_h_481b40();
+word_t sk_h_481b9c();
+bool sk_h_481c18();
+word_t sk_h_481c60();
+bool sk_h_481c90();
+void sk_h_481cc0();
+word_t sk_h_481f0c();
+word_t sk_h_4820f8();
+word_t sk_h_482254();
+word_t sk_h_4825e4();
+void sk_h_48273c();
+void sk_h_48285c();
+void sk_h_482a84();
+void sk_h_482d18();
+sk_r29_pair_t sk_h_4832a4();
+void sk_h_483490();
+void sk_h_483530();
+void sk_h_4836a8();
+void sk_h_484374();
+void sk_h_4846dc();
+void sk_h_484910();
+void sk_h_484a3c();
+word_t sk_h_484aa8();
+void sk_h_484b34();
+void sk_h_484ca8();
+void sk_h_485010();
+word_t sk_h_4851b4();
+void sk_h_48525c();
+void sk_h_4852ac();
+word_t sk_h_485ffc();
+word_t sk_h_48603c();
+sk_r29_pair_t sk_h_4860bc();
+void sk_h_4860d8();
+word_t sk_h_48610c();
+word_t sk_h_486110();
+void sk_h_48612c();
+void sk_h_4861a0();
+void sk_h_48622c();
+sk_r29_pair_t sk_h_4862a0();
+long sk_h_4863d8();
+sk_r29_pair_t sk_h_4867a4();
+void sk_h_4870b4();
+void sk_h_4870f4();
+void sk_h_487210();
+void sk_h_487250();
+void sk_h_48736c();
+void sk_h_4875c8();
+void sk_h_487700();
+void sk_h_487734();
+void sk_h_4877a0();
+void sk_h_48788c();
+void sk_h_487960();
+void sk_h_488828();
+void sk_h_488ec8();
+bool sk_h_489938();
+sk_r29_pair_t sk_h_489ac4();
+sk_r29_pair_t sk_h_489b5c();
+void sk_h_489c84();
+void sk_h_48a0f4();
+word_t sk_h_48a110();
+void sk_h_48a244();
+void sk_h_48a590();
+sk_r29_pair_t sk_h_48a670();
+void sk_h_48a81c();
+void sk_h_48a84c();
+bool sk_h_48a8ac();
+void sk_h_48a95c();
+void sk_h_48a988();
+void sk_h_48aa38();
+void sk_h_48aa3c();
+void sk_h_48aa68();
+void sk_h_48aa90();
+void sk_h_48aab8();
+void sk_h_48aae0();
+void sk_h_48ab08();
+void sk_h_48abc4();
+void sk_h_48ad50();
+word_t sk_h_48addc();
+void sk_h_48ba64();
+void sk_h_48bb04();
+void sk_h_48c284();
+void sk_h_48c564();
+void sk_h_48c644();
+void sk_h_48c718();
+word_t sk_h_48ce80();
+void sk_h_48d400();
+bool sk_h_48d554();
+long sk_h_48d694();
+sk_r29_pair_t sk_h_48d990();
+word_t sk_h_48d9f8();
+void sk_h_48dddc();
+void sk_h_48deb0();
+sk_r29_pair_t sk_h_48e570();
+void sk_h_48e76c();
+void sk_h_48ebd8();
+sk_r29_pair_t sk_h_48ee54();
+word_t sk_h_48ee9c();
+void sk_h_48ef24();
+void sk_h_48f61c();
+void sk_h_48fe4c();
+void sk_h_4816c4();
+void sk_h_48afec();
 /* FUN_00481600 @ 0x00481600   (est. sk_regex_unicode_category_bits)
  * Ghidra: undefined8 FUN_00481600(ulong param_1)
  * Returns a 2-bit Unicode general-category selector derived from bits 16-17 of
@@ -715,7 +860,7 @@ void sk_h_48169c(void) { sk_h_004ac518(8); }
 /* FUN_004816a8 @ 0x004816a8   (est. sk_regex_emit_anchor_slot0d)
  * Ghidra: void FUN_004816a8(void)
  * Emits anchor kind 0xd (end-of-subject) via the dispatcher. Confidence: medium. */
-void sk_h_4816a8(void) { sk_h_004ac518(0xd); }
+word_t sk_h_4816a8(word_t p) { return sk_h_004ac518(0xd); }
 
 /* FUN_004816b4 @ 0x004816b4   (est. sk_regex_emit_anchor_slot1e)
  * Ghidra: void FUN_004816b4(void)
@@ -1226,7 +1371,7 @@ word_t sk_h_482254(word_t p, word_t *x20)
     case 11: case 12: {
         word_t r;
         if ((p >> 0x36 & 1) == 0) r = sk_h_004ac4f0();
-        else { sk_h_004abcb4(); sk_h_00117cc4(0, 0, 0xd8); r = sk_h_4825e4(0, 0); }
+        else { sk_h_004abcb4(); sk_h_00117cc4(0, 0, 0xd8); r = sk_h_4825e4(0, 0, x20); }
         if (kind == 12) r ^= 1;
         return r & 1;
     }
@@ -1241,13 +1386,13 @@ word_t sk_h_482254(word_t p, word_t *x20)
  * Compares two cursor words (x20[2] vs x20[3], else the work cursor) and
  * reports equality of their page-frame bits to the trailing FUN_00354ef8.
  * Confidence: low (register-global cursors). */
-void sk_h_4825e4(word_t p1, word_t p2, word_t *x20)
+word_t sk_h_4825e4(word_t p1, word_t p2, word_t *x20)
 {
     sk_h_00354a34();
     word_t a = x20[3];
-    if (x20[2] >> 0xe == a >> 0xe) { sk_h_00354ef8(0, 0); return; }
+    if (x20[2] >> 0xe == a >> 0xe) { sk_h_00354ef8(0, 0); return 0; }
     word_t cur = x20[0xb];
-    if (cur >> 0xe == x20[2] >> 0xe) { sk_h_004ac758(); sk_h_00354ef8(); sk_h_00494f3c(); return; }
+    if (cur >> 0xe == x20[2] >> 0xe) { sk_h_004ac758(); sk_h_00354ef8(); sk_h_00494f3c(); return 0; }
     sk_h_00350b48(cur);
     word_t r = sk_h_0029c058();
     word_t out = sk_h_00494f3c(r, 0);
@@ -1266,7 +1411,7 @@ void sk_h_48273c(word_t p1, word_t p2, word_t p3, long *p4, word_t *p5, word_t p
     word_t lo = d.lo >> 0xe;
     if (lo != d.hi >> 0xe && lo != p3 >> 0xe) {
         long l = *p4;
-        if (l != 0) { sk_h_003508fc(); if ((sk_h_0048a8ac(0, 0) & 1) != 0) goto done1; }
+        if (l != 0) { sk_h_003508fc(); if ((sk_h_48a8ac(0, 0) & 1) != 0) goto done1; }
         word_t cur = *p5, flag = p5[1];
         if ((char)flag != 1 && lo < cur >> 0xe) { sk_h_0007767c(0, 0); return; }
         if (l == 0) *p4 = (long)&sk_h_006577e0;
@@ -1275,7 +1420,7 @@ void sk_h_48273c(word_t p1, word_t p2, word_t p3, long *p4, word_t *p5, word_t p
             if (p3 >> 0xe <= cur >> 0xe || lo < cur >> 0xe) {
                 *p5 = cur;
                 *(unsigned char *)(p5 + 1) = 0;
-                if (*p4 != 0) { sk_h_0007767c(d.lo, *p4); sk_h_0048a8ac(0, 0); return; }
+                if (*p4 != 0) { sk_h_0007767c(d.lo, *p4); sk_h_48a8ac(0, 0); return; }
                 SK_TRAP(0x48285c);
             }
             if (*p4 == 0) SK_TRAP(0x482858);
@@ -1552,11 +1697,11 @@ void sk_h_483530(word_t *x20)
         sk_h_004629b4();
         word_t s = sk_h_00027724(0);
         sk_h_003504ac(s);
-        sk_h_004867a4(e);
+        sk_h_4867a4(e);
         word_t kind = sk_h_4816b4() & 0xff;
         if (kind - 0x11 < 2 || kind == 4) {
             if (total <= (e & 0xffffffffffffff)) SK_TRAP(0x4836a0);
-            sk_h_004867a4(*(word_t *)(base + (e & 0xffffffffffffff) * 8));
+            sk_h_4867a4(*(word_t *)(base + (e & 0xffffffffffffff) * 8));
             sk_h_004ac0cc();
             sk_h_003a25d4(e);
         } else if (kind == 0x1e) {
@@ -1588,7 +1733,7 @@ void sk_h_4836a8(word_t p1, word_t *x20)
     word_t sel0 = (sel & 0xff) != 0, sel1 = (sel & 0xff) == 1;
     word_t selm = 0;
     if (sel1) selm = 1; else if (!sel0) selm = 0;
-    switch (sk_h_4815cc(tag)) {
+    switch (sk_h_004815cc(tag).lo) {
     case 1:
         keep = x20[0xb];
         cur = sk_h_004ab8dc(keep);
@@ -1629,7 +1774,7 @@ void sk_h_4836a8(word_t p1, word_t *x20)
         for (;;) {
             word_t c2 = cur;
             if (c2 >> 0xe < keep >> 0xe) {
-                sk_h_004832a4();
+                sk_h_4832a4(0,0,0,0,0,0);
                 cur = sk_h_004ac7bc().lo;
             } else break;
         }
@@ -2210,23 +2355,26 @@ long sk_h_4863d8(long p1, word_t p2, long p3, word_t p4, word_t p5)
         if ((*(unsigned char *)(argptr + 0x20) & 0x3f) < 6) bitmask = ~(-1L << (wordbits & 0x3f));
         word_t bits = bitmask & *(word_t *)(argptr + 0x40);
         long sel = 0;
+        word_t rb = 0;
         for (;;) {
             while (bits == 0) {
                 sel++;
-                if ((wordbits + 0x3f >> 6) <= sel) { slot1 = 0; slot0 = 1; goto emit; }
+                if ((wordbits + 0x3f >> 6) <= sel) { slot0 = 1; slot1 = 0; goto emit; }
                 bits = *(word_t *)(argptr + 0x40 + sel * 8);
             }
-            word_t rb = (bits & 0xaaaaaaaaaaaaaaaa) >> 1 | (bits & 0x5555555555555555) << 1;
+            rb = (bits & 0xaaaaaaaaaaaaaaaa) >> 1 | (bits & 0x5555555555555555) << 1;
             rb = (rb & 0xcccccccccccccccc) >> 2 | (rb & 0x3333333333333333) << 2;
             rb = (rb & 0xf0f0f0f0f0f0f0f0) >> 4 | (rb & 0x0f0f0f0f0f0f0f0f) << 4;
             rb = (rb & 0xff00ff00ff00ff00) >> 8 | (rb & 0x00ff00ff00ff00ff) << 8;
             rb = (rb & 0xffff0000ffff0000) >> 0x10 | (rb & 0x0000ffff0000ffff) << 0x10;
             bits = bits - 1 & bits;
             rb = 0 | sel << 6;   /* LZCOUNT-based bit index */
-            if (*(long *)(*(long *)(argptr + 0x38) + rb * 8) == step) break;
+            if (*(long *)(*(long *)(argptr + 0x38) + rb * 8) == step) {
+                slot0 = 0;
+                slot1 = *(word_t *)(*(long *)(argptr + 0x30) + rb * 8);
+                break;
+            }
         }
-        slot0 = 0;
-        slot1 = *(word_t *)(*(long *)(argptr + 0x30) + rb * 8);
 emit:
         word_t nn = *(word_t *)(vec + 0x10);
         if (*(word_t *)(vec + 0x18) >> 1 <= nn) { sk_h_0006b42c(); sk_h_004ab0e0(); vec = (long)sk_h_00498e50(); }
@@ -2246,7 +2394,7 @@ emit:
  * (string literals decoded). */
 sk_r29_pair_t sk_h_4867a4(word_t p1)
 {
-    word_t kind = sk_h_4816b4(p1 >> 0x38) & 0xff;
+    word_t kind = sk_h_4816b4() & 0xff;
     word_t lo = 0, hi = 0xe000000000000000;
     if (0x1d < kind - 1) {
         sk_h_004aa904(); sk_h_000f4a9c(); sk_h_004ab304();
@@ -2298,7 +2446,7 @@ sk_r29_pair_t sk_h_4867a4(word_t p1)
  * Confidence: low. */
 void sk_h_4870b4(word_t x21)
 {
-    sk_h_4870f4((word_t)&(word_t[5]){0});
+    sk_h_4870f4((word_t)&(word_t[5]){0}, 0,0,0,0,0,0,0,0);
     if (x21 == 0) sk_h_004aade4();
 }
 
@@ -2326,7 +2474,7 @@ void sk_h_4870f4(word_t p1, long p2, word_t p3, word_t p4, word_t p5, word_t p6,
 /* FUN_00487210 @ 0x00487210   (est. sk_regex_build_matcher2)
  * Ghidra: void FUN_00487210(void)
  * Adjacent matcher builder (like 4870b4). Confidence: low. */
-void sk_h_487210(word_t x21) { sk_h_4870f4((word_t)&(word_t[5]){0}); if (x21 == 0) sk_h_004aade4(); }
+void sk_h_487210(word_t x21) { sk_h_4870f4((word_t)&(word_t[5]){0}, 0,0,0,0,0,0,0,0); if (x21 == 0) sk_h_004aade4(); }
 
 /* FUN_00487250 @ 0x00487250   (est. sk_regex_build_matcher3)
  * Ghidra: void FUN_00487250(...8 args)
@@ -2390,7 +2538,7 @@ void sk_h_48736c(word_t p1, long p2, word_t *p3)
             } else { u12 = (u12 + 0) * 0x10000 | 5; }
         } else { sk_h_00352c4c(u12); u12 = sk_h_002a49a8(); }
         if (end >> 0xe < u12 >> 0xe) goto store;
-        sk_h_484910(u12, p3[9], p3[10]);
+        sk_h_484910(u12, p3[9], p3[10], 0);
     }
     sk_h_0036b270(0); sk_h_0036b270(0);
     sk_h_000f5e5c((word_t)&(word_t){0});
@@ -2635,12 +2783,12 @@ bool sk_h_489938(word_t p1, word_t p2, word_t p3, word_t x21)
     }
     sk_h_004ab260();
     long l3 = *(long *)(0 + 0x18);
-    sk_h_0048a0f4(p2);
+    sk_h_48a0f4(p2);
     sk_h_00351d18();
     sk_h_0036b270();
     if ((p2 & 1) == 0) {
         sk_h_00084180();
-        word_t r = sk_h_0048a110();
+        word_t r = sk_h_48a110();
         if ((r & 1) == 0) {
             sk_h_0006b6f4(); sk_h_00002534();
             sk_h_003510c4((word_t)&sk_h_00657e58, 0, p3, 0);
@@ -2810,16 +2958,16 @@ void sk_h_48a0f4(long p1)
  * Looks up the current character in the compiled class table (DAT_006c10b8):
  * hashes the scalar via FUN_001a84f4/001b9084/001a8564, probes the bit-set,
  * and forwards to FUN_0029fb80's match. Confidence: low. */
-void sk_h_48a110(void)
+word_t sk_h_48a110(void)
 {
     sk_h_0035638c();
     word_t seed = sk_h_003532b8();
-    sk_h_0036b270(0);
+    sk_h_0036b270(seed);
     sk_r29_pair_t d = sk_h_0029fb80();
     word_t l6 = d.hi;
-    if (l6 == 0) { sk_h_003a25d4(0); sk_h_00356370(0, 0); return; }
+    if (l6 == 0) { sk_h_003a25d4(0); sk_h_00356370(0, 0); return 0; }
     if (0 != -1) { sk_h_004ab58c(); sk_h_0039a128(0); }
-    word_t l7 = 0;
+    word_t found = 0;
     if (*(long *)(0 + 0x10) != 0) {
         sk_h_001a84f4((word_t)&(word_t){0}, 0);
         sk_h_00350600((word_t)&(word_t){0});
@@ -2829,17 +2977,12 @@ void sk_h_48a110(void)
         h &= mask;
         if (*(word_t *)(0 + 0x38 + (h >> 6) * 8) >> (h & 0x3f) & 1) {
             word_t *slot = (word_t *)(*(long *)(0 + 0x30) + h * 0x10);
-            sk_r29_pair_t q; q.hi = slot[1]; q.lo = *slot;
-            if (d.lo == q.lo && d.hi == q.hi) break;
+            if (d.lo == *slot && d.hi == slot[1]) found = 1;
         }
     }
     sk_h_003a25d4(l6);
-    sk_h_00356370(0, 0);
-    return;
-    /* unreachable probe-retry tail */
-    for (;;) { sk_h_00351584(); word_t r = sk_h_002a0cf8(); if ((r & 1) != 0) break; sk_h_003a25d4(0); }
-    sk_h_003a25d4(0);
-    sk_h_00356370(1, 0);
+    sk_h_00356370(found, 0);
+    return found;
 }
 
 /* FUN_0048a244 @ 0x0048a244   (est. sk_regex_emit_quantifier)
@@ -2848,7 +2991,7 @@ void sk_h_48a110(void)
  * unaff_x20, prints the appropriate DSL snippet ({n}, {n,}, {m,n}, the
  * case-insensitive \\p/\\P property escapes, and anchors \N), and emits the
  * descriptor. Confidence: low (register-global quantifier header). */
-void sk_h_48a244(void)
+sk_r29_pair_t sk_h_48a244(void)
 {
     sk_h_00357cb4();
     word_t ic = *(word_t *)(0 + 0x21) & 1;   /* case-insensitive flag */
@@ -2894,13 +3037,14 @@ void sk_h_48a244(void)
         default:
             sk_h_004ab89c();
             sk_h_002acbb8(0x7b, 0xe100000000000000);
-            sk_h_00451a64(v0 = 0);
+            sk_h_00451a64(0);
             sk_h_00465294();
             lo = 0; hi = 0xe000000000000000;
             break;
         }
     }
     sk_h_00357c74(lo, hi, 0);
+    { sk_r29_pair_t _r; _r.lo = lo; _r.hi = hi; return _r; }
 }
 
 /* FUN_0048a590 @ 0x0048a590   (est. sk_regex_init_class_table)
@@ -2932,7 +3076,7 @@ void sk_h_48a590(void)
  * 2-byte, or 3/4-byte via the UTF-8 length helpers), then prints it via
  * FUN_00255d4c and the string pipeline, and emits the trailing descriptor.
  * Confidence: low. */
-void sk_h_48a670(void)
+sk_r29_pair_t sk_h_48a670(void)
 {
     sk_h_00041138();
     sk_h_003504d0();
@@ -3249,7 +3393,7 @@ void sk_h_48bb04(word_t p1, word_t p2)
  * bounds are unbounded. Confidence: medium (tagged field decode). */
 void sk_h_48c284(word_t *x20)
 {
-    word_t d = sk_h_00354a34();
+    word_t d = sk_h_00354a34().lo;
     long a = *x20, b = x20[1];
     long c = x20[4], e = x20[5];
     long lo = 0, hi = 0xe000000000000000;
@@ -3343,7 +3487,7 @@ void sk_h_48c644(long x24, long *x3)
  * Ghidra: void FUN_0048c718(...4 args)
  * Prints a capture: reads the capture tag/name, emits the group marker, and
  * when the capture references a subpattern or character class, prints the
- * nested element (via sk_h_0048d694 / the char-set printer). Confidence: low. */
+ * nested element (via sk_h_48d694 / the char-set printer). Confidence: low. */
 void sk_h_48c718(word_t p1, word_t p2, word_t p3, word_t p4)
 {
     sk_r29_pair_t d = sk_h_00354744();
@@ -3391,7 +3535,7 @@ word_t sk_h_48ce80(long p1)
         out = 0x22;
         break;
     case 2:
-        out = sk_h_48e570(*(unsigned char *)sk_h_0049e2f0((word_t)&(word_t[22]){0}, 0xe400000000000000, 1));
+        out = sk_h_48e570(*(unsigned char *)(word_t)sk_h_0049e2f0((word_t)&(word_t[22]){0}, 0xe400000000000000, 1).lo).lo;
         break;
     case 3: {
         /* anchors ^ $ \\b \\B \\A \\z ... */
@@ -3459,7 +3603,7 @@ bool sk_h_48d554(void)
 {
     sk_r29_pair_t d = sk_h_00463f94();
     sk_h_00117cc4(d.lo, d.hi, 0x99);
-    int k = (int)sk_h_00458af8((word_t)&(word_t[20]){0});
+    int k = (int)sk_h_00458af8((word_t)&(word_t[20]){0}).lo;
     if (k == 4) return true;
     if (k >= 5 && k <= 8) { sk_h_00458b14((word_t)&(word_t[20]){0}); return true; }
     sk_h_00458b14((word_t)&(word_t[20]){0});
@@ -3475,7 +3619,7 @@ bool sk_h_48d554(void)
 long sk_h_48d694(void)
 {
     sk_h_00465258((word_t)&(word_t[20]){0});
-    word_t k = sk_h_00458af8((word_t)&(word_t[20]){0});
+    word_t k = sk_h_00458af8((word_t)&(word_t[20]){0}).lo;
     long out = 0x2365756c6176233c;   /* "<#value<#..." */
     switch (k & 0xffffffff) {
     case 3:
@@ -3651,7 +3795,7 @@ sk_r29_pair_t sk_h_48e570(word_t p)
 /* FUN_0048e76c @ 0x0048e76c   (est. sk_regex_print_class_element)
  * Ghidra: void FUN_0048e76c(undefined8 param_1)
  * Prints one character-class element: decodes its kind and emits the text
- * (char, range "a-z", negated, union, or a group via sk_h_0048ebd8/48d694).
+ * (char, range "a-z", negated, union, or a group via sk_h_48ebd8/48d694).
  * Confidence: low. */
 void sk_h_48e76c(word_t p1)
 {
@@ -3767,9 +3911,9 @@ word_t sk_h_48ee9c(void)
 {
     sk_r29_pair_t d = sk_h_00463f94();
     sk_h_00117cc4(d.lo, d.hi, 0x99);
-    int k = (int)sk_h_00458af8((word_t)&(word_t[20]){0});
+    int k = (int)sk_h_00458af8((word_t)&(word_t[20]){0}).lo;
     if (k == 4) {
-        word_t b = *(unsigned char *)sk_h_00458b14((word_t)&(word_t[20]){0});
+        word_t b = *(unsigned char *)(word_t)sk_h_00458b14((word_t)&(word_t[20]){0}).lo;
         if (b - 0x15 < 10) return 0xd;   /* DAT_005a5eb0[b-0x15] */
         return 0xd;
     }
@@ -3867,7 +4011,7 @@ done:
  * Each builder allocates a 0x10+ node object via FUN_0036a940 (tagged
  * 0x6000000000000000) carrying {value, child}. Confidence: low (large
  * register-global AST state machine). */
-void sk_h_48f61c(word_t p1, word_t p2, word_t x21)
+word_t sk_h_48f61c(word_t p1, word_t p2, word_t x21)
 {
     sk_r29_pair_t d = sk_h_00353cfc();
     word_t node = d.lo;
@@ -3985,7 +4129,7 @@ void sk_h_48f61c(word_t p1, word_t p2, word_t x21)
     case 8:
         sk_h_00117cc4((word_t)&(word_t[22]){0}, (node & 0xfffffffffffffff) + 0x10, 0xb0);
         sk_h_00117cc4((word_t)&(word_t[20]){0}, (node & 0xfffffffffffffff) + 0x10, 0x99);
-        if ((int)sk_h_00458af8((word_t)&(word_t[20]){0}) == 2) {
+        if ((int)sk_h_00458af8((word_t)&(word_t[20]){0}).lo == 2) {
             sk_h_004589e8((word_t)&(word_t[22]){0}, (word_t)&(word_t){0});
             sk_h_00350af4();
             long l18 = sk_h_0041449c();
@@ -4062,7 +4206,7 @@ void sk_h_48fe4c(word_t p1)
         return;
     }
     sk_h_00117cc4((word_t)&(word_t[20]){0}, (word_t)&(word_t[20]){0}, 0x99);
-    int kind = (int)sk_h_00458af8((word_t)&(word_t[20]){0});
+    int kind = (int)sk_h_00458af8((word_t)&(word_t[20]){0}).lo;
     if (kind == 4) {
         sk_h_00458b14((word_t)&(word_t[20]){0});
         sk_h_004176bc(*(unsigned char *)0);
@@ -4088,19 +4232,169 @@ void sk_h_48fe4c(word_t p1)
     sk_h_00117cc4(p1, (word_t)&(word_t){0}, 0xb0);
 }
 
-/* __APPEND__ */
+extern sk_r29_pair_t sk_h_004815cc(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6, word_t a7, word_t a8); /* FUN_004815cc */
 
+/* FUN_004816c4 @ 0x004816c4   (est. sk_regex_emit_property_class)
+ * Ghidra: void FUN_004816c4(void)
+ * Dispatches a regex property emission; *unaff_x20 is the property selector
+ * word. Adjacent to FUN_004816c0. Confidence: low. */
+void sk_h_4816c4(word_t *x20) { sk_h_00492704(*x20, (word_t)sk_h_002298d4); }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* FUN_0048afec @ 0x0048afec   (est. sk_regex_print_captured_value)
+ * Ghidra: void FUN_0048afec(void)
+ * Prints a captured/match value expression. The kind (from the tagged node in
+ * auVar21) selects the printer:
+ *   0/1    capture / alternation lists (sk_h_48bb04)
+ *   2      a capture "C" reference
+ *   3      a conditional expression (Local/ok/koo, or "TODO: conditional")
+ *   4/0xc  nested value (recursion via sk_h_48afec)
+ *   5/0xd/0xe/0xf  TODO placeholders (conditional/consumers/validators/
+ *          character-predicates)
+ *   6      a quantifier/expression with a range (sk_h_48c284)
+ *   7      a character class (sk_h_48c718)
+ *   8      a class set / property (sk_h_48ce80)
+ *   10     an "expression" string
+ * The defaults print the "Regex" / value string via sk_h_004aab08.
+ * Confidence: low (register-global value node + carry artifacts). */
+void sk_h_48afec(word_t u10, word_t u14, word_t *x20)
+{
+    sk_r29_pair_t d = sk_h_0008e518();
+    word_t flag = d.hi & 0xffffffff;
+    word_t node = d.lo;
+    if ((char)x20[1] != 1) {
+        word_t lim = *x20;
+        sk_h_00117cc4((word_t)&(word_t[11]){0});
+        long chk = sk_h_00092d40();
+        if (chk >= (long)lim) { sk_h_48ad50(node); goto fin; }
+    }
+    if ((char)x20[3] != 1) {
+        word_t lim = x20[2];
+        long chk = sk_h_0044f098((word_t)&sk_h_006888f0, 0);
+        if (chk <= (long)lim) { sk_h_48ad50(node); goto fin; }
+    }
+    {
+        word_t kind = (d.hi >> 0x1b) & 0x1e | (d.lo >> 2) & 1;
+        word_t is16 = kind == 0x10;
+        switch (kind) {
+        case 1: {
+            word_t c = *(word_t *)((node & 0xffffffffffffffb) + 0x10);
+            word_t ref = sk_h_0036b270(c);
+            sk_h_48bb04(ref, flag & 1);
+            sk_h_0036b118(c);
+            goto fin;
+        }
+        case 2: {
+            node &= 0xffffffffffffffb;
+            word_t ref = *(word_t *)(node + 0x30);
+            if (*(long *)(node + 0x18) != 0) {
+                sk_h_002acbb8(*(word_t *)(node + 0x10));
+                sk_h_00100e34(); sk_h_002acbb8();
+            }
+            sk_h_0041d788((word_t)&(word_t){0x65727574706143});   /* "Captur" */
+            word_t out = sk_h_004ab458();
+            *(word_t *)(0 + -0x10) = ref;
+            sk_h_004aab08(out, 0xe700000000000000);
+            sk_h_0041d7dc();
+            sk_h_003a25d4(0xe700000000000000);
+            goto fin;
+        }
+        case 3: {
+            node &= 0xffffffffffffffb;
+            word_t c = *(word_t *)(node + 0x68);
+            if (*(char *)(node + 0x60) == 3) {
+                sk_h_004ab064(*(word_t *)(node + 0x10), *(word_t *)(node + 0x40),
+                              *(word_t *)(node + 0x50), *(word_t *)(node + 0x20),
+                              *(word_t *)(node + 0x30), c);
+                if (3 == 3 && 0 == 0 && 0 == 0) {
+                    word_t o = sk_h_004ab458();
+                    *(word_t *)(0 + -0x10) = o;
+                    sk_h_004aab08(0x6c61636f4c, 0xe500000000000000);   /* "Local" */
+                    sk_h_0041d7dc();
+                    goto fin;
+                } else if (4 == 4 && 0 == 0 && 0 == 0) {
+                    word_t o = sk_h_004ab458();
+                    *(word_t *)(0 + -0x10) = o;
+                    sk_h_004aab08(0x616568616b6f6f4c, 0xe900000000000064);   /* "Lookahea" */
+                    sk_h_0041d7dc();
+                    goto fin;
+                } else if (5 != 5 || 0 != 0 || 0 != 0) { }
+                else {
+                    sk_h_004aab08(0xd000000000000011, 0x8000000000000000 | 0);
+                    sk_h_0041d7dc();
+                    goto fin;
+                }
+            }
+            sk_h_48afec(0, 0, x20);
+            goto fin;
+        }
+        case 4: case 0xc: {
+            word_t c = *(word_t *)((node & 0xffffffffffffffb) + 0x10);
+            word_t ref = sk_h_0036b270(c & 0xffffffffffffffb);
+            sk_h_48afec(ref, flag & 1, x20);
+            sk_h_0036b118(c & 0xffffffffffffffb);
+            goto fin;
+        }
+        case 5: case 0xd: case 0xe: case 0xf:
+            sk_h_004ab468(0);   /* TODO: conditional/consumers/validators/predicates */
+            break;
+        case 6: {
+            sk_h_004ab4e8();
+            node &= 0;
+            sk_h_48c284();
+            sk_h_0036b270(0);
+            sk_h_00464e34(); sk_h_002acbb8();
+            sk_h_0035084c(); sk_h_002acbb8();
+            sk_h_00100e34(); sk_h_002acbb8();
+            if ((0x72656761652e != 0) || 0 != -0x1a00000000000000) {
+                sk_h_0035084c();
+                word_t m = sk_h_002a0cf8();
+                if ((m & 1) == 0) sk_h_003a25d4(0);
+            } else sk_h_003a25d4(0);
+            if (!(-0x6000000000000001 < 0)) {
+                word_t k = (0 >> 0x3b) & 0x1e | (0 >> 2) & 1;
+                if (k == 7) { word_t c = *(word_t *)(0 + 0x10); word_t f = *(word_t *)(0 + 0x18); word_t ref = sk_h_0036b270(c); if (sk_h_48d400(ref, 0) & 1) { sk_h_48c644(c, f); sk_h_0036b118(c); } }
+                else if (k == 8) { sk_h_004ac12c(0, (word_t)&(word_t){0}); sk_h_00117cc4(); sk_h_004a36c4((word_t)&(word_t){0}, (word_t)&(word_t){0}); sk_h_48ce80(); sk_h_004ac960(); sk_h_004a36d4((word_t)&(word_t){0}); }
+                else if (k == 0xc) { sk_h_004ab4e8(); word_t c = *(word_t *)(0 + 0x10); if (((c >> 0x3b) & 0x1e | (c >> 2) & 1) == 7) sk_h_48c718(*(word_t *)(c + 0x10), *(word_t *)(c + 0x18), 1, 1); }
+                sk_h_003a25d4(0);
+            }
+            break;
+        }
+        case 7: {
+            word_t c = *(word_t *)((node & 0xffffffffffffffb) + 0x10);
+            word_t f = *(word_t *)((node & 0xffffffffffffffb) + 0x18);
+            word_t ref = sk_h_0036b270(c);
+            sk_h_48c718(ref, f, 1, 1);
+            sk_h_0036b118(c);
+            goto fin;
+        }
+        case 8: {
+            sk_h_00117cc4((word_t)&(word_t){0}, (node & 0xffffffffffffffb) + 0x10, 0xb0);
+            sk_h_00117cc4((word_t)&(word_t){0}, (node & 0xffffffffffffffb) + 0x10);
+            sk_h_004ac210((word_t)&(word_t){0});
+            if (is16) {
+                if (sk_h_48d554() & 1) { sk_h_004a36c4((word_t)&(word_t){0}, (word_t)&(word_t){0}); sk_h_48d694(); sk_h_003535a8(); sk_h_004a36d4((word_t)&(word_t){0}); }
+            }
+            sk_h_004a36c4((word_t)&(word_t){0}, (word_t)&(word_t){0});
+            sk_r29_pair_t q = sk_h_48ce80();
+            sk_h_004a36d4((word_t)&(word_t){0});
+            if (q.hi != 0) { sk_h_003a25d4(0); sk_h_003a25d4(q.hi); }
+            break;
+        }
+        case 10:
+            sk_h_0036b270(*(word_t *)((node & 0xffffffffffffffb) + 0x18));
+            sk_h_004aa990(); sk_h_0046c4e0(); sk_h_004aab74(); sk_h_0046c4e0();
+            sk_h_003517c0(); sk_h_003a25d4(0);
+            sk_h_00350470(); sk_h_002acbb8(); sk_h_004657ac(); sk_h_002acbb8();
+            sk_h_003a25d4(*x20);
+            break;
+        default:
+            sk_h_0036b270(*(word_t *)(node + 0x10));
+            sk_h_004aab08(0x664f6563696f6843, 0xe800000000000000);   /* "ChoiceOf" */
+            sk_h_0041d7dc();
+            sk_h_0036b118(*(word_t *)(node + 0x10));
+            goto fin;
+        }
+    }
+fin:
+    sk_h_0008e500(0);
+}

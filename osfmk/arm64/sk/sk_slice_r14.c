@@ -55,11 +55,11 @@ extern void sk_h_001bb7a0(void *out, word_t n, word_t a, word_t b);  /* FUN_001b
 extern cl4_result_t sk_h_003f7b44(word_t a, word_t b);               /* FUN_003f7b44 */
 extern void sk_h_0028e8fc(word_t a, word_t b, word_t c, word_t d,
                           word_t e);                                 /* FUN_0028e8fc */
-extern void sk_h_000bd3a4(void);                                     /* FUN_000bd3a4 */
+extern void sk_h_000bd3a4();                                           /* FUN_000bd3a4 (varargs) */
 extern void sk_h_001a29a0(word_t a, word_t b, word_t c);             /* FUN_001a29a0 */
 extern word_t sk_h_003722e4(void);                                   /* FUN_003722e4 */
 extern void sk_h_0031e5c8(word_t a, word_t b);                       /* FUN_0031e5c8 */
-extern void sk_h_003f9234(void);                                     /* FUN_003f9234 (13-arg varargs marshaller) */
+extern void sk_h_003f9234();                                           /* FUN_003f9234 (13-arg varargs marshaller) */
 extern cl4_result_t sk_h_0001a1c8(word_t a, word_t b, word_t c);     /* thunk_FUN_0001a1c8 */
 extern word_t sk_h_0025177c(void);                                   /* FUN_0025177c */
 extern void sk_h_0035860c(void);                                     /* FUN_0035860c */
@@ -114,6 +114,8 @@ extern void sk_h_0040695c(word_t a, word_t b, word_t c);             /* FUN_0040
 extern void sk_h_00407894(void);                                     /* FUN_00407894 (commit) */
 extern word_t sk_h_003f6278(void);                                   /* FUN_003f6278 (msg word read) */
 extern void sk_h_00407d44(void);                                     /* FUN_00407d44 */
+extern void sk_h_00407d44_vtable_x16_10();                           /* (**(code **)(x16+0x10))() */
+extern void sk_h_00407d44_vtable_x16_18();                           /* (**(code **)(x16+0x18))() */
 extern void sk_h_00407d24(void);                                     /* FUN_00407d24 */
 extern word_t sk_h_00407e20();                                        /* FUN_00407e20 (returns value) */
 extern void sk_h_0040668c(void);                                     /* FUN_0040668c */
@@ -812,15 +814,16 @@ void sk_f_0040548c(word_t param_1, word_t param_2)
  */
 void sk_f_00405604(void)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t info = *(word_t *)(ctx + 0x10);
     word_t val;
 
     sk_h_0034bb84();
-    sk_h_003f5e78(*(word_t *)(ctx + 0x18), 0);
+    sk_h_003f5e78(*(word_t *)(ctx + 0x18));
     sk_h_000bd3a4();
-    val = sk_h_003f5c00(0);
+    val = sk_h_003f5c00();
     sk_h_003509c8(info, val, val);
-    sk_h_00407d44_vtable_x16_10(info);
+    sk_h_00407d44_vtable_x16_10();
 }
 
 /* FUN_0040567c @ 0x0040567c  (est. sk_f_0040567c)
@@ -837,9 +840,13 @@ void sk_f_00405604(void)
  */
 void sk_f_0040567c(word_t param_1, word_t param_2, word_t *param_3)
 {
-    long ctxbuf = (long)(ctx + 0x10);
-    long end = (long)param_3[1] + *(long *)(ctxbuf);
+    long ctx;                    /* unaff_x20 (context, register artifact) */
+    long ctxbuf;                 /* lVar3 from FUN_00408238 (context getter) */
+    long end;
+    word_t x21;                  /* unaff_x21 (callee-saved register result) */
 
+    ctxbuf = (long)sk_h_00408238();
+    end = (long)param_3[1] + *(long *)(ctxbuf + 0x10);
     if (end < 0) {
         sk_h_0040633c();
         sk_h_001afa84();      /* noreturn */
@@ -848,7 +855,7 @@ void sk_f_0040567c(word_t param_1, word_t param_2, word_t *param_3)
         sk_h_00350744(0);
         sk_h_000839d8(0, 0, 0, 0);
     } else {
-        if (end < *(long *)(ctxbuf)) {
+        if (end < *(long *)(ctxbuf + 0x10)) {
             sk_h_00347da8();
             sk_h_003504b8();
             sk_h_001afe4c();  /* noreturn */
@@ -857,8 +864,7 @@ void sk_f_0040567c(word_t param_1, word_t param_2, word_t *param_3)
             cl4_result_t desc = sk_h_003f5cc4();
             void (*handler)(word_t, cl4_result_t) =
                 *(void (**)(word_t, cl4_result_t))(ctx + 0x20);
-            word_t x21;
-            x21 = handler(0, desc);
+            handler(0, desc);
             if (x21 == 0) {
                 sk_h_0034ba48();
                 sk_h_000839d8(0, 0, 0, 0);
@@ -893,6 +899,7 @@ void sk_f_00405778(void)
  */
 void sk_f_004057e0(word_t param_1, word_t param_2)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     sk_h_003f9234(param_1, param_2,
                   *(word_t *)(ctx + 0x28), *(word_t *)(ctx + 0x30),
                   *(word_t *)(ctx + 0x38), *(word_t *)(ctx + 0x40),
@@ -924,17 +931,19 @@ void sk_f_00405830(void)
  */
 void sk_f_00405848(void)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
+    word_t *out_x24;             /* unaff_x24 (output ptr, register artifact) */
     word_t info = *(word_t *)(ctx + 0x10);
-    word_t val = sk_h_003f5e78(*(word_t *)(ctx + 0x18), 0);
+    word_t val = sk_h_003f5e78(*(word_t *)(ctx + 0x18));
     int idx;
 
     sk_h_0034bb84();
     sk_h_003515b4(0, sk_g_string_0067f358, info);
     idx = *(int *)(sk_h_003722e4() + 0x30);
-    out_x24 = val;
+    *out_x24 = val;
     sk_h_000bd3a4(val);
-    val = sk_h_003f5c00(0);
-    sk_h_001a29a0((word_t)(out_x24_ptr) + (word_t)idx, val, info);
+    val = sk_h_003f5c00();
+    sk_h_001a29a0((word_t)out_x24 + (word_t)idx, val, info);
 }
 
 /* FUN_004058d4 @ 0x004058d4  (est. sk_f_004058d4)
@@ -945,6 +954,7 @@ void sk_f_00405848(void)
  */
 void sk_f_004058d4(word_t param_1, word_t param_2)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     sk_f_00404ac0(param_1, param_2, (word_t *)(ctx + 0x18),
                   *(word_t *)(ctx + 0x20), *(word_t *)(ctx + 0x10));
 }
@@ -971,6 +981,7 @@ void sk_f_00405904(void)
  */
 void sk_f_00405968(word_t param_1, word_t param_2)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     sk_h_003f709c(param_1, param_2, *(word_t *)(ctx + 0x10));
 }
 
@@ -982,6 +993,7 @@ void sk_f_00405968(word_t param_1, word_t param_2)
  */
 void sk_f_00405994(word_t param_1, word_t param_2, word_t param_3)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t out1 = 0;
 
     sk_h_00407170();
@@ -996,6 +1008,7 @@ void sk_f_00405994(word_t param_1, word_t param_2, word_t param_3)
  */
 void sk_f_004059c0(word_t param_1, word_t param_2)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     sk_h_003f6e08(param_1, param_2, *(word_t *)(ctx + 0x10));
 }
 
@@ -1007,6 +1020,7 @@ void sk_f_004059c0(word_t param_1, word_t param_2)
  */
 void sk_f_004059ec(word_t param_1, word_t param_2, word_t param_3)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t out1 = 0;
 
     sk_h_00407170();
@@ -1021,6 +1035,7 @@ void sk_f_004059ec(word_t param_1, word_t param_2, word_t param_3)
  */
 void sk_f_00405a18(word_t param_1, word_t param_2)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     sk_h_003f6ea8(param_1, param_2, *(word_t *)(ctx + 0x10));
 }
 
@@ -1034,6 +1049,7 @@ void sk_f_00405a18(word_t param_1, word_t param_2)
  */
 void sk_f_00405a44(word_t param_1, word_t param_2, word_t param_3, word_t param_4)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     sk_h_00408238();
     sk_h_003f70f8(*(word_t *)(ctx + 0x18), *(word_t *)(ctx + 0x20),
                   param_3, param_4, *(word_t *)(ctx + 0x10));
@@ -1050,6 +1066,7 @@ void sk_f_00405a44(word_t param_1, word_t param_2, word_t param_3, word_t param_
  */
 void sk_f_00405a78(word_t param_1, word_t param_2)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t info = *(word_t *)(ctx + 0x10);
     long length = *(long *)(ctx + 0x20);
 

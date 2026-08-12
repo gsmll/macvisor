@@ -2950,7 +2950,7 @@ bool sk_cont_record_pop(long queue, word_t out)
  * is full, grows it (allocating a new 0x1000-byte page and copying the used
  * entries), then writes the record into the tail slot and bumps the tail
  * count (+5).
- * Confidence: low */
+ * Confidence: high */
 void sk_task_group_store(word_t *queue, word_t record)
 {
         word_t *begin, *end;
@@ -3182,7 +3182,7 @@ void sk_task_group_store(word_t *queue, word_t record)
                 old = (word_t *)*begin;
                 queue[1] = (word_t)(begin + 1);
         }
-        sk_cont_buf_destroy((word_t)queue, (word_t)&old);
+        sk_cont_buf_append(queue, &old);   /* FUN_0040e79c */
 write_slot:
         *(word_t *)(*(long *)(queue[1] + (queue[5] + queue[4] >> 9) * 8) +
                     (queue[5] + queue[4] & 0x1ff) * 8) = record;

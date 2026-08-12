@@ -973,7 +973,7 @@ void skp0_sk_dtor_pure_f();
 /* FUN_00200150 @ 0x00200150   (est. skp0_sk_object_describe_root)
  * Ghidra: void FUN_00200150(void)
  * Entry point of the object-description engine. Performs the standard runtime prologue (save thread context via skp0_rt_0008e518, resolve object fields), then drives two sub-walkers (skp0_sk_dump_check, skp0_sk_dump_finish) and the table iterator; the else path is an unrecoverable panic. Faithful mechanical transcription of the decompiler output.
- * Confidence: medium
+ * Confidence: high (verified vs decompile, VB2 sweep)
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_object_describe_root(void)
@@ -1800,7 +1800,7 @@ void skp0_sk_dispatch_jump(void)
 /* FUN_00201788 @ 0x00201788   (est. skp0_sk_lookup_install)
  * Ghidra: void FUN_00201788(word_t param_1,word_t param_2,word_t param_3)
  * Lookup-and-install: resolves an object range, walks via skp0_rt_0031b2ec, validates a slot within bounds; on range match records the node; else panics with error codes 0x108/0x10a/0x10c. Returns via the standard epilogue or noreturn panic.
- * Confidence: medium
+ * Confidence: high (verified vs decompile+disasm, VB2 sweep)
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_lookup_install(word_t param_1,word_t param_2,word_t param_3)
@@ -2690,7 +2690,7 @@ sk_u128_t skp0_sk_node_init(word_t *param_1,word_t param_2,word_t param_3)
 /* FUN_00202f84 @ 0x00202f84   (est. skp0_sk_unmap_region)
  * Ghidra: void FUN_00202f84(word_t param_1,word_t param_2,word_t param_3)
  * Unmap region: resolves ranges, runs a first-entry check (skp0_rt_001b9040); on failure panics; on success walks and releases entries, calling sk_cleanup_thunk and finishing with runtime release.
- * Confidence: medium
+ * Confidence: high (verified vs decompile+disasm, VB2 sweep)
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_unmap_region(word_t param_1,word_t param_2,word_t param_3)

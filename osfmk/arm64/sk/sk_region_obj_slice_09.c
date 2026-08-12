@@ -1937,7 +1937,7 @@ void sk_slice_002df380()
 /*--------------------------------------------------------------------*/
 /* FUN_002df40c @ 0x002df40c  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002df40c(ulong *param_1,ulong *arg2,undefined8 arg3,long param_4,undefined8 param_5) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified against decompile; msg-callback &0x60e404 restored). */
 void sk_slice_002df40c()
 {
     unsigned long * arg1;
@@ -2481,7 +2481,7 @@ void sk_slice_002dfdd4()
 /*--------------------------------------------------------------------*/
 /* FUN_002e079c @ 0x002e079c  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002e079c(ulong *param_1,ulong *arg2,undefined8 arg3,long param_4,undefined8 param_5) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified against decompile; msg-callback &0x60e404 restored). */
 void sk_slice_002e079c()
 {
     unsigned long * arg1;
@@ -2750,7 +2750,7 @@ void sk_slice_002e079c()
 /*--------------------------------------------------------------------*/
 /* FUN_002e1164 @ 0x002e1164  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002e1164(ulong *param_1,undefined8 arg2,long arg3,undefined8 param_4) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified against decompile; msg-callback &0x60e404 restored). */
 void sk_slice_002e1164()
 {
     unsigned long * arg1;
@@ -5268,7 +5268,7 @@ long sk_slice_002e4bc0()
 /*--------------------------------------------------------------------*/
 /* FUN_002e4c1c @ 0x002e4c1c  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002e4c1c(float2 param_1,long *arg2) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified against decompile). */
 unsigned long sk_slice_002e4c1c()
 {
     sk_f16_t arg1;

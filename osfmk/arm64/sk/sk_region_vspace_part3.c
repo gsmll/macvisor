@@ -3346,7 +3346,7 @@ LBL_0021745c:
 /* skp3_FUN_002177bc @ 0x002177bc   (est. swift_string_advance)
  * Ghidra: uint32_t skp3_FUN_002177bc( void)
  * Swift stdlib runtime support embedded in the cL4 kernel.
- * Confidence: medium
+ * Confidence: high (verified vs decompile, VB2 sweep)
  * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
 uint32_t skp3_FUN_002177bc( void){
   uint8_t v15;
@@ -3842,7 +3842,7 @@ LBL_0021815c:
 /* skp3_FUN_002181e0 @ 0x002181e0   (est. swift_string_loop)
  * Ghidra: void skp3_FUN_002181e0( void)
  * Swift stdlib runtime support embedded in the cL4 kernel.
- * Confidence: medium
+ * Confidence: high (verified vs decompile, VB2 sweep)
  * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
 void skp3_FUN_002181e0( void){
   uint8_t v2;
@@ -6311,7 +6311,7 @@ LBL_0021be08:
 /* skp3_FUN_0021bf60 @ 0x0021bf60   (est. swift_string_distance_utf8_2)
  * Ghidra: long skp3_FUN_0021bf60(long param_1, long param_2, char param_3, long param_4, long param_5, char param_6, uint64_t param_7, code * param_8, uint64_t param_9)
  * Swift stdlib runtime support embedded in the cL4 kernel.
- * Confidence: medium
+ * Confidence: high (verified vs decompile+disasm, VB2 sweep)
  * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
 long skp3_FUN_0021bf60(long param_1, long param_2, char param_3, long param_4, long param_5, char param_6, uint64_t param_7, code * param_8, uint64_t param_9){
   long v4;
@@ -11254,7 +11254,7 @@ LBL_00222a2c:
 /* skp3_FUN_00223508 @ 0x00223508   (est. swift_compare_dispatch)
  * Ghidra: void skp3_FUN_00223508( void)
  * Swift stdlib runtime support embedded in the cL4 kernel.
- * Confidence: medium
+ * Confidence: high (verified vs decompile, VB2 sweep)
  * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
 void skp3_FUN_00223508( void){
   uint32_t v2;
@@ -11459,7 +11459,7 @@ LBL_00223940:
 /* skp3_FUN_00223960 @ 0x00223960   (est. swift_float_parse)
  * Ghidra: void skp3_FUN_00223960( void)
  * Swift stdlib runtime support embedded in the cL4 kernel.
- * Confidence: medium
+ * Confidence: high (verified vs decompile, VB2 sweep)
  * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
 void skp3_FUN_00223960( void){
   unsigned long v8;

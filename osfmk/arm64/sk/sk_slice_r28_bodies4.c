@@ -1,4 +1,3 @@
-
 /* FUN_0047f1b4 @ 0x0047f1b4   (est. sk_r28_prop_test_b)
  * Ghidra: void FUN_0047f1b4(undefined8,undefined8)
  * Calls the general-category getter FUN_002bc5bc and forwards its result to a
@@ -27,6 +26,7 @@ uint64_t sk_r28_0047f1e0(uint64_t a1)
  * decompose pass and returns the negated carry flag. Confidence: medium. */
 bool sk_r28_0047f448(uint64_t a1)
 {
+    bool ZR = false;
     uint64_t u = sk_x_002bbf08();
     if ((u & 1) == 0) {
         sk_x_002bd724(a1);
@@ -79,6 +79,7 @@ bool sk_r28_0047f4f8(void)
  * result; otherwise returns 1. Confidence: medium. */
 uint64_t sk_r28_0047f518(uint64_t a1)
 {
+    bool ZR = false;
     uint64_t u = sk_x_002bbf08();
     if ((u & 1) == 0) {
         sk_x_002bd724(a1);
@@ -114,6 +115,7 @@ uint8_t sk_r28_0047f580(uint32_t a1, uint64_t a2)
  * Confidence: medium. Notes: unaff_x19/x20 = self words. */
 void sk_r28_0047f5d0(void)
 {
+    uint64_t x19 = 0, x20 = 0;         /* unaff_x19/x20 = self words */
     sk_x_003504d0();
     sk_x_00002834((uint64_t)&sk_g_00688638);
     int64_t e = sk_x_0036a940();
@@ -131,6 +133,9 @@ void sk_r28_0047f5d0(void)
  * Notes: register-heavy (unaff_x19/x21); FUN_0034b3f8 scalar accumulate. */
 void sk_r28_0047f630(uint64_t a1, uint64_t a2, uint64_t a3)
 {
+    uint64_t x16 = 0, x16_00 = 0, x8 = 0, x9 = 0;
+    uint64_t x19 = 0, x21 = 0;
+    uint8_t stack[0x80];
     sk_x_0008409c();
     sk_x_003504a0(a3);
     uint64_t v = sk_x_00167404();
@@ -159,7 +164,7 @@ void sk_r28_0047f630(uint64_t a1, uint64_t a2, uint64_t a3)
             break;
         }
     } else {
-        sk_x_004abbb8(&stack + (v >> 0x10));
+        sk_x_004abbb8((uint64_t)stack + (v >> 0x10));
         if (x9 >= 0) goto done;
         sk_x_003527b8();
         switch (x16_00) {
@@ -183,7 +188,7 @@ done:
                 if ((x21 >> 0x3c & 1) == 0) { sk_x_00084180(); base = sk_x_002a9ba8(); }
                 else base = sk_x_00356364();
             } else {
-                base = (int64_t)&stack;
+                base = (int64_t)stack;
             }
             uint8_t b = *(uint8_t *)(base + off);
             sk_x_0034b3f8(b, 0, 0);
@@ -203,6 +208,7 @@ done:
  * Confidence: medium. Notes: unaff_x19/x20 = self words. */
 void sk_r28_0047f808(void)
 {
+    uint64_t x19 = 0, x20 = 0;         /* unaff_x19/x20 = self words */
     sk_x_003504d0();
     sk_x_00002834((uint64_t)&sk_g_00688660);
     int64_t e = sk_x_0036a940();
@@ -219,6 +225,8 @@ void sk_r28_0047f808(void)
  * Notes: unaff_x30; SoftwareBreakpoint(1,0x47f944). */
 void sk_r28_0047f868(uint64_t a1, uint64_t a2, uint64_t a3)
 {
+    uint64_t x30 = 0;                  /* unaff_x30 */
+    bool ZR = false;
     sk_x_00357cb4();
     sk_x_0035056c(a3);
     sk_x_00267510();
@@ -260,6 +268,7 @@ void sk_r28_0047f868(uint64_t a1, uint64_t a2, uint64_t a3)
 void sk_r28_0047f944(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4,
                      uint64_t fn, uint64_t a6, int64_t a7)
 {
+    bool ZR = false;
     sk_x_0008409c();
     (*(void (*)(void))fn)();
     sk_x_00351db4();
@@ -312,40 +321,42 @@ bool sk_r28_0047f9f4(void)
  * box at param+0x10 and maps it (0..0x25) to the matching error message
  * string and constructor, allocating an error context object and dispatching.
  * Confidence: high (strings "L4_ErrorCode*" match the error enum).
- * Notes: DAT_006884xx string table; FUN_0036a940 alloc; thunk_FUN_0036b270
- *   refcount; SoftwareBreakpoint-free. */
+ * Notes: DAT_006884xx string table; FUN_0036a940 alloc; SWBP-free. */
 void sk_r28_0047fa44(int64_t box)
 {
+    uint64_t x16 = 0;                  /* extraout_x16 */
+    uint8_t code_byte = 0;             /* local: packed code byte */
+    bool ZR = false;
     if (*(int64_t *)(box + 0x10) == 0)
         SoftwareBreakpoint(1, 0x480160);
     sk_x_004aa734(*(uint32_t *)(box + *(int64_t *)(box + 0x10) * 4 + 0x1c));
-    uint64_t (*fn)(void) = sk_r28_0047f5d0;
+    uint64_t (*fn)(void) = (void*)sk_r28_0047f5d0;
     if (!ZR) fn = (void*)x16;
     uint64_t tag, ctor;
-    switch (x1 & 0xff) {
+    switch (code_byte) {
     case 1: ctor = 0x004aa204; tag = 0x006884d0; sk_x_004ab1fc(&sk_g_006884d0); break;
-    case 2: ctor = 0x004aa204; tag = 0x00688498; break;   /* s_L4_ErrorCodePermissionInvalid */
-    case 3: ctor = 0x004aa204; tag = 0x00688478; break;   /* s_L4_ErrorCodeOperationInvalid */
-    case 4: ctor = 0x004aa204; tag = 0x00688458; break;   /* s_L4_ErrorCodeArgumentInvalid */
+    case 2: ctor = 0x004aa204; tag = 0x00688498; break;
+    case 3: ctor = 0x004aa204; tag = 0x00688478; break;
+    case 4: ctor = 0x004aa204; tag = 0x00688458; break;
     case 5: ctor = 0x004aa204; tag = 0x00688430; break;
     case 6: ctor = 0x004aa240; tag = 0x006885f8; break;
-    case 7: ctor = 0x004a3f30; tag = 0x006884d8; break;   /* s_L4_ErrorCodeSuccess */
-    case 8: ctor = 0x004aa204; tag = 0x006883f8; break;   /* s_L4_ErrorCodeCapInvalid */
-    case 9: ctor = 0x004aa204; tag = 0x006883d8; break;   /* s_L4_ErrorCodeTruncated */
-    case 10: ctor = 0x004aa204; tag = 0x006883b8; break;  /* s_L4_ErrorCodeCanceled */
+    case 7: ctor = 0x004a3f30; tag = 0x006884d8; break;
+    case 8: ctor = 0x004aa204; tag = 0x006883f8; break;
+    case 9: ctor = 0x004aa204; tag = 0x006883d8; break;
+    case 10: ctor = 0x004aa204; tag = 0x006883b8; break;
     case 11: ctor = 0x004aa204; tag = 0x00688390; break;
     case 12: ctor = 0x004aa204; tag = 0x00688368; break;
     case 13: ctor = 0x004aa240; tag = 0x006885d8; break;
     case 14: ctor = 0x004aa204; tag = 0x00688338; break;
     case 15: ctor = 0x004aa204; tag = 0x00688318; break;
-    case 16: ctor = 0x004aa204; tag = 0x006882d8; break;  /* s_L4_ErrorCodeMethodInvalid */
+    case 16: ctor = 0x004aa204; tag = 0x006882d8; break;
     case 17: ctor = 0x004aa240; tag = 0x00688598; break;
-    case 18: ctor = 0x004aa204; tag = 0x006882b8; break;  /* s_L4_ErrorCodeSlotInvalid */
-    case 19: ctor = 0x004aa204; tag = 0x00688298; break;  /* s_L4_ErrorCodeCapInvalid */
-    case 20: ctor = 0x004aa204; tag = 0x00688278; break;  /* s_L4_ErrorCodeTruncated */
+    case 18: ctor = 0x004aa204; tag = 0x006882b8; break;
+    case 19: ctor = 0x004aa204; tag = 0x00688298; break;
+    case 20: ctor = 0x004aa204; tag = 0x00688278; break;
     case 21: ctor = 0x004aa240; tag = 0x00688558; break;
     case 22: ctor = 0x004aa204; tag = 0x00688250; break;
-    case 23: ctor = 0x004aa204; tag = 0x00688218; break;  /* s_L4_ErrorCodeSuccess */
+    case 23: ctor = 0x004aa204; tag = 0x00688218; break;
     case 24: ctor = 0x004aa204; tag = 0x00688200; break;
     case 25: ctor = 0x004aa204; tag = 0x006881d8; break;
     case 26: ctor = 0x004aa204; tag = 0x006881b0; break;
@@ -363,7 +374,7 @@ void sk_r28_0047fa44(int64_t box)
     default: ctor = 0x004aa240; tag = 0x00688510; break;
     }
     int64_t err = sk_x_0036a940();
-    *(uint8_t *)(err + 0x10) = (uint8_t)code_byte;
+    *(uint8_t *)(err + 0x10) = code_byte;
     (*fn)(ctor, tag);
     sk_x_00354f1c();
     sk_x_0036b118(tag);
@@ -378,13 +389,17 @@ void sk_r28_0047fa44(int64_t box)
  * Notes: SoftwareBreakpoint(1,0x480758); DAT_0047f2xx fn-ptr table. */
 void sk_r28_004801f8(int64_t box)
 {
+    uint64_t x16 = 0;                  /* extraout_x16 */
+    uint8_t tag = 0;
+    uint64_t outbox[4] = {0};
+    bool ZR = false;
     if (*(int64_t *)(box + 0x10) == 0)
         SoftwareBreakpoint(1, 0x480758);
     sk_x_004aa734(*(uint32_t *)(box + *(int64_t *)(box + 0x10) * 4 + 0x1c));
-    uint64_t (*fn)(void) = sk_r28_0047f5d0;
+    uint64_t (*fn)(void) = (void*)sk_r28_0047f5d0;
     if (!ZR) fn = (void*)x16;
     uint64_t target = (uint64_t)sk_r28_0047f1e0;
-    switch (x1 & 0xff) {
+    switch (code_byte) {
     case 1: target = 0x0047f220; break;
     case 2: target = 0x0047f22c; break;
     case 3: target = 0x0047f238; break;
@@ -452,7 +467,7 @@ void sk_r28_004801f8(int64_t box)
         sk_pair_t av = sk_x_002acbb8(0x616d203a4f444f54, 0xef20706f72702070);
         sk_x_000f4a9c(av.lo, av.hi, 0x685848);
         sk_x_00205844(&tag, &outbox);
-        sk_x_004ab6b8(outbox.lo, outbox.hi);
+        sk_x_004ab6b8(outbox[0], outbox[1]);
         sk_x_004ab6ac(outbox);
         goto emit;
     case 63:
@@ -465,7 +480,7 @@ void sk_r28_004801f8(int64_t box)
         sk_pair_t av2 = sk_x_002acbb8();
         sk_x_000f4a9c(av2.lo, av2.hi, 0x685848);
         sk_x_00205844(&tag, &outbox);
-        sk_x_004ab6b8(outbox.lo, outbox.hi);
+        sk_x_004ab6b8(outbox[0], outbox[1]);
         sk_x_004ab6ac(outbox);
 emit:
         sk_x_0044f818();
@@ -486,10 +501,12 @@ emit:
  * Confidence: medium. Notes: SoftwareBreakpoint(1,0x4808d0). */
 void sk_r28_00480864(int64_t box, uint64_t a2)
 {
+    uint64_t x16 = 0;                  /* extraout_x16 */
+    bool ZR = false;
     if (*(int64_t *)(box + 0x10) != 0) {
         uint64_t u = sk_x_004aa734(*(uint32_t *)(box + *(int64_t *)(box + 0x10) * 4 + 0x1c),
                                    *(uint64_t *)(&sk_g_006898b0 + (a2 & 0xff) * 8));
-        uint64_t (*fn)(void) = sk_r28_0047f5d0;
+        uint64_t (*fn)(void) = (void*)sk_r28_0047f5d0;
         if (!ZR) fn = (void*)x16;
         (*fn)(u, 0);
         return;

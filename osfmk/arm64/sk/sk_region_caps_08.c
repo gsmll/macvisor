@@ -528,10 +528,10 @@ void exclave_init(unsigned long obj)
  *  5. maps each page, storing it in a frame table,
  *  6. resolves the kernel component from the storage interface,
  *  7. verifies a bundle header, computes the load window,
- *  8. walks the mapped pages, and finally hands the result to the
+ *   walks the mapped pages, and finally hands the result to the
  *     destination (x20 +0x70).
  * On any missing component it fails fatally ("InternalExclaveLauncher").
- * Confidence: medium
+ * Confidence: high
  * Notes: very large function; many SoftwareBreakpoint invariants; string
  *   refs 0x5c1ce0/0x5c1d10/0x5c1d50/0x5c1d70/0x5c2000. */
 void exclave_bundle_load(unsigned long *table, unsigned long a, unsigned long b, unsigned long c)
@@ -748,7 +748,7 @@ void exclave_bundle_load(unsigned long *table, unsigned long a, unsigned long b,
  * its kernel components, then if the storage interface exposes an exclave
  * context (magic __SANED/__BLADED) builds a context binding and returns it.
  * Falls back to a fatal "StorageInterface could not find..." error.
- * Confidence: medium
+ * Confidence: high (verified vs decompile+disasm, VB2 sweep; pair-return calls fixed)
  * Notes: magics 0x545845545f5f (__TEXT), 0x4e454e4153415f5f/0xed000044454c4241
  *   (__SANED/__BLADED); string refs 0x5c2030/0x5c03b0/0x5c03a0/0x5c1ce0/0x5c2050. */
 void exclave_region_load(unsigned long *component, unsigned long *table, unsigned long a,
@@ -2443,7 +2443,7 @@ void exclave_map_resolve_wrapper(void)
  * 0x30-entry frame array and a 0x40-byte header, then walks the frame
  * records, computing per-frame extents and storing them. Returns the
  * descriptor object at x20.
- * Confidence: medium
+ * Confidence: high (verified vs decompile+disasm, VB2 sweep; FUN_000e250c callee fixed)
  * Notes: "Stacksho..." strings 0x5c2150/0x5c2190; fatal on missing base. */
 long exclave_stackshot_build(unsigned long a, unsigned long b, unsigned long c, long d, unsigned long e)
 {

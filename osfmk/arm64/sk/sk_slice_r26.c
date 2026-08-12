@@ -69,8 +69,19 @@ extern unsigned long FUN_0034cff4();
 extern void         FUN_0034d090();
 extern void         FUN_0034dfa4();
 extern void         FUN_0034e5bc();
+extern long         FUN_003722e4();
+extern void         FUN_0035a9b0();
+extern void         FUN_0035a8d0();
+extern void         FUN_0035a8d0();
 
 /* 0x0035xxxx dispatch/error handlers. */
+extern void         FUN_003503f8();
+extern void         FUN_00350428();
+extern void         FUN_00350464();
+extern void         FUN_00350470();
+extern void         FUN_00350494();
+extern void         FUN_003504a0();
+extern void         FUN_003504ac();
 extern cl4_pair_t   FUN_003504e8();
 extern cl4_pair_t   FUN_003504f4();
 extern cl4_pair_t   FUN_00350500();
@@ -166,16 +177,16 @@ extern void         FUN_003580e4();
 extern void         FUN_00359018();
 
 /* Allocator / object helpers. */
-extern void *FUN_0036a940();                         /* zone/obj alloc (size,count,tag) */
+extern long FUN_0036a940();                         /* zone/obj alloc (size,count,tag) */
 extern void *FUN_0036b270();                         /* sk_alloc / refcount acquire */
 extern void  FUN_0036b118();                         /* sk_free / refcount release */
 extern void  FUN_0036b340();                         /* refcount link */
 extern void  FUN_0036b588();                         /* sk_alloc_link */
 extern void  FUN_003a25d4();                         /* object release (tightbeam) */
 extern void  FUN_003a261c();                         /* object release 2 (tightbeam) */
-extern void  FUN_0001d4f4();                         /* error-frame build */
+extern cl4_pair_t FUN_0001d4f4();                         /* error-frame build */
 extern unsigned long FUN_0001dd14();                 /* grow/ensure-capacity */
-extern void  FUN_0019dfc4();                         /* cap/name lookup */
+extern unsigned long FUN_0019dfc4();                         /* cap/name lookup */
 extern unsigned long FUN_0019e578();                 /* sk_swift_helper */
 extern void  FUN_001b58b0();
 extern void  FUN_001b9084();
@@ -184,9 +195,9 @@ extern void  FUN_001d9890();
 extern unsigned long FUN_001a3e10();                 /* container head */
 
 /* Kernel / arch primitives. */
-extern void  FUN_00002534();                         /* diag/boot name ref */
+extern unsigned long FUN_00002534();                 /* diag/boot name ref */
 extern void  FUN_00117cc4();                         /* sk_memcpy */
-extern void  FUN_00100c38();
+extern cl4_pair_t   FUN_00100c38();
 extern void  FUN_00100efc();
 extern void  FUN_0011aa70();
 extern unsigned long FUN_0014ae44();
@@ -278,6 +289,8 @@ extern void         FUN_004acc48();
 extern void         FUN_004b5a74();
 
 /* 0x0041-0x0046 earlier-slice helpers. */
+extern unsigned long FUN_00407ed0();
+extern void FUN_00407ab8();
 extern void FUN_0041d180();
 extern void FUN_0042ec68();
 extern void FUN_00437eec();                          /* sk_re_parse_done */
@@ -292,7 +305,7 @@ extern void FUN_0046490c();
 extern unsigned long FUN_00464a44();
 extern void FUN_00464f4c();
 extern void FUN_00465db0();
-extern void FUN_0046ea44();
+extern cl4_pair_t FUN_0046ea44();
 extern void FUN_0046ef90();
 extern void FUN_0047277c();
 extern void FUN_0047d358();
@@ -318,13 +331,185 @@ extern void FUN_0049d248();
 
 /* Function-pointer type for Ghidra `code *` register artifacts and vtable
  * method dispatch. Old-style () so any argument list type-checks. */
-typedef void (*code_fn)();
+typedef uint64_t (*code_fn)();
 #define SK_VMETHOD(obj, off, ...) \
     (((code_fn)(*(void **)((char *)(obj) + (off))))(__VA_ARGS__))
 
 /* ================================================================== *
  * SKR26 function bodies (address order)
  * ================================================================== */
+
+/* Forward declarations (old-style) for the in-range functions so they can be
+ * called before their definitions (mutual call graph in this slice). */
+extern cl4_pair_t   FUN_004661e4();
+extern uint64_t     FUN_004661f0();
+extern void         FUN_004661fc();
+extern void         FUN_00466208();
+extern void         FUN_00466214();
+extern void         FUN_00466220();
+extern void         FUN_0046622c();
+extern uint64_t     FUN_00466238();
+extern void         FUN_00466244();
+extern uint64_t     FUN_00466250();
+extern cl4_pair_t   FUN_00466264();
+extern void         FUN_00466270();
+extern uint64_t     FUN_0046627c();
+extern void         FUN_00466290();
+extern cl4_pair_t   FUN_004662a4();
+extern cl4_pair_t   FUN_004662b8();
+extern uint64_t     FUN_004662cc();
+extern void         FUN_004662e0();
+extern void         FUN_004662f4();
+extern void         FUN_00466300();
+extern void         FUN_00466314();
+extern uint64_t     FUN_00466328();
+extern uint8_t     *FUN_0046633c();
+extern void         FUN_00466348();
+extern void         FUN_0046635c();
+extern uint64_t     FUN_00466368();
+extern void         FUN_00466374();
+extern void         FUN_00466388();
+extern cl4_pair_t   FUN_00466394();
+extern void         FUN_004663a0();
+extern uint64_t     FUN_004663ac();
+extern void         FUN_004663c0();
+extern void         FUN_004663d4();
+extern void         FUN_004663e0();
+extern void         FUN_004663ec();
+extern void         FUN_00466408();
+extern void         FUN_00466440();
+extern void         FUN_00466454();
+extern void         FUN_00466468();
+extern void         FUN_0046647c();
+extern void         FUN_00466490();
+extern void         FUN_004664a4();
+extern void         FUN_004664b8();
+extern void         FUN_004664d0();
+extern void         FUN_004664e4();
+extern void         FUN_004664f8();
+extern void         FUN_00466510();
+extern void         FUN_00466528();
+extern void         FUN_00466540();
+extern void         FUN_00466554();
+extern void         FUN_00466568();
+extern void         FUN_00466580();
+extern void         FUN_00466594();
+extern void         FUN_004665a8();
+extern void         FUN_004665bc();
+extern void         FUN_004665d0();
+extern void         FUN_004665dc();
+extern void         FUN_004665e8();
+extern void         FUN_004665f4();
+extern void         FUN_00466600();
+extern void         FUN_0046660c();
+extern void         FUN_00466618();
+extern void         FUN_00466624();
+extern void         FUN_00466630();
+extern void         FUN_0046663c();
+extern void         FUN_00466648();
+extern void         FUN_00466654();
+extern void         FUN_00466660();
+extern void         FUN_0046666c();
+extern void         FUN_00466678();
+extern void         FUN_00466684();
+extern void         FUN_00466690();
+extern void         FUN_0046669c();
+extern void         FUN_004666a8();
+extern void         FUN_004666b4();
+extern void         FUN_004666c0();
+extern void         FUN_004666cc();
+extern void         FUN_004666e4();
+extern void         FUN_004666f8();
+extern void         FUN_00466730();
+extern void         FUN_00466744();
+extern void         FUN_00466a68();
+extern void         FUN_00466f18();
+extern bool         FUN_00467468();
+extern bool         FUN_004674e4();
+extern void         FUN_00467564();
+extern void         FUN_00467678();
+extern void         FUN_004676a4();
+extern void         FUN_0046777c();
+extern void         FUN_00467848();
+extern void         FUN_004678c8();
+extern cl4_pair_t   FUN_00467de4();
+extern cl4_pair_t   FUN_00467e44();
+extern void         FUN_00468144();
+extern void         FUN_004686e8();
+extern void         FUN_004687e8();
+extern void         FUN_00468888();
+extern void         FUN_00468c6c();
+extern void         FUN_00468ce4();
+extern uint64_t     FUN_00468d98();
+extern void         FUN_00468dd4();
+extern void         FUN_00468ee4();
+extern void         FUN_00469250();
+extern uint64_t     FUN_004693d0();
+extern void         FUN_004693ec();
+extern void         FUN_0046989c();
+extern void         FUN_00469918();
+extern cl4_pair_t   FUN_00469b50();
+extern void         FUN_00469c50();
+extern void         FUN_00469d58();
+extern void         FUN_00469d84();
+extern void         FUN_00469dc4();
+extern void         FUN_00469ee8();
+extern void         FUN_00469f58();
+extern void         FUN_00469f74();
+extern void         FUN_0046a01c();
+extern void         FUN_0046a118();
+extern cl4_pair_t   FUN_0046a1b0();
+extern cl4_pair_t   FUN_0046a368();
+extern void         FUN_0046a5c8();
+
+/* Additional kernel / object helpers used by the dispatchers (0x0000-0x0020
+ * region). Old-style () = unspecified params; return type set where consumed. */
+extern void         FUN_00019858();
+extern cl4_pair_t   FUN_0001d4f4();                 /* error-frame build */
+extern unsigned long FUN_0001dd14();                 /* grow/ensure-capacity */
+extern unsigned long FUN_00027754();                 /* object release */
+extern unsigned long FUN_000277b8();                 /* fn-pointer carrier */
+extern unsigned long FUN_00027818();                 /* object release 2 */
+extern cl4_pair_t   FUN_00077888();
+extern void         FUN_00077894();
+extern void         FUN_0007c028();
+extern void         FUN_0007c1a4();
+extern void         FUN_0007c1c4();
+extern unsigned long FUN_000839d8();
+extern long         FUN_000839f8();
+extern void         FUN_00084174();
+extern void         FUN_00084180();
+extern void         FUN_00084220();
+extern void         FUN_00084234();
+extern void         FUN_0008e388();
+extern void         FUN_0008e500();
+extern cl4_pair_t   FUN_0008e518();                  /* launch image pair */
+extern cl4_pair_t   FUN_0009461c();
+extern void         FUN_0009e234();
+extern void         FUN_000a68c4();
+extern unsigned long FUN_000a68f4();                 /* fn-pointer carrier */
+extern cl4_pair_t   FUN_000a6e14();
+extern void         FUN_000a6f68();
+extern unsigned long FUN_000a6f88();
+extern void         FUN_000aa4ec();
+extern cl4_pair_t   FUN_000b4390();
+extern cl4_pair_t   FUN_000b43d0();
+extern void         FUN_000bd3a4();
+extern cl4_pair_t   FUN_000e15d8();
+extern void         FUN_000f5d84();
+extern cl4_pair_t   FUN_00100c38();
+extern void         FUN_00100efc();
+extern void         FUN_0011aa70();
+extern unsigned long FUN_0014ae44();
+extern unsigned long FUN_0019dfc4();
+extern unsigned long FUN_001a3e10();                 /* container head */
+extern void         FUN_001b58b0();
+extern void         FUN_001b9084();
+extern void         FUN_001d88fc();
+extern void         FUN_001d9890();
+extern unsigned long FUN_00206770();
+extern void         FUN_002a55a4();
+extern void         FUN_002a74f8();
 
 /* FUN_004661e4 @ 0x004661e4   (est. sk_pair_661e4)
  * Ghidra: undefined1 [16] FUN_004661e4(void)
@@ -1302,8 +1487,9 @@ done:
  * Confidence: low
  * Notes: register-carried pointers (extraout_x8/x9/x16); SUB_54ffff60f100041f
  * supervisor calls; span compare helper FUN_00365b6c. */
-void FUN_00466a68(word_t p1, word_t p2, word_t p3, word_t p4)
+void FUN_00466a68(void)
 {
+    word_t p1 = 0, p2 = 0, p3 = 0, p4 = 0;  /* register-passed args */
     cl4_pair_t img;         /* auVar10 */
     cl4_pair_t t11;         /* auVar11 */
     uint64_t a;             /* uVar3 */
@@ -1399,7 +1585,7 @@ spandone:
             FUN_00351c7c();
         }
         FUN_000839d8();
-        v = FUN_004ac9d8();
+        v = FUN_004ac9d8().lo;
         img.lo = v;
         img.hi = p3;
         fx8 = (code_fn)0;
@@ -1416,7 +1602,7 @@ spandone:
                 goto spancall1;
             }
             a = s40;
-            b = FUN_0001d4f4();
+            b = FUN_0001d4f4().lo;
             tag = (uint32_t)a;
             FUN_004ac33c();
             FUN_003a25d4(s40);
@@ -1488,9 +1674,9 @@ finish:
  * Confidence: low
  * Notes: register-carried pointers; SUB supervisor calls; FUN_00027754
  * release helper; L4_ErrorCode path via FUN_003508fc. */
-void FUN_00466f18(word_t p1, word_t p2, word_t p3, word_t p4,
-                  word_t p5, word_t p6)
+void FUN_00466f18()
 {
+    word_t p1 = 0, p2 = 0, p3 = 0, p4 = 0, p5 = 0, p6 = 0; /* register args */
     cl4_pair_t img;         /* auVar10 */
     cl4_pair_t t11;         /* auVar11 */
     uint64_t a, b, v;       /* uVar3, uVar4, uVar5 */
@@ -1583,7 +1769,7 @@ spancall1:
                     FUN_00351c7c();
                 }
                 FUN_000839d8();
-                v = FUN_004ac9d8();
+                v = FUN_004ac9d8().lo;
                 img.lo = v;
                 img.hi = p3;
                 fx8 = (code_fn)0;
@@ -1609,7 +1795,7 @@ spancall1:
                 goto spancall1;
             }
             a = s40;
-            b = FUN_0001d4f4(0xf, local_48);
+            b = FUN_0001d4f4(0xf, local_48).lo;
             tag = (uint32_t)a;
             FUN_004ac33c();
             FUN_003a25d4(s40);
@@ -1775,10 +1961,12 @@ void FUN_00467678(void)
  * reformats via FUN_0046ef90, then reports through FUN_00497994/FUN_004aba34.
  * Confidence: low
  * Notes: register/stack artifacts (in_x7, in_stack_*); memcpy 0x59. */
-void FUN_004676a4(word_t in_x7, uint64_t s18, uint64_t s20, uint64_t s28,
-                  uint64_t s90, uint64_t s98, uint64_t sa0, uint64_t sa8,
-                  uint64_t se0, char se8)
+void FUN_004676a4(void)
 {
+    word_t in_x7 = 0;
+    uint64_t s18 = 0, s20 = 0, s28 = 0, s90 = 0, s98 = 0;
+    uint64_t sa0 = 0, sa8 = 0, se0 = 0; char se8 = 0; /* register/stack args */
+    (void)sa8; (void)sa0;
     uint64_t v;             /* uVar1 */
     char tag;               /* cVar2 */
     uint8_t tagout;         /* uVar3 */
@@ -1817,9 +2005,10 @@ void FUN_004676a4(word_t in_x7, uint64_t s18, uint64_t s20, uint64_t s28,
  * (SoftwareBreakpoint 0x467848) if the range check fails.
  * Confidence: low
  * Notes: frame of 8 words; breakpoint 0x467848 on invalid range. */
-void FUN_0046777c(word_t p1, word_t p2, word_t p3, uint8_t p4,
-                  word_t p5, word_t p6, word_t p7, word_t p8)
+void FUN_0046777c()
 {
+    word_t p1 = 0, p2 = 0, p3 = 0, p5 = 0, p6 = 0, p7 = 0, p8 = 0;
+    uint8_t p4 = 0;   /* register/stack args */
     cl4_pair_t r;           /* auVar2 */
     cl4_pair_t q;           /* auVar3 */
     word_t cx8, cx9, cx9b, cx10;
@@ -1884,9 +2073,9 @@ void FUN_00467848(word_t x20)
  * Confidence: low
  * Notes: string s_L4_ErrorCodeOperationInvalid_00688748; breakpoint
  * 0x467de4; vtable dispatch; SUB supervisor calls. */
-void FUN_004678c8(word_t p1, word_t p2, word_t p3, word_t p4,
-                  word_t p5, word_t p6)
+void FUN_004678c8(void)
 {
+    word_t p1 = 0, p2 = 0, p3 = 0, p4 = 0, p5 = 0, p6 = 0; /* register args */
     cl4_pair_t img;         /* auVar14 */
     cl4_pair_t t15;         /* auVar15 */
     uint64_t u2, u3, u6, u7, u8;
@@ -1954,7 +2143,7 @@ void FUN_004678c8(word_t p1, word_t p2, word_t p3, word_t p4,
     FUN_004ac8b4();
     FUN_0035139c(p4);
     FUN_0046490c();
-    u7 = FUN_00377bec();
+    u7 = FUN_00377bec().lo;
     FUN_004ac9c0(u8, 0x004a4b78);
     img = FUN_00467de4();
     FUN_00270c08(0x004b5a74, 0, cx1, p4);
@@ -2003,8 +2192,12 @@ void FUN_004678c8(word_t p1, word_t p2, word_t p3, word_t p4,
  * FUN_00100efc, FUN_0047277c).
  * Confidence: low
  * Notes: ordered helper chain; in_x4 register artifact. */
-void FUN_00467de4(word_t in_x4)
+cl4_pair_t FUN_00467de4()
 {
+    word_t in_x4 = 0;   /* register-passed arg (arity varies) */
+    cl4_pair_t r = { 0, 0 };   /* decompiler shows void body but callers read a
+                                  return pair (Ghidra inconsistency); model the
+                                  register pair as zeroed. */
     FUN_00077888();
     FUN_003509ec();
     FUN_00027754(in_x4);
@@ -2012,7 +2205,7 @@ void FUN_00467de4(word_t in_x4)
     FUN_00377824();
     FUN_00100efc();
     FUN_0047277c();
-    return;
+    return r;
 }
 
 /* FUN_00467e44 @ 0x00467e44   (est. sk_span_search_67e44)
@@ -2132,9 +2325,10 @@ ret:
  * Confidence: low
  * Notes: register-carried pointers (extraout_x8/x9/x12/x16); SUB supervisor
  * calls; breakpoints 0x4686dc/0x4686e0/0x4686e4/0x4686e8. */
-void FUN_00468144(word_t in_x3, word_t in_x6, word_t in_x7, word_t unaff_x27,
-                  word_t unaff_x28)
+void FUN_00468144(void)
 {
+    word_t in_x3 = 0, in_x6 = 0, in_x7 = 0, unaff_x27 = 0, unaff_x28 = 0; /* reg args */
+    (void)unaff_x27;
     cl4_pair_t img;         /* auVar17 */
     uint64_t u3, u4, u5, u8, u9;
     long l4, l6, l9, l10, l11, l15, l17;
@@ -2153,7 +2347,7 @@ void FUN_00468144(word_t in_x3, word_t in_x6, word_t in_x7, word_t unaff_x27,
     u4 = FUN_00377824(u3, u5, u4);
     FUN_00464f4c();
     FUN_003515fc(in_x7, in_x6);
-    u5 = FUN_00377bec();
+    u5 = FUN_00377bec().lo;
     FUN_00350b84(0xff);
     l6 = FUN_00310e08();
     FUN_003504e8();
@@ -2323,7 +2517,7 @@ void FUN_004686e8(word_t in_x3, word_t in_x4, word_t s10, word_t s18,
     FUN_0034e5bc(s10, u2);
     FUN_00467678();
     FUN_003a25d4(u3);
-    p = FUN_0036b118(u4);
+    FUN_0036b118(u4);
     b1 = s18 != 0;
     if (b1) {
         FUN_004acc20();
@@ -2343,8 +2537,9 @@ void FUN_004686e8(word_t in_x3, word_t in_x4, word_t s10, word_t s18,
  * table; "Too many branches"). Tail-dispatch into the target handler.
  * Confidence: low
  * Notes: unrecovered jumptable at 0x00468884; unaff_x20. */
-void FUN_004687e8(word_t x20, word_t cx8, word_t cx16)
+void FUN_004687e8()
 {
+    word_t x20 = 0, cx8 = 0, cx16 = 0;   /* register args (arity varies) */
     long r;
 
     FUN_00077888();
@@ -2386,7 +2581,7 @@ void FUN_00468888(word_t p1, word_t p2, word_t p3)
     FUN_004ab310();
     FUN_003510dc();
     FUN_0035053c();
-    u3 = FUN_00377bec();
+    u3 = FUN_00377bec().lo;
     FUN_004aa770();
     FUN_00350548();
     u2 = FUN_00377824();
@@ -2409,7 +2604,7 @@ void FUN_00468888(word_t p1, word_t p2, word_t p3)
     FUN_00464f4c();
     FUN_000b43d0();
     FUN_00351f1c();
-    u4 = FUN_00377bec();
+    u4 = FUN_00377bec().lo;
     t14 = FUN_0035050c();
     l6 = FUN_00310e08(t14.lo, t14.hi, u4);
     FUN_000a6f88();
@@ -2716,7 +2911,7 @@ void FUN_00469250(word_t p1, word_t p2, word_t p3, word_t p4,
         word_t t = l3;
         img = FUN_003504e8();
         u2 = FUN_004974ec(img.lo, img.hi, p4);
-        FUN_00468dd4(cx8, (word_t)t20, v, u2, 0x687b40);
+        FUN_00468dd4(cx8, t20.lo, v, u2, 0x687b40);
     }
     FUN_0036b118(u1);
     FUN_0036b118(p5);
@@ -2862,14 +3057,14 @@ spandone:
     FUN_00352ae4();
     img = FUN_00377bec();
     FUN_0035050c(img.lo, img.hi, img.lo);
-    img = FUN_00310e08();
+    img.lo = FUN_00310e08(); img.hi = 0;
     FUN_003509bc(img.lo, img.hi, img.lo);
     v = FUN_0019dfc4();
     FUN_0036b118(u3);
     SK_VMETHOD(l6, 8, (word_t)(x21 + local_c8), p3);
 finish:
     FUN_00084180(*(uint64_t *)(local_c0 + 8));
-    cx8();
+    ((code_fn)cx8)();
     FUN_0008e500(v, x30);
     return;
 }

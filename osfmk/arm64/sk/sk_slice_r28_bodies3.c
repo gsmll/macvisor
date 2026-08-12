@@ -1,4 +1,3 @@
-
 /* FUN_0047e8ec @ 0x0047e8ec   (est. sk_r28_case_fold)
  * Ghidra: undefined1 FUN_0047e8ec(uint,undefined1,ulong)
  * ASCII case-folding helper: if param_3 flag set, folds an ASCII letter
@@ -7,6 +6,7 @@
  * Notes: FUN_004950f0 = scalar emit; in_CY/in_ZR = flag bits. */
 uint8_t sk_r28_0047e8ec(uint32_t a1, uint8_t a2, uint64_t a3)
 {
+    bool CY = false, ZR = false;       /* flag-bits artifacts */
     sk_x_004950f0(a1);
     if ((a3 & 1) != 0) {
         sk_x_004ac7ec(a1 - 0x40);
@@ -77,11 +77,15 @@ bool sk_r28_0047ea18(uint32_t a1)
 void sk_r28_0047ead4(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4,
                      uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9)
 {
+    uint64_t x24 = 0, x25 = 0, x30 = 0;   /* unaff_x24/x25/x30 */
+    uint64_t x8 = 0, x9 = 0, x10 = 0, x16 = 0;
+    uint32_t x8_00 = 0;
+    uint64_t stack0 = 0;
     sk_x_00077698();
     uint32_t u11 = (uint32_t)a4;
     uint64_t u5 = a3;
     sk_x_00407ab8();
-    u5 = sk_r28_0047ed40(0, (u11 ^ 0xffffffff) & 1);
+    u5 = (uint64_t)sk_r28_0047ed40(u5, (u11 ^ 0xffffffff) & 1);
     uint64_t scalar = 0;
     if ((~u11 & 1) == 0) {
         sk_x_00351300(a3);
@@ -102,7 +106,7 @@ void sk_r28_0047ead4(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4,
             scalar = (uint64_t)b; u11 = b; a9 = x25;
             if ((int8_t)b < 0) {
                 sk_x_00352af0();
-                switch (x16_cont) {
+                switch (x16) {
                 case 1: goto cont1;
                 case 2: goto cont2;
                 case 3: goto cont3;
@@ -112,9 +116,9 @@ void sk_r28_0047ead4(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4,
         }
         if ((x25 >> 0x3c & 1) == 0) {
             sk_x_00350618();
-            sk_x_002a9ba8();
+            x8 = (uint64_t)sk_x_002a9ba8();
         } else {
-            sk_x_002a9ba8();
+            x8 = (uint64_t)sk_x_002a9ba8();
         }
         uint8_t b = *(uint8_t *)(x8 + (scalar >> 0x10));
         scalar = (uint64_t)b; u11 = b;
@@ -124,7 +128,7 @@ void sk_r28_0047ead4(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4,
 cont1:
         case 1:
             sk_x_00353ff4();
-            scalar = (uint64_t)(x8 & 0xfffff800 | x8 & 0x3f | (u11 & 0x1f) << 6);
+            scalar = (uint64_t)(x8_00 & 0xfffff800 | x8_00 & 0x3f | (u11 & 0x1f) << 6);
             break;
 cont2:
         case 2:
@@ -183,6 +187,8 @@ commit:
  * Confidence: low. Notes: register-heavy; unaff_x19/x20 = string words. */
 void sk_r28_0047ed40(void)
 {
+    uint64_t x1 = 0, x8 = 0, x9 = 0;   /* extraout registers */
+    uint64_t x19 = 0, x20 = 0;         /* unaff_x19/x20 = string words */
     sk_x_00077888();
     if ((x1 & 1) == 0) {
         sk_x_00350624();
@@ -198,7 +204,7 @@ void sk_r28_0047ed40(void)
     }
     if (((x19 >> 0x3d & 1) == 0) && ((x20 >> 0x3c & 1) == 0)) {
         sk_x_0007c1c4();
-        sk_x_002a9ba8();
+        x8 = (uint64_t)sk_x_002a9ba8();
     }
     sk_x_004abcdc();
     sk_x_004abd2c(x8 + x9);
@@ -212,15 +218,17 @@ void sk_r28_0047ed40(void)
  * Notes: FUN_002be300/002be23c/002be12c utf16 read; FUN_00343c20 finalize. */
 uint64_t sk_r28_0047edf4(void)
 {
+    uint64_t x3 = 0;
     uint8_t st[104];
     sk_x_002be300();
     sk_x_002be23c(st);
     sk_x_003a25d4(x3);
     uint64_t v1 = sk_x_002be12c();
+    uint64_t v2;
     if ((v1 & 0xff00000000) == 0x100000000) {
         sk_x_00343c20(st);
     } else {
-        uint64_t v2 = sk_x_002be12c();
+        v2 = sk_x_002be12c();
         sk_x_00343c20(st);
         if ((v2 & 0xff00000000) == 0x100000000) {
             v2 = 0; v1 = 0;
@@ -238,6 +246,9 @@ uint64_t sk_r28_0047edf4(void)
  * Notes: SoftwareBreakpoint(1,0x47ef1c); unaff_x20. */
 uint64_t sk_r28_0047ee98(void)
 {
+    uint64_t x1 = 0, x8 = 0, x9 = 0;   /* extraout registers */
+    uint64_t x20 = 0;                  /* unaff_x20 */
+    bool ZR = false;
     sk_x_003532b8();
     int64_t len = x8;
     if (!ZR) len = x9;
@@ -267,6 +278,9 @@ uint64_t sk_r28_0047ee98(void)
  * Notes: SoftwareBreakpoint(1,0x47efb8); unaff_x19/x20. */
 uint64_t sk_r28_0047ef1c(void)
 {
+    uint64_t x8 = 0, x9 = 0, x8_00 = 0, x8_01 = 0, x8_02 = 0;
+    uint64_t x19 = 0, x20 = 0;         /* unaff_x19/x20 */
+    bool ZR = false;
     sk_x_003532b8();
     int64_t len = x8;
     if (!ZR) len = x9;
@@ -310,6 +324,7 @@ uint64_t sk_r28_0047ef1c(void)
  * Notes: string s_Unknown_script_rawValue__005e2ef0; FUN_00027724 getter. */
 uint64_t sk_r28_0047eff4(void)
 {
+    uint64_t x8 = 0;
     uint64_t r = sk_x_004ace08();
     sk_x_000b430c();
     sk_x_002a4ab4(0x1b);
@@ -319,7 +334,7 @@ uint64_t sk_r28_0047eff4(void)
     (*fn)(&sk_g_006775b0, 0x670738);
     sk_x_004ac0cc();
     sk_x_003a25d4(0x670738);
-    sk_x_003a25d4(0);
+    sk_x_003a25d4(x8);
     return r;
 }
 
@@ -332,8 +347,9 @@ uint64_t sk_r28_0047eff4(void)
  * Notes: unaff_x19 = dest; SK_CANARY stack check; DAT_00657e20. */
 void sk_r28_0047f0a8(void)
 {
+    uint64_t x_bae8 = 0, x_beb0 = 0;   /* uRam 0x4baeb8 / _DAT_004baeb0 */
     sk_pair_t au = sk_x_00357cb4();
-    int64_t canary = -0x2c8502b44bfffed6;
+    int64_t canary = SK_CANARY;
     uint8_t tag = 0;
     uint8_t *src = (uint8_t *)sk_x_004ace88(au.lo, &tag);
     uint64_t dst;
@@ -347,6 +363,7 @@ void sk_r28_0047f0a8(void)
         uint64_t n = (uint64_t)tag;
         if (n == 0) {
             sk_x_000a6fe0();
+            dst = 0;
         } else {
             sk_x_004ac27c();
             dst = sk_x_00499468();
@@ -365,7 +382,7 @@ void sk_r28_0047f0a8(void)
             } while (n != 0);
         }
     }
-    if (canary != -0x2c8502b44bfffed6)
+    if (canary != SK_CANARY)
         sk_x_0011d7e8();
     sk_x_00357c74(dst, au.hi);
 }

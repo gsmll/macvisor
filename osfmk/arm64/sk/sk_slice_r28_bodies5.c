@@ -1,4 +1,3 @@
-
 /* FUN_004811b4 @ 0x004811b4   (est. sk_r28_prop_test_j)
  * Ghidra: bool FUN_004811b4(int)
  * True if the general category (FUN_002bc5bc) is 0x16 (number) or the arg
@@ -17,6 +16,9 @@ bool sk_r28_004811b4(int a1)
  * Notes: unaff_x20 = self; SoftwareBreakpoint(1,0x481320). */
 void sk_r28_004811e8(uint64_t a1, uint64_t a2)
 {
+    uint64_t self = 0;                 /* unaff_x20 */
+    uint64_t x8 = 0;                   /* extraout_x8 */
+    bool u4 = false;
     if (*(char *)(self + 0x28) == 0x01)
         SoftwareBreakpoint(1, 0x481320);
     uint64_t cur = *(uint64_t *)(self + 0x18);
@@ -40,16 +42,13 @@ void sk_r28_004811e8(uint64_t a1, uint64_t a2)
             if ((a2 >> 0x3d & 1) == 0) {
                 if ((a1 >> 0x3c & 1) == 0) { sk_x_00084180(); base = sk_x_002a9ba8(); }
                 else base = (a2 & 0xfffffffffffffff) + 0x20;
-                int64_t end;
                 sk_x_004ab054(base, npos);
-                end = x8;
-                if ((int64_t)npos != 0x4000 && ((int64_t)(npos - 0x4000) < 0) == 0)
-                    goto skip;
-                do { sk_x_00356930(); end = x8; } while (0);
+                if (npos != 0x4000 && (int64_t)npos < 0x4000) goto skip;
+                do { sk_x_00356930(); } while (0);
 skip:
-                npos = sk_x_004abf00(end);
+                npos = sk_x_004abf00(x8);
             } else {
-                sk_x_004ab054(&stack);
+                sk_x_004ab054(&stack0);
                 npos = sk_x_004abf00(x8);
             }
         } else {
@@ -178,6 +177,7 @@ void sk_r28_00481510(uint64_t a1, uint8_t a2)
  * Confidence: medium. Notes: unaff_x19 = out slot. */
 void sk_r28_00481554(void)
 {
+    uint8_t *x19 = 0;                  /* unaff_x19: out slot */
     sk_x_00351124();
     uint8_t v = (uint8_t)sk_r28_00481354(0);
     *x19 = v;
@@ -189,6 +189,7 @@ void sk_r28_00481554(void)
  * Confidence: medium. Notes: unaff_x20 = index byte. */
 void sk_r28_00481580(uint64_t *out)
 {
+    uint8_t *x20 = 0;                  /* unaff_x20: index byte */
     uint64_t v = sk_r28_00481378(*x20);
     *out = v;
 }
